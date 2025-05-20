@@ -16,8 +16,16 @@
     border-radius: 10px;
 }
 
-form .form-fournisseur {
-    max-width: 400px;
+form {
+    width: 100%;
+    background-color: var(--secondary-color);
+    padding: 2em;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    gap: 5em;
+}
+
+form .form-fournisseurs {
     margin: 5em;
     padding: 1.5em;
     border-radius: 12px;
@@ -27,28 +35,36 @@ form .form-fournisseur {
     gap: 1em;
 }
 
-.form-fournisseur h3 {
+form h3 {
     margin: 0 0 0.5em;
     color: #333;
     font-size: 1.2em;
     text-align: center;
 }
 
-.form-fournisseur input {
-    padding: 0.5em;
+form input {
+    padding: 0.3em;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 1em;
     transition: border-color 0.3s ease;
 }
 
-.form-fournisseur input:focus {
+form select {
+    padding: 0.3em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+form input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 5px rgba(241, 95, 97, 0.3);
 }
 
-.form-fournisseur button {
+form button {
     padding: 0.8em;
     background-color: var(--primary-color);
     color: white;
@@ -59,6 +75,6 @@ form .form-fournisseur {
     transition: background-color 0.3s ease;
 }
 
-.form-fournisseur button:hover {
+form button:hover {
     background-color: #939ad1;
 }

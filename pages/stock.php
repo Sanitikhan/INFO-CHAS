@@ -17,6 +17,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock</title>
     <link rel="stylesheet" href="../public/style.css">
+    <link rel="stylesheet" href="../public/form.css">
     <link rel="icon" href="../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -114,7 +115,7 @@ try {
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>
                         </li>
                         <li class="nav-item">
-                            <a href="fournisseur.php" class="nav-link dropdown-link">Fournisseurs</a>
+                            <a href="fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
                         </li>
                     </ul>
                 </li>
@@ -161,6 +162,34 @@ try {
 
     <section class="main-content">
         <h1>Bienvenue dans le stock</h1>
+
+        <section class="btn-section">
+            <button class="btn btn-search" id="search-lot-btn">Rechercher</button>
+            <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+        </section>
+
+        <div class="form-section">
+            <form action="../actions/ajouter_lot.php" method="POST">
+                <input type="text" name="reference" placeholder="Référence" required>
+                <select name="type" placeholder="Type">
+                    <option value="TOP">Top</option>
+                    <option value="BAS">Bas</option>
+                    <option value="ENS">Ensemble</option>
+                    <option value="DSS">Dessus</option>
+                </select>
+                <input type="number" name="quantite_total" placeholder="Quantité totale">
+                <input type="number" name="disponibilite" placeholder="Disponible">
+                <input type="number" name="reserve" placeholder="Réservé">
+                <input type="number" name="a_venir" placeholder="À venir">
+                <select name="etat">
+                    <option value="vert">Vert</option>
+                    <option value="orange">Orange</option>
+                    <option value="rouge">Rouge</option>
+                </select>
+                <input type="number" name="fournisseur_id" placeholder="Fournisseur">
+                <button type="submit">Ajouter le lot</button>
+            </form>
+        </div>
 
         <!-- Affichage des lots existants -->
         <h2>Lots enregistrés</h2>
@@ -310,26 +339,6 @@ try {
                 </tr>
             </tbody>
         </table>
-        <form action="../actions/ajouter_lot.php" method="POST">
-            <input type="text" name="reference" placeholder="Référence" required>
-            <select name="type" placeholder="Type">
-                <option value="TOP">Top</option>
-                <option value="BAS">Bas</option>
-                <option value="ENS">Ensemble</option>
-                <option value="DSS">Dessus</option>
-            </select>
-            <input type="number" name="quantite_total" placeholder="Quantité totale">
-            <input type="number" name="disponibilite" placeholder="Disponible">
-            <input type="number" name="reserve" placeholder="Réservé">
-            <input type="number" name="a_venir" placeholder="À venir">
-            <select name="etat">
-                <option value="vert">Vert</option>
-                <option value="orange">Orange</option>
-                <option value="rouge">Rouge</option>
-            </select>
-            <input type="number" name="fournisseur_id" placeholder="Fournisseur">
-            <button type="submit">Ajouter le lot</button>
-        </form>
 
     </section>
 
