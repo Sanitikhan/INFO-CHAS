@@ -18,6 +18,7 @@ try {
     <title>Stock</title>
     <link rel="stylesheet" href="../public/style.css">
     <link rel="stylesheet" href="../public/form.css">
+    <link rel="stylesheet" href="../public/lot.css">
     <link rel="icon" href="../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -161,14 +162,17 @@ try {
     </aside>
 
     <section class="main-content">
-        <h1>Bienvenue dans le stock</h1>
-
+        
+        <header class="header">
+            <h1>STOCK</h1>
+        </header>
+        
         <section class="btn-section">
-            <button class="btn btn-search" id="search-lot-btn">Rechercher</button>
+            <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
         </section>
 
-        <div class="form-section">
+        <div class="form-section" id="add-lot-form-section" style="display:none;">
             <form action="../actions/ajouter_lot.php" method="POST">
                 <input type="text" name="reference" placeholder="Référence" required>
                 <select name="type" placeholder="Type">
@@ -193,155 +197,71 @@ try {
 
         <!-- Affichage des lots existants -->
         <h2>Lots enregistrés</h2>
-        <table border="1" cellpadding="8">
-            <tr>
-                <th>Référence</th>
-                <th>Type</th>
-                <th>Quantité</th>
-                <th>Disponibilité</th>
-                <th>Réservé</th>
-                <th>A venir</th>
-                <th>Fournisseur</th>
-                <th>Etat</th>
-            </tr>
-            <?php foreach ($lots as $lot): ?>
-                <tr>
-                    <td><?= htmlspecialchars($lot['reference']) ?></td>
-                    <td><?= htmlspecialchars($lot['type']) ?></td>
-                    <td><?= htmlspecialchars($lot['quantite_total']) ?></td>
-                    <td><?= htmlspecialchars($lot['disponibilite']) ?></td>
-                    <td><?= htmlspecialchars($lot['reserve']) ?></td>
-                    <td><?= htmlspecialchars($lot['a_venir']) ?></td>
-                    <td><?= htmlspecialchars($lot['fournisseur_id']) ?></td>
-                    <td><?= htmlspecialchars($lot['etat']) ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </table>
-
-        <table>
+        <table id="lots-table" border="1" cellpadding="5">
             <thead>
                 <tr>
-                    <th>Lot</th>
                     <th>Référence</th>
                     <th>Type</th>
                     <th>Quantité</th>
                     <th>Disponibilité</th>
-                    <th>Réservé</th>
-                    <th>A venir</th>
-                    <th>Fournisseur</th>
                     <th>Etat</th>
                 </tr>
             </thead>
+
             <tbody>
-                <tr class="main-row">
-                    <td>lot_1</td>
-                    <td>ref_1</td>
-                    <td>typ_1</td>
-                    <td>qtt_1</td>
-                    <td>disp_1</td>
-                    <td>res_1</td>
-                    <td>ven_1</td>
-                    <td>fou_1</td>
-                    <td>etat_1</td>
-                </tr>
-                <!-- Hidden Details Row -->
-                <tr class="details-row" <!--style="display: none;-->">
-                    <td colspan="9">
-                        <table class="details-table">
-                            <thead>
-                                <tr>
-                                    <th>Lieu de stock</th>
-                                    <th>Emplacement</th>
-                                    <th>Quantité</th>
-                                    <th>Disponibilité</th>
-                                    <th>Réservé</th>
-                                    <th>A venir</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>lds_1</td>
-                                    <td>emp_1</td>
-                                    <td>qtt_1</td>
-                                    <td>dispo_1</td>
-                                    <td>res_1</td>
-                                    <td>ven_1</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td>lot_1</td>
-                    <td>ref_1</td>
-                    <td>typ_1</td>
-                    <td>qtt_1</td>
-                    <td>disp_1</td>
-                    <td>res_1</td>
-                    <td>ven_1</td>
-                    <td>fou_1</td>
-                    <td>etat_1</td>
-                </tr>
-                <tr>
-                    <td>lot_1</td>
-                    <td>ref_1</td>
-                    <td>typ_1</td>
-                    <td>qtt_1</td>
-                    <td>disp_1</td>
-                    <td>res_1</td>
-                    <td>ven_1</td>
-                    <td>fou_1</td>
-                    <td>etat_1</td>
-                </tr>
-                <tr>
-                    <td>lot_1</td>
-                    <td>ref_1</td>
-                    <td>typ_1</td>
-                    <td>qtt_1</td>
-                    <td>disp_1</td>
-                    <td>res_1</td>
-                    <td>ven_1</td>
-                    <td>fou_1</td>
-                    <td>etat_1</td>
-                </tr>
-                <tr>
-                    <td>lot_1</td>
-                    <td>ref_1</td>
-                    <td>typ_1</td>
-                    <td>qtt_1</td>
-                    <td>disp_1</td>
-                    <td>res_1</td>
-                    <td>ven_1</td>
-                    <td>fou_1</td>
-                    <td>etat_1</td>
-                </tr>
-                <tr>
-                    <td>lot_1</td>
-                    <td>ref_1</td>
-                    <td>typ_1</td>
-                    <td>qtt_1</td>
-                    <td>disp_1</td>
-                    <td>res_1</td>
-                    <td>ven_1</td>
-                    <td>fou_1</td>
-                    <td>etat_1</td>
-                </tr>
-                <tr>
-                    <td>lot_1</td>
-                    <td>ref_1</td>
-                    <td>typ_1</td>
-                    <td>qtt_1</td>
-                    <td>disp_1</td>
-                    <td>res_1</td>
-                    <td>ven_1</td>
-                    <td>fou_1</td>
-                    <td>etat_1</td>
-                </tr>
+                <?php foreach ($lots as $lot): ?>
+                    <tr class="main-row" style="cursor:pointer;">
+                        <td><?= htmlspecialchars($lot['reference']) ?></td>
+                        <td><?= htmlspecialchars($lot['type']) ?></td>
+                        <td><?= htmlspecialchars($lot['quantite_total']) ?></td>
+                        <td><?= htmlspecialchars($lot['disponibilite']) ?></td>
+                        <td><?= htmlspecialchars($lot['etat']) ?></td>
+                    </tr>
+                    <tr class="details-row" style="display:none; background:#f9f9f9;">
+                        <td colspan="8">
+                            <table style="width:100%; background:#f9f9f9;">
+                                <thead>
+                                    <tr>
+                                        <th>Fournisseur</th>
+                                        <th>Réservé</th>
+                                        <th>À venir</th>
+                                        <th>Emplacement</th>
+                                    </tr>
+                                </thead>    
+                                <tbody>
+                                    <tr>
+                                        <td><?= htmlspecialchars($lot['fournisseur_id']) ?></td>
+                                        <td><?= htmlspecialchars($lot['reserve']) ?></td>
+                                        <td><?= htmlspecialchars($lot['a_venir']) ?></td>
+                                        <td><?= isset($lot['emplacement']) ? htmlspecialchars($lot['emplacement']) : '-' ?></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
 
     </section>
 
+    <script>
+    document.querySelectorAll('#lots-table .main-row').forEach(function(row) {
+        row.addEventListener('click', function() {
+            const detailsRow = row.nextElementSibling;
+            if (detailsRow && detailsRow.classList.contains('details-row')) {
+                detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
+            }
+        });
+    });
+
+    document.getElementById('add-lot-btn').addEventListener('click', function() {
+    const formSection = document.getElementById('add-lot-form-section');
+    formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
+    });
+    </script>
+
+    <script src="../actions/search.js"></script>
     <script src="../actions/script.js"></script>
 </body>
 </html>
