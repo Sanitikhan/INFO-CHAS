@@ -18,6 +18,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../public/style.css">
     <link rel="stylesheet" href="../public/modal.css">
+    <link rel="stylesheet" href="../public/form.css">
     <title>Paramètres</title>
     <link rel="icon" href="../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
@@ -108,7 +109,7 @@ try {
                     <!-- Dropdown menu -->
                     <ul class="dropdown-menu">
                         <li class="nav-item">
-                            <a class="nav-link dropdown-title">Messagerie</a>
+                            <a class="nav-link active dropdown-title">Messagerie</a>
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link dropdown-link">Mes messages</a>
@@ -117,7 +118,7 @@ try {
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link dropdown-link">Fournisseurs</a>
+                            <a href="fournisseur.php" class="nav-link active dropdown-link">Fournisseurs</a>
                         </li>
                     </ul>
                 </li>
@@ -137,7 +138,7 @@ try {
             <!-- Secondary Bottom Nav -->
             <ul class="nav-list secondary-nav">
                 <li class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="#" class="nav-link">
                         <span class="material-symbols-rounded">settings</span>
                         <span class="nav-label">Paramètres</span>
                     </a>
@@ -163,13 +164,15 @@ try {
     </aside>
 
     <section class="main-content">
-        <h1>Bienvenue dans les paramètres</h1>
-        <form class="form-fournisseur" method="POST" action="../actions/ajouter_fournisseur.php">
-            <input type="text" name="nom" placeholder="Nom du fournisseur" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="text" name="telephone" placeholder="Téléphone" required>
-            <button type="submit">Ajouter le fournisseur</button>
-        </form>
+        <h1>Bienvenue dans la page fournisseurs</h1>
+        <div class="form-section">
+            <form class="form-fournisseur" method="POST" action="../actions/ajouter_fournisseur.php">
+                <input type="text" name="nom" placeholder="Nom du fournisseur" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="text" name="telephone" placeholder="Téléphone" required>
+                <button type="submit">Ajouter le fournisseur</button>
+            </form>
+        </div>
 
         <!-- Affichage des fournisseurs existants -->
         <h2>Fournisseurs enregistrés</h2>
@@ -207,7 +210,7 @@ try {
                 </div>
             </div>
         </div>
-        
+
     </section>
 
     
@@ -217,6 +220,6 @@ try {
 
 
     <script src="../actions/script.js"></script>
-    <!--<script src="../actions/modal.js"></script>-->
+    <script src="../actions/modal.js"></script>
 </body>
 </html>
