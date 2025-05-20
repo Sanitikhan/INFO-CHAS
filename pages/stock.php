@@ -1,9 +1,21 @@
+<?php
+require_once '../includes/config.php';
+
+try {
+    $stmt = $pdo->query("SELECT * FROM lots");
+    $lots = $stmt->fetchAll();
+} catch (PDOException $e) {
+    echo "Erreur : " . $e->getMessage();
+    $lots = [];
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sidebar</title>
+    <title>Stock</title>
     <link rel="stylesheet" href="../public/style.css">
     <link rel="icon" href="../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
@@ -42,7 +54,7 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="stock.html" class="nav-link active">
+                    <a href="stock.php" class="nav-link active">
                         <span class="material-symbols-rounded">inventory_2</span>
                         <span class="nav-label">Stock</span>
                     </a>
@@ -122,7 +134,7 @@
             <!-- Secondary Bottom Nav -->
             <ul class="nav-list secondary-nav">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="parameters.php" class="nav-link">
                         <span class="material-symbols-rounded">settings</span>
                         <span class="nav-label">Paramètres</span>
                     </a>
@@ -149,6 +161,34 @@
 
     <section class="main-content">
         <h1>Bienvenue dans le stock</h1>
+
+        <!-- Affichage des lots existants -->
+        <h2>Lots enregistrés</h2>
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Référence</th>
+                <th>Type</th>
+                <th>Quantité</th>
+                <th>Disponibilité</th>
+                <th>Réservé</th>
+                <th>A venir</th>
+                <th>Fournisseur</th>
+                <th>Etat</th>
+            </tr>
+            <?php foreach ($lots as $lot): ?>
+                <tr>
+                    <td><?= htmlspecialchars($lot['reference']) ?></td>
+                    <td><?= htmlspecialchars($lot['type']) ?></td>
+                    <td><?= htmlspecialchars($lot['quantite_total']) ?></td>
+                    <td><?= htmlspecialchars($lot['disponibilite']) ?></td>
+                    <td><?= htmlspecialchars($lot['reserve']) ?></td>
+                    <td><?= htmlspecialchars($lot['a_venir']) ?></td>
+                    <td><?= htmlspecialchars($lot['fournisseur_id']) ?></td>
+                    <td><?= htmlspecialchars($lot['etat']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+
         <table>
             <thead>
                 <tr>
@@ -270,6 +310,27 @@
                 </tr>
             </tbody>
         </table>
+        <form action="../actions/ajouter_lot.php" method="POST">
+            <input type="text" name="reference" placeholder="Référence" required>
+            <select name="type" placeholder="Type">
+                <option value="TOP">Top</option>
+                <option value="BAS">Bas</option>
+                <option value="ENS">Ensemble</option>
+                <option value="DSS">Dessus</option>
+            </select>
+            <input type="number" name="quantite_total" placeholder="Quantité totale">
+            <input type="number" name="disponibilite" placeholder="Disponible">
+            <input type="number" name="reserve" placeholder="Réservé">
+            <input type="number" name="a_venir" placeholder="À venir">
+            <select name="etat">
+                <option value="vert">Vert</option>
+                <option value="orange">Orange</option>
+                <option value="rouge">Rouge</option>
+            </select>
+            <input type="number" name="fournisseur_id" placeholder="Fournisseur">
+            <button type="submit">Ajouter le lot</button>
+        </form>
+
     </section>
 
     <script src="../actions/script.js"></script>

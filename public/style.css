@@ -278,6 +278,53 @@ body {
     padding: 8px;
 }
 
+form .form-fournisseur {
+    max-width: 400px;
+    margin: 2em 0;
+    padding: 2em;
+    background-color: #fdf7f2;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.form-fournisseur h3 {
+    margin: 0 0 0.5em;
+    color: #333;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.form-fournisseur input {
+    padding: 0.8em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.form-fournisseur input:focus {
+    outline: none;
+    border-color: #f15f61;
+    box-shadow: 0 0 5px rgba(241, 95, 97, 0.3);
+}
+
+.form-fournisseur button {
+    padding: 0.8em;
+    background-color: #f15f61;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-fournisseur button:hover {
+    background-color: #e04e51;
+}
 
 
 /* Responsive media query code form small screens */
