@@ -191,8 +191,20 @@ try {
         </table>
     </section>
 
+    <div class="wrapper">
+        <a href="#modalbox">Click to open Modal</a>
+    </div>
+
+    <div id="modalbox">
+        <div class="modalcontent">
+            <h1>Modal Title</h1>
+            <p>This is a modal box.</p>
+            <a href="#" class="modalClose">&times;</a>
+        </div>
+    </div>
+
     <!-- Modal de succès -->
-    <div id="modal-success" class="modal" style="display:none;">
+    <div id="modal-success" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('modal-success')">&times;</span>
         <p>Fournisseur ajouté avec succès !</p>
@@ -200,7 +212,7 @@ try {
     </div>
 
     <!-- Modal d'erreur -->
-    <div id="modal-error" class="modal" style="display:none;">
+    <div id="modal-error" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('modal-error')">&times;</span>
         <p>Erreur lors de l'ajout du fournisseur.</p>
@@ -210,6 +222,6 @@ try {
 
 
     <script src="../actions/script.js"></script>
-    <script src="../actions/modal.js"></script>
+    <!--<script src="../actions/modal.js"></script>-->
 </body>
 </html>
