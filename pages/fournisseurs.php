@@ -19,6 +19,7 @@ try {
     <link rel="stylesheet" href="../public/style.css">
     <link rel="stylesheet" href="../public/modal.css">
     <link rel="stylesheet" href="../public/form.css">
+    <link rel="stylesheet" href="../public/fournisseur.css">
     <title>Paramètres</title>
     <link rel="icon" href="../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
@@ -164,8 +165,16 @@ try {
     </aside>
 
     <section class="main-content">
-        <h1>Bienvenue dans la page fournisseurs</h1>
-        <div class="form-section">
+        <header class="header">
+            <h1>Fournisseurs</h1>
+        </header>
+
+        <section class="btn-section">
+            <input type="text" id="search-fournisseur-input" placeholder="Rechercher un fournisseur..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <button class="btn btn-add" id="add-fournisseur-btn">Ajouter un fournisseur</button>
+        </section>
+
+        <div class="form-section" id="add-fournisseur-form-section" style="display:none;">
             <form class="form-fournisseur" method="POST" action="../actions/ajouter_fournisseur.php">
                 <input type="text" name="nom" placeholder="Nom du fournisseur" required>
                 <input type="email" name="email" placeholder="Email" required>
@@ -176,20 +185,24 @@ try {
 
         <!-- Affichage des fournisseurs existants -->
         <h2>Fournisseurs enregistrés</h2>
-        <table border="1" cellpadding="5">
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Téléphone</th>
-            </tr>
-            <?php foreach ($fournisseurs as $fournisseur): ?>
+        <table id="fournisseurs-table" border="1" cellpadding="5">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($fournisseurs as $fournisseur): ?>
                 <tr>
                     <td><?= htmlspecialchars($fournisseur['id']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['nom']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['email']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['telephone']) ?></td>
                 </tr>
+            </tbody>
             <?php endforeach; ?>
         </table>
 
@@ -218,7 +231,33 @@ try {
     
 
 
+    <script>
+    /* Details row */
+    document.querySelectorAll('#lots-table .main-row').forEach(function(row) {
+        row.addEventListener('click', function() {
+            const detailsRow = row.nextElementSibling;
+            if (detailsRow && detailsRow.classList.contains('details-row')) {
+                detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
+            }
+        });
+    });
 
+    /* Search 'fournisseur' */
+    document.getElementById('search-fournisseur-input').addEventListener('input', function() {
+    const search = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#fournisseurs-table tbody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(search) ? '' : 'none';
+    });
+    });
+
+    /* Display form */
+    document.getElementById('add-fournisseur-btn').addEventListener('click', function() {
+    const formSection = document.getElementById('add-fournisseur-form-section');
+    formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
+    });
+    </script>
     <script src="../actions/script.js"></script>
     <script src="../actions/modal.js"></script>
 </body>

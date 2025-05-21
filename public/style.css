@@ -133,7 +133,7 @@ body {
 }
 
 .sidebar-nav .active {
-    color: #000;
+    color: #000 !important;
     background: #fff;
 }
 
