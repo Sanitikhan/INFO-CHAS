@@ -215,7 +215,9 @@ try {
                         <td><?= htmlspecialchars($lot['type']) ?></td>
                         <td><?= htmlspecialchars($lot['quantite_total']) ?></td>
                         <td><?= htmlspecialchars($lot['disponibilite']) ?></td>
-                        <td><?= htmlspecialchars($lot['etat']) ?></td>
+                        <td>
+                            <span class="etat-square <?= htmlspecialchars($lot['etat']) ?>"></span>
+                        </td>
                     </tr>
                     <tr class="details-row" style="display:none; background:#f9f9f9;">
                         <td colspan="8">
