@@ -170,7 +170,7 @@ try {
         </header>
 
         <section class="btn-section">
-            <input type="text" id="search-fournisseur-input" placeholder="Rechercher un fournisseur..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <input type="text" id="search-fournisseur-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <button class="btn btn-add" id="add-fournisseur-btn">Ajouter un fournisseur</button>
         </section>
 
