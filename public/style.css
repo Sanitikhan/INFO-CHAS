@@ -191,7 +191,7 @@ body {
     height: auto !important;
     overflow-y: unset;
     pointer-events: none;
-    background: #f8aae5;
+    background: var(--secondary-color);
     padding-right: 10px; 
     border-radius: 0 10px 10px 0;
     transition: 0s;
