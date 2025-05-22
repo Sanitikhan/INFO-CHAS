@@ -30,6 +30,11 @@
     align-items: center;
     gap: 1.5rem; /* Optional: space between p and span */
 }
+.btn-search:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(241, 95, 97, 0.3);
+}
 
 .form-section {
     display: flex;

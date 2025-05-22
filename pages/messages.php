@@ -16,9 +16,9 @@ $users = $pdo->query("SELECT id, username FROM users")->fetchAll();
 if (isset($_SESSION['user_id'])) {
     $stmt = $pdo->prepare("SELECT m.*, u.username AS sender_name 
         FROM messages m 
-        JOIN users u ON m.sender_id = u.id 
-        WHERE m.receiver_id = ? 
-        ORDER BY m.sent_at DESC");
+        JOIN users u ON m.expediteur_id = u.id 
+        WHERE m.receveur_id = ? 
+        ORDER BY m.id DESC");
     $stmt->execute([$_SESSION['user_id']]);
     $received_messages = $stmt->fetchAll();
 } else {
@@ -184,7 +184,7 @@ if (isset($_SESSION['user_id'])) {
         </header>
 
         <section class="btn-section">
-            <input type="text" id="search-message-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <input type="text" id="search-message-input" placeholder="Rechercher..." class="btn-search" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <button class="btn btn-add" id="add-message-btn">Nouveau message</button>
         </section>
         
@@ -223,6 +223,16 @@ if (isset($_SESSION['user_id'])) {
     </section>
 
     <script>
+        /* Search 'message' */
+        document.getElementById('search-message-input').addEventListener('input', function() {
+        const search = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#message-table tbody tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(search) ? '' : 'none';
+        });
+        });
+
         /* Display form */
         document.getElementById('add-message-btn').addEventListener('click', function() {
         const formSection = document.getElementById('add-message-form-section');
