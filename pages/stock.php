@@ -110,7 +110,7 @@ try {
                             <a class="nav-link dropdown-title">Messagerie</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link dropdown-link">Mes messages</a>
+                            <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>

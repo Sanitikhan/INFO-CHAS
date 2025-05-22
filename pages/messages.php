@@ -8,7 +8,24 @@ try {
     echo "Erreur : " . $e->getMessage();
     $fournisseurs = [];
 }
+
+// Fetch all users for the select (if not already done)
+$users = $pdo->query("SELECT id, username FROM users")->fetchAll();
+
+// Fetch received messages for the logged-in user
+if (isset($_SESSION['user_id'])) {
+    $stmt = $pdo->prepare("SELECT m.*, u.username AS sender_name 
+        FROM messages m 
+        JOIN users u ON m.sender_id = u.id 
+        WHERE m.receiver_id = ? 
+        ORDER BY m.sent_at DESC");
+    $stmt->execute([$_SESSION['user_id']]);
+    $received_messages = $stmt->fetchAll();
+} else {
+    $received_messages = [];
+}
 ?>
+
 
 
 <!DOCTYPE html>
@@ -16,18 +33,15 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messagerie</title>
     <link rel="stylesheet" href="../public/style.css">
-    <link rel="stylesheet" href="../public/modal.css">
-    <link rel="stylesheet" href="../public/form.css">
-    <link rel="stylesheet" href="../public/fournisseur.css">
-    <title>Paramètres</title>
+    <link rel="stylesheet" href="../public/messages.css">
     <link rel="icon" href="../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
-
-    <!-- Mobile Sidebar Menu Button -->
+<!-- Mobile Sidebar Menu Button -->
     <button class="sidebar-menu-button">
         <span class="material-symbols-rounded">menu</span>
     </button>
@@ -102,7 +116,7 @@ try {
                 </li>
                 <!-- Dropdown -->
                 <li class="nav-item dropdown-container">
-                    <a href="#" class="nav-link dropdown-toggle">
+                    <a href="#" class="nav-link active dropdown-toggle">
                         <span class="material-symbols-rounded">mail</span>
                         <span class="nav-label">Messagerie</span>
                         <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
@@ -113,13 +127,13 @@ try {
                             <a class="nav-link active dropdown-title">Messagerie</a>
                         </li>
                         <li class="nav-item">
-                            <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
+                            <a href="messages.php" class="nav-link active dropdown-link">Mes messages</a>
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>
                         </li>
                         <li class="nav-item">
-                            <a href="fournisseur.php" class="nav-link active dropdown-link">Fournisseurs</a>
+                            <a href="founisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
                         </li>
                     </ul>
                 </li>
@@ -139,7 +153,7 @@ try {
             <!-- Secondary Bottom Nav -->
             <ul class="nav-list secondary-nav">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="parameters.php" class="nav-link">
                         <span class="material-symbols-rounded">settings</span>
                         <span class="nav-label">Paramètres</span>
                     </a>
@@ -166,99 +180,42 @@ try {
 
     <section class="main-content">
         <header class="header">
-            <h1>Fournisseurs</h1>
+            <h1>MES MESSAGES</h1>
         </header>
-
-        <section class="btn-section">
-            <input type="text" id="search-fournisseur-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="btn btn-add" id="add-fournisseur-btn">Ajouter un fournisseur</button>
-        </section>
-
-        <div class="form-section" id="add-fournisseur-form-section" style="display:none;">
-            <form class="form-fournisseur" method="POST" action="../actions/ajouter_fournisseur.php">
-                <input type="text" name="nom" placeholder="Nom du fournisseur" required>
-                <input type="email" name="email" placeholder="Email" required>
-                <input type="text" name="telephone" placeholder="Téléphone" required>
-                <button type="submit">Ajouter le fournisseur</button>
-            </form>
+        
+        <div class="messages-container">
+                <!-- Send Message Form -->
+                <form action="../actions/messagerie.php" method="POST">
+                    <label for="receveur_id">Destinataire :</label>
+                    <select name="receveur_id" required>
+                        <?php foreach ($users as $user): ?>
+                            <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                <option value="<?= $user['id'] ?>"><?= htmlspecialchars($user['username']) ?></option>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </select>
+                    <label for="objet">Sujet :</label>
+                    <input type="text" name="objet" required>
+                    <label for="corps">Message :</label>
+                    <textarea name="corps" required></textarea>
+                    <button type="submit" name="send_message">Envoyer</button>
+                </form>
         </div>
-
-        <!-- Affichage des fournisseurs existants -->
-        <h2>Fournisseurs enregistrés</h2>
-        <table id="fournisseurs-table" border="1" cellpadding="5">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nom</th>
-                    <th>Email</th>
-                    <th>Téléphone</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($fournisseurs as $fournisseur): ?>
-                <tr>
-                    <td><?= htmlspecialchars($fournisseur['id']) ?></td>
-                    <td><?= htmlspecialchars($fournisseur['nom']) ?></td>
-                    <td><?= htmlspecialchars($fournisseur['email']) ?></td>
-                    <td><?= htmlspecialchars($fournisseur['telephone']) ?></td>
-                </tr>
-            </tbody>
-            <?php endforeach; ?>
-        </table>
-
-        <div class="wrapper">
-            <!-- Modal de succès -->
-            <div id="modal-success" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeModal('modal-success')">&times;</span>
-                    <p>Fournisseur ajouté avec succès !</p>
-                </div>
-            </div>
-
-            <!-- Modal d'erreur -->
-            <div id="modal-error" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeModal('modal-error')">&times;</span>
-                    <p>Erreur lors de l'ajout du fournisseur.</p>
-                </div>
-            </div>
+        <div class="received-messages">
+            <!-- Display messages -->
+            <h2>Messages reçus</h2>
+            <ul>
+                <?php foreach ($received_messages as $msg): ?>
+                    <li>
+                        <strong><?= htmlspecialchars($msg['objet']) ?></strong>
+                        de <?= htmlspecialchars($msg['sender_name']) ?><br>
+                        <?= nl2br(htmlspecialchars($msg['corps'])) ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
         </div>
-
     </section>
 
-    
-
-    
-
-
-    <script>
-    /* Details row */
-    document.querySelectorAll('#lots-table .main-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-            const detailsRow = row.nextElementSibling;
-            if (detailsRow && detailsRow.classList.contains('details-row')) {
-                detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
-            }
-        });
-    });
-
-    /* Search 'fournisseur' */
-    document.getElementById('search-fournisseur-input').addEventListener('input', function() {
-    const search = this.value.toLowerCase();
-    const rows = document.querySelectorAll('#fournisseurs-table tbody tr');
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(search) ? '' : 'none';
-    });
-    });
-
-    /* Display form */
-    document.getElementById('add-fournisseur-btn').addEventListener('click', function() {
-    const formSection = document.getElementById('add-fournisseur-form-section');
-    formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-    });
-    </script>
     <script src="../actions/script.js"></script>
-    <script src="../actions/modal.js"></script>
 </body>
 </html>
