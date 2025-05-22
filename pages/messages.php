@@ -182,23 +182,30 @@ if (isset($_SESSION['user_id'])) {
         <header class="header">
             <h1>MES MESSAGES</h1>
         </header>
+
+        <section class="btn-section">
+            <input type="text" id="search-message-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <button class="btn btn-add" id="add-message-btn">Nouveau message</button>
+        </section>
         
         <div class="messages-container">
                 <!-- Send Message Form -->
-                <form action="../actions/messagerie.php" method="POST">
-                    <label for="receveur_id">Destinataire :</label>
-                    <select name="receveur_id" required>
-                        <?php foreach ($users as $user): ?>
-                            <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                <option value="<?= $user['id'] ?>"><?= htmlspecialchars($user['username']) ?></option>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </select>
-                    <label for="objet">Sujet :</label>
-                    <input type="text" name="objet" required>
-                    <textarea name="corps" id="corps" rows="6" style="width:100%; resize:vertical; display:block; margin-bottom:1em;" required></textarea>
-                    <button type="submit" name="send_message">Envoyer</button>
-                </form>
+                <div class="form-section" id="add-message-form-section" style="display:none;">
+                    <form action="../actions/messagerie.php" method="POST">
+                        <label for="receveur_id">Destinataire :</label>
+                        <select name="receveur_id" required>
+                            <?php foreach ($users as $user): ?>
+                                <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                    <option value="<?= $user['id'] ?>"><?= htmlspecialchars($user['username']) ?></option>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </select>
+                        <label for="objet">Sujet :</label>
+                        <input type="text" name="objet" required>
+                        <textarea name="corps" id="corps" rows="6" style="width:100%; resize:vertical; display:block; margin-bottom:1em;" required></textarea>
+                        <button type="submit" name="send_message">Envoyer</button>
+                    </form>
+                </div>
         </div>
         <div class="received-messages">
             <!-- Display messages -->
@@ -215,6 +222,13 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </section>
 
+    <script>
+        /* Display form */
+        document.getElementById('add-message-btn').addEventListener('click', function() {
+        const formSection = document.getElementById('add-message-form-section');
+        formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
+        });
+    </script>
     <script src="../actions/script.js"></script>
 </body>
 </html>
