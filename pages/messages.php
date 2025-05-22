@@ -133,7 +133,7 @@ if (isset($_SESSION['user_id'])) {
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>
                         </li>
                         <li class="nav-item">
-                            <a href="founisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
+                            <a href="fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
                         </li>
                     </ul>
                 </li>
