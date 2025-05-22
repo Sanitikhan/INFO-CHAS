@@ -46,28 +46,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <section class="container forms">
         <div class="form login">
             <div class="form-content">
-                <header>Login</header>
+                <header>Connexion</header>
 
                 <form method="post">
                     <div class="field input-field">
-                        <input type="email" name="email" placeholder="email" class="input" required>
+                        <input type="email" name="email" placeholder="Email" class="input" required>
                     </div>
 
                     <div class="field input-field">
-                        <input type="password" name="password" placeholder="password" class="password" required>
+                        <input type="password" name="password" placeholder="Mot de passe" class="password" required>
                         <i class='bx bx-hide eye-icon'></i>
                     </div>
 
                     <div class="form-link">
-                        <a href="#" class="forgot-pass">Forgot password?</a>
+                        <a href="#" class="forgot-pass">Mot de passe oublié?</a>
                     </div>
 
                     <div class="field button-field">
-                        <button type="submit">Login</button>
-                    </div>
-
-                    <div class="form-link">
-                        <span>Don't have an account? <a href="#" class="link signup-link">Signup</a></span>
+                        <button type="submit">Connexion</button>
                     </div>
                 </form>
             </div>

@@ -5,10 +5,10 @@
     padding: 0;
     box-sizing: border-box;
     font-family: "Poppins", sans-serif;
-    --primary-color: #6482AD;
-    --secondary-color: #7FA1C3;
-    --thrid-color: #E2DAD6;
-    --fourth-color: #F5EDED;
+    --primary-color: #ADB2D4;
+    --secondary-color: #C7D9DD;
+    --thrid-color: #D5E5D5;
+    --fourth-color: #EEF1DA;
 }
 
 .container {
@@ -26,7 +26,7 @@
     max-width: 430px;
     width: 100%;
     padding: 30px;
-    border-radius: 6px;
+    border-radius: 12px;
     background: #fff;
 }
 
