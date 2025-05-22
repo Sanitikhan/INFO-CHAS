@@ -10,6 +10,23 @@ $email = $user ? $user['email'] : null;
 
 $all_users_stmt = $pdo->query("SELECT username, email FROM users");
 $all_users = $all_users_stmt->fetchAll();
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST['username'];
+    $email = $_POST['email'];
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $role = 'commercial'; // Par défaut
+
+    $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
+    
+    if ($stmt->execute([$username, $email, $password, $role])) {
+        $_SESSION['success'] = "Inscription réussie, vous pouvez vous connecter.";
+        header("Location: parameters.php");
+        exit();
+    } else {
+        $_SESSION['error'] = "Erreur lors de l'inscription.";
+    }
+}
 ?>
 
 
@@ -101,7 +118,7 @@ $all_users = $all_users_stmt->fetchAll();
                 </li>
                 <!-- Dropdown -->
                 <li class="nav-item dropdown-container">
-                    <a href="#" class="nav-link active dropdown-toggle">
+                    <a href="#" class="nav-link dropdown-toggle">
                         <span class="material-symbols-rounded">mail</span>
                         <span class="nav-label">Messagerie</span>
                         <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
@@ -168,8 +185,9 @@ $all_users = $all_users_stmt->fetchAll();
             <h1>PARAMETRES</h1>
         </header>
 
-        <section class="section-content">
-            <div class="container">
+        <!-- Mes informations + Ajouter un nouvel utilisateur côte à côte -->
+        <section class="section-content" style="display: flex; gap: 32px; align-items: flex-start;">
+            <div class="container" style="flex: 1;">
                 <h2>Mes informations</h2>
                 <div class="user-info">
                     <p><strong>Nom d'utilisateur :</strong> <?php echo htmlspecialchars($_SESSION['username']); ?></p>
@@ -178,18 +196,18 @@ $all_users = $all_users_stmt->fetchAll();
                 </div>
                 <button class="btn btn-edit" id="edit-infos-btn">Modifier</button>
             </div>
-        </section>
-        <section class="section-content" id="edit-infos-form-section" style="display:none;">
-            <div class="form-section">
-                <h2>Modifier mes informations</h2>
-                <form action="../actions/update_user.php" method="POST">
+            
+            <div class="container" style="flex: 1;">
+                <h2>Ajouter un nouvel utilisateur</h2>
+                <?php if (isset($_SESSION['error'])) { echo "<p style='color:red'>" . $_SESSION['error'] . "</p>"; unset($_SESSION['error']); } ?>
+                <form method="post">
                     <div class="form-group">
                         <label for="username">Nom d'utilisateur :</label>
-                        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($_SESSION['username']); ?>" required>
+                        <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
                     </div>
                     <div class="form-group">
                         <label for="email">Email :</label>
-                        <input type="email" id="email" name="email" value="<?= $email ? htmlspecialchars($email) : '' ?>" required>
+                        <input type="email" name="email" placeholder="Email" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Mot de passe :</label>
@@ -200,9 +218,38 @@ $all_users = $all_users_stmt->fetchAll();
                         <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmer le mot de passe">
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn">Mettre à jour</button>
+                        <button type="submit" class="btn">Ajouter</button>
                     </div>
                 </form>
+            </div>
+        </section>
+
+        <section class="section-content" id="edit-infos-form-section" style="display:none;">
+            <div class="form-section">
+                <div class="container">
+                    <h2>Modifier mes informations</h2>
+                    <form action="../actions/update_user.php" method="POST">
+                        <div class="form-group">
+                            <label for="username">Nom d'utilisateur :</label>
+                            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($_SESSION['username']); ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email :</label>
+                            <input type="email" id="email" name="email" value="<?= $email ? htmlspecialchars($email) : '' ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Mot de passe :</label>
+                            <input type="password" id="password" name="password" placeholder="Nouveau mot de passe">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirmer le mot de passe :</label>
+                            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmer le mot de passe">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn">Mettre à jour</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </section>
 
@@ -228,12 +275,6 @@ $all_users = $all_users_stmt->fetchAll();
             </div>
         </section>
 
-        <section class="section-content">
-            <div class="container">
-                <h2>Ajouter un nouvel utilisateur</h2>
-                
-            </div>
-        </section>
         
 
 
