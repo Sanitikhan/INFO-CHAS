@@ -196,8 +196,7 @@ if (isset($_SESSION['user_id'])) {
                     </select>
                     <label for="objet">Sujet :</label>
                     <input type="text" name="objet" required>
-                    <label for="corps">Message :</label>
-                    <textarea name="corps" required></textarea>
+                    <textarea name="corps" id="corps" rows="6" style="width:100%; resize:vertical; display:block; margin-bottom:1em;" required></textarea>
                     <button type="submit" name="send_message">Envoyer</button>
                 </form>
         </div>

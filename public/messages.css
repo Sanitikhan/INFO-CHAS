@@ -46,7 +46,14 @@ form select:focus {
 }
 
 form textarea {
-    padding: 0.3em;
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    display: block;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    font-size: 1em;
+    padding: 0.5em;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 1em;
