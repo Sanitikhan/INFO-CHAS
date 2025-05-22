@@ -27,6 +27,12 @@ form {
     transition: all 0.3s ease;
 }
 
+.section-content {
+    display: flex;
+    gap: 1em;
+    align-items: flex-start;
+}
+
 .section-content h2 {
     margin-bottom: 0.5em;
 }

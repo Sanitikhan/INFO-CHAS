@@ -185,8 +185,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <h1>PARAMETRES</h1>
         </header>
 
-        <!-- Mes informations + Ajouter un nouvel utilisateur côte à côte -->
-        <section class="section-content" style="display: flex; gap: 32px; align-items: flex-start;">
+        <!-- Mes informations + Ajouter un nouvel utilisateur -->
+        <section class="section-content">
             <div class="container" style="flex: 1;">
                 <h2>Mes informations</h2>
                 <div class="user-info">
