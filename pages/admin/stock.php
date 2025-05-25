@@ -67,7 +67,7 @@ try {
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="reapprovisionnement.php" class="nav-link">
                         <span class="material-symbols-rounded">shopping_cart</span>
                         <span class="nav-label">Réapprovisionnement</span>
                     </a>

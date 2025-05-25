@@ -7,7 +7,7 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sidebar</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/dashboard.css">
     <link rel="icon" href="../../img/logo_fc.png" type="image/png">
@@ -58,7 +58,7 @@ session_start();
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="reapprovisionnement.php" class="nav-link">
                         <span class="material-symbols-rounded">shopping_cart</span>
                         <span class="nav-label">Réapprovisionnement</span>
                     </a>
