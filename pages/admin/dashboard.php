@@ -1,42 +1,16 @@
 <?php
-require_once '../includes/config.php';
-
-try {
-    $stmt = $pdo->query("SELECT * FROM fournisseurs");
-    $fournisseurs = $stmt->fetchAll();
-} catch (PDOException $e) {
-    echo "Erreur : " . $e->getMessage();
-    $fournisseurs = [];
-}
-
-// Fetch all users for the select (if not already done)
-$users = $pdo->query("SELECT id, username FROM users")->fetchAll();
-
-// Fetch received messages for the logged-in user
-if (isset($_SESSION['user_id'])) {
-    $stmt = $pdo->prepare("SELECT m.*, u.username AS sender_name 
-        FROM messages m 
-        JOIN users u ON m.expediteur_id = u.id 
-        WHERE m.receveur_id = ? 
-        ORDER BY m.id DESC");
-    $stmt->execute([$_SESSION['user_id']]);
-    $received_messages = $stmt->fetchAll();
-} else {
-    $received_messages = [];
-}
+session_start();
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messagerie</title>
-    <link rel="stylesheet" href="../public/style.css">
-    <link rel="stylesheet" href="../public/messages.css">
-    <link rel="icon" href="../img/logo_fc.png" type="image/png">
+    <title>Sidebar</title>
+    <link rel="stylesheet" href="../../public/style.css">
+    <link rel="stylesheet" href="../../public/dashboard.css">
+    <link rel="icon" href="../../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
@@ -50,7 +24,7 @@ if (isset($_SESSION['user_id'])) {
         <!-- Sidebar Header -->
         <hearder class="sidebar-header">
             <a href="" class="header-logo">
-                <img src="../img/logo_fc.png" alt="FASHION CHIC">
+                <img src="../../img/logo_fc.png" alt="FASHION CHIC">
                 <!-- Faire en sorte que l'image soit différente quand la sidebar est collapsed -->
             </a>
             <button class="sidebar-toggler">
@@ -62,7 +36,7 @@ if (isset($_SESSION['user_id'])) {
             <!-- Primary Top Nav -->
             <ul class="nav-list primary-nav">
                 <li class="nav-item">
-                    <a href="index.html" class="nav-link">
+                    <a href="dashboard.php" class="nav-link active">
                         <span class="material-symbols-rounded">dashboard</span>
                         <span class="nav-label">Tableau de bord</span>
                     </a>
@@ -116,7 +90,7 @@ if (isset($_SESSION['user_id'])) {
                 </li>
                 <!-- Dropdown -->
                 <li class="nav-item dropdown-container">
-                    <a href="#" class="nav-link active dropdown-toggle">
+                    <a href="#" class="nav-link dropdown-toggle">
                         <span class="material-symbols-rounded">mail</span>
                         <span class="nav-label">Messagerie</span>
                         <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
@@ -124,10 +98,10 @@ if (isset($_SESSION['user_id'])) {
                     <!-- Dropdown menu -->
                     <ul class="dropdown-menu">
                         <li class="nav-item">
-                            <a class="nav-link active dropdown-title">Messagerie</a>
+                            <a class="nav-link dropdown-title">Messagerie</a>
                         </li>
                         <li class="nav-item">
-                            <a href="messages.php" class="nav-link active dropdown-link">Mes messages</a>
+                            <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>
@@ -180,65 +154,28 @@ if (isset($_SESSION['user_id'])) {
 
     <section class="main-content">
         <header class="header">
-            <h1>MES MESSAGES</h1>
+            <h1>DASHBOARD</h1>
         </header>
+        <p>Bienvenue </p>
+        <p>Vous êtes connecté en tant que <strong><?php echo $_SESSION['role']; ?></strong>.</p>
+        <p>Voici votre tableau de bord où vous pouvez gérer vos tâches quotidiennes.</p>
 
-        <section class="btn-section">
-            <input type="text" id="search-message-input" placeholder="Rechercher..." class="btn-search" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="btn btn-add" id="add-message-btn">Nouveau message</button>
-        </section>
-        
-        <div class="messages-container">
-                <!-- Send Message Form -->
-                <div class="form-section" id="add-message-form-section" style="display:none;">
-                    <form action="../actions/messagerie.php" method="POST">
-                        <label for="receveur_id">Destinataire :</label>
-                        <select name="receveur_id" required>
-                            <?php foreach ($users as $user): ?>
-                                <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                    <option value="<?= $user['id'] ?>"><?= htmlspecialchars($user['username']) ?></option>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </select>
-                        <label for="objet">Sujet :</label>
-                        <input type="text" name="objet" required>
-                        <textarea name="corps" id="corps" rows="6" style="width:100%; resize:vertical; display:block; margin-bottom:1em;" required></textarea>
-                        <button type="submit" name="send_message">Envoyer</button>
-                    </form>
-                </div>
-        </div>
-        <div class="received-messages">
-            <!-- Display messages -->
-            <h2>Messages reçus</h2>
-            <ul>
-                <?php foreach ($received_messages as $msg): ?>
-                    <li>
-                        <strong><?= htmlspecialchars($msg['objet']) ?></strong>
-                        de <?= htmlspecialchars($msg['sender_name']) ?><br>
-                        <?= nl2br(htmlspecialchars($msg['corps'])) ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+        <div class="four-square-container">
+            <div class="four-square-item" id="performance">
+                <span>Performance</span>
+            </div>
+            <div class="four-square-item" id="alertes">
+                <span>Alertes</span>
+            </div>
+            <div class="four-square-item" id="acces-rapides">
+                <span>Accès rapides</span>
+            </div>
+            <div class="four-square-item" id="recents">
+                <span>Récents</span>
+            </div>
         </div>
     </section>
 
-    <script>
-        /* Search 'message' */
-        document.getElementById('search-message-input').addEventListener('input', function() {
-        const search = this.value.toLowerCase();
-        const rows = document.querySelectorAll('#message-table tbody tr');
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(search) ? '' : 'none';
-        });
-        });
-
-        /* Display form */
-        document.getElementById('add-message-btn').addEventListener('click', function() {
-        const formSection = document.getElementById('add-message-form-section');
-        formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-        });
-    </script>
-    <script src="../actions/script.js"></script>
+    <script src="../../actions/script.js"></script>
 </body>
 </html>

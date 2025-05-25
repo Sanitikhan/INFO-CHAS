@@ -18,8 +18,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
-            header("Location: index.html");
+            
+            switch ($_SESSION['role']) {
+                case 'admin':
+                    header('Location: admin/dashboard.php');
+                    break;
+                case 'commercial':
+                    header('Location: commercial/dashboard.php');
+                    break;
+                case 'gestionnaire de stock':
+                    header('Location: gds/dashboard.php');
+                    break;
+                case 'gestionnaire de livraison':
+                    header('Location: gdl/dashboard.php');
+                    break;
+                case 'magasinier':
+                    header('Location: magasinier/dashboard.php');
+                    break;
+                case 'livreur':
+                    header('Location: livreur/dashboard.php');
+                    break;
+                case 'fournisseur':
+                    header('Location: fournisseur/dashboard.php');
+                    break;
+                default:
+                    header('Location: login.php');
+            }
             exit();
         } else {
             echo "<p style='color:red'>Mot de passe incorrect.</p>";

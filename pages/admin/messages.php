@@ -1,25 +1,42 @@
 <?php
-require_once '../includes/config.php';
+require_once '../../includes/config.php';
 
 try {
-    $stmt = $pdo->query("SELECT * FROM lots");
-    $lots = $stmt->fetchAll();
+    $stmt = $pdo->query("SELECT * FROM fournisseurs");
+    $fournisseurs = $stmt->fetchAll();
 } catch (PDOException $e) {
     echo "Erreur : " . $e->getMessage();
-    $lots = [];
+    $fournisseurs = [];
+}
+
+// Fetch all users for the select (if not already done)
+$users = $pdo->query("SELECT id, username FROM users")->fetchAll();
+
+// Fetch received messages for the logged-in user
+if (isset($_SESSION['user_id'])) {
+    $stmt = $pdo->prepare("SELECT m.*, u.username AS sender_name 
+        FROM messages m 
+        JOIN users u ON m.expediteur_id = u.id 
+        WHERE m.receveur_id = ? 
+        ORDER BY m.id DESC");
+    $stmt->execute([$_SESSION['user_id']]);
+    $received_messages = $stmt->fetchAll();
+} else {
+    $received_messages = [];
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock</title>
-    <link rel="stylesheet" href="../public/style.css">
-    <link rel="stylesheet" href="../public/form.css">
-    <link rel="stylesheet" href="../public/lot.css">
-    <link rel="icon" href="../img/logo_fc.png" type="image/png">
+    <title>Messagerie</title>
+    <link rel="stylesheet" href="../../public/style.css">
+    <link rel="stylesheet" href="../../public/messages.css">
+    <link rel="icon" href="../../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
@@ -33,7 +50,7 @@ try {
         <!-- Sidebar Header -->
         <hearder class="sidebar-header">
             <a href="" class="header-logo">
-                <img src="../img/logo_fc.png" alt="FASHION CHIC">
+                <img src="../../img/logo_fc.png" alt="FASHION CHIC">
                 <!-- Faire en sorte que l'image soit différente quand la sidebar est collapsed -->
             </a>
             <button class="sidebar-toggler">
@@ -45,7 +62,7 @@ try {
             <!-- Primary Top Nav -->
             <ul class="nav-list primary-nav">
                 <li class="nav-item">
-                    <a href="index.html" class="nav-link">
+                    <a href="dashboard.php" class="nav-link">
                         <span class="material-symbols-rounded">dashboard</span>
                         <span class="nav-label">Tableau de bord</span>
                     </a>
@@ -56,7 +73,7 @@ try {
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="stock.php" class="nav-link active">
+                    <a href="stock.php" class="nav-link">
                         <span class="material-symbols-rounded">inventory_2</span>
                         <span class="nav-label">Stock</span>
                     </a>
@@ -99,7 +116,7 @@ try {
                 </li>
                 <!-- Dropdown -->
                 <li class="nav-item dropdown-container">
-                    <a href="#" class="nav-link dropdown-toggle">
+                    <a href="#" class="nav-link active dropdown-toggle">
                         <span class="material-symbols-rounded">mail</span>
                         <span class="nav-label">Messagerie</span>
                         <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
@@ -107,10 +124,10 @@ try {
                     <!-- Dropdown menu -->
                     <ul class="dropdown-menu">
                         <li class="nav-item">
-                            <a class="nav-link dropdown-title">Messagerie</a>
+                            <a class="nav-link active dropdown-title">Messagerie</a>
                         </li>
                         <li class="nav-item">
-                            <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
+                            <a href="messages.php" class="nav-link active dropdown-link">Mes messages</a>
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>
@@ -162,108 +179,66 @@ try {
     </aside>
 
     <section class="main-content">
-        
         <header class="header">
-            <h1>STOCK</h1>
+            <h1>MES MESSAGES</h1>
         </header>
-        
+
         <section class="btn-section">
-            <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+            <input type="text" id="search-message-input" placeholder="Rechercher..." class="btn-search" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <button class="btn btn-add" id="add-message-btn">Nouveau message</button>
         </section>
-
-        <div class="form-section" id="add-lot-form-section" style="display:none;">
-            <form action="../actions/ajouter_lot.php" method="POST">
-                <input type="text" name="reference" placeholder="Référence" required>
-                <select name="type" placeholder="Type">
-                    <option value="TOP">Top</option>
-                    <option value="BAS">Bas</option>
-                    <option value="ENS">Ensemble</option>
-                    <option value="DSS">Dessus</option>
-                </select>
-                <input type="number" name="quantite_total" placeholder="Quantité totale">
-                <input type="number" name="disponibilite" placeholder="Disponible">
-                <input type="number" name="reserve" placeholder="Réservé">
-                <input type="number" name="a_venir" placeholder="À venir">
-                <select name="etat">
-                    <option value="vert">Vert</option>
-                    <option value="orange">Orange</option>
-                    <option value="rouge">Rouge</option>
-                </select>
-                <input type="number" name="fournisseur_id" placeholder="Fournisseur">
-                <button type="submit">Ajouter le lot</button>
-            </form>
+        
+        <div class="messages-container">
+                <!-- Send Message Form -->
+                <div class="form-section" id="add-message-form-section" style="display:none;">
+                    <form action="../actions/messagerie.php" method="POST">
+                        <label for="receveur_id">Destinataire :</label>
+                        <select name="receveur_id" required>
+                            <?php foreach ($users as $user): ?>
+                                <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                    <option value="<?= $user['id'] ?>"><?= htmlspecialchars($user['username']) ?></option>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </select>
+                        <label for="objet">Sujet :</label>
+                        <input type="text" name="objet" required>
+                        <textarea name="corps" id="corps" rows="6" style="width:100%; resize:vertical; display:block; margin-bottom:1em;" required></textarea>
+                        <button type="submit" name="send_message">Envoyer</button>
+                    </form>
+                </div>
         </div>
-
-        <!-- Affichage des lots existants -->
-        <h2>Lots enregistrés</h2>
-        <table id="lots-table" border="1" cellpadding="5">
-            <thead>
-                <tr>
-                    <th>Référence</th>
-                    <th>Type</th>
-                    <th>Quantité</th>
-                    <th>Disponibilité</th>
-                    <th>Etat</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <?php foreach ($lots as $lot): ?>
-                    <tr class="main-row" style="cursor:pointer;">
-                        <td><?= htmlspecialchars($lot['reference']) ?></td>
-                        <td><?= htmlspecialchars($lot['type']) ?></td>
-                        <td><?= htmlspecialchars($lot['quantite_total']) ?></td>
-                        <td><?= htmlspecialchars($lot['disponibilite']) ?></td>
-                        <td>
-                            <span class="etat-square <?= htmlspecialchars($lot['etat']) ?>"></span>
-                        </td>
-                    </tr>
-                    <tr class="details-row" style="display:none; background:#f9f9f9;">
-                        <td colspan="8">
-                            <table style="width:100%; background:#f9f9f9;">
-                                <thead>
-                                    <tr>
-                                        <th>Fournisseur</th>
-                                        <th>Réservé</th>
-                                        <th>À venir</th>
-                                        <th>Emplacement</th>
-                                    </tr>
-                                </thead>    
-                                <tbody>
-                                    <tr>
-                                        <td><?= htmlspecialchars($lot['fournisseur_id']) ?></td>
-                                        <td><?= htmlspecialchars($lot['reserve']) ?></td>
-                                        <td><?= htmlspecialchars($lot['a_venir']) ?></td>
-                                        <td><?= isset($lot['emplacement']) ? htmlspecialchars($lot['emplacement']) : '-' ?></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
+        <div class="received-messages">
+            <!-- Display messages -->
+            <h2>Messages reçus</h2>
+            <ul>
+                <?php foreach ($received_messages as $msg): ?>
+                    <li>
+                        <strong><?= htmlspecialchars($msg['objet']) ?></strong>
+                        de <?= htmlspecialchars($msg['sender_name']) ?><br>
+                        <?= nl2br(htmlspecialchars($msg['corps'])) ?>
+                    </li>
                 <?php endforeach; ?>
-            </tbody>
-        </table>
-
+            </ul>
+        </div>
     </section>
 
     <script>
-    document.querySelectorAll('#lots-table .main-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-            const detailsRow = row.nextElementSibling;
-            if (detailsRow && detailsRow.classList.contains('details-row')) {
-                detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
-            }
+        /* Search 'message' */
+        document.getElementById('search-message-input').addEventListener('input', function() {
+        const search = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#message-table tbody tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(search) ? '' : 'none';
         });
-    });
+        });
 
-    document.getElementById('add-lot-btn').addEventListener('click', function() {
-    const formSection = document.getElementById('add-lot-form-section');
-    formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-    });
+        /* Display form */
+        document.getElementById('add-message-btn').addEventListener('click', function() {
+        const formSection = document.getElementById('add-message-form-section');
+        formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
+        });
     </script>
-
-    <script src="../actions/search.js"></script>
-    <script src="../actions/script.js"></script>
+    <script src="../../actions/script.js"></script>
 </body>
 </html>
