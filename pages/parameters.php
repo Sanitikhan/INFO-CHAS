@@ -8,17 +8,16 @@ $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 $email = $user ? $user['email'] : null;
 
-$all_users_stmt = $pdo->query("SELECT username, email FROM users");
+$all_users_stmt = $pdo->query("SELECT id, username, email, role FROM users");
 $all_users = $all_users_stmt->fetchAll();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $role = 'commercial'; // Par défaut
+    $role = $_POST['role']; // <-- Fix here
 
     $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
-    
     if ($stmt->execute([$username, $email, $password, $role])) {
         $_SESSION['success'] = "Inscription réussie, vous pouvez vous connecter.";
         header("Location: parameters.php");
@@ -210,6 +209,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="email" name="email" placeholder="Email" required>
                     </div>
                     <div class="form-group">
+                        <label for="role">Rôle :</label>
+                        <select name="role" required>
+                            <option value="admin">Administrateur</option>
+                            <option value="commercial">Commercial</option>
+                            <option value="gestionnaire de stock">Gestionnaire de stock</option>
+                            <option value="magasinier">Magasinier</option>
+                            <option value="gestionnaire de livraison">Gestionnaire de livraison</option>
+                            <option value="livreur">Livreur</option>
+                            <option value="fournisseur">Fournisseur</option>
+                        </select>
+                    <div class="form-group">
                         <label for="password">Mot de passe :</label>
                         <input type="password" id="password" name="password" placeholder="Nouveau mot de passe">
                     </div>
@@ -256,18 +266,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <section class="section-content">
             <div class="container">
                 <h2>Liste des utilisateurs</h2>
-                <table border="1" cellpadding="8" style="width:100%; background:#fff;">
+                <table border="1" cellpadding="3" style="width:100%; background:#fff;">
                     <thead>
                         <tr>
                             <th>Nom d'utilisateur</th>
                             <th>Email</th>
+                            <th>Rôle</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($all_users as $user): ?>
-                            <tr>
+                            <tr class="user-row"
+                                data-id="<?= htmlspecialchars($user['id']) ?>"
+                                data-username="<?= htmlspecialchars($user['username']) ?>"
+                                data-email="<?= htmlspecialchars($user['email']) ?>"
+                                data-role="<?= htmlspecialchars($user['role']) ?>">
                                 <td><?= htmlspecialchars($user['username']) ?></td>
                                 <td><?= htmlspecialchars($user['email']) ?></td>
+                                <td><?= htmlspecialchars($user['role']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -275,7 +291,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </section>
 
-        
+        <!-- Edit User Modal/Form -->
+<div id="edit-user-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:2em; border-radius:10px; min-width:300px; position:relative;">
+        <button onclick="document.getElementById('edit-user-modal').style.display='none'" style="position:absolute;top:10px;right:10px;">&times;</button>
+        <h3>Modifier l'utilisateur</h3>
+        <form id="edit-user-form" method="post" action="../actions/update_user.php">
+            <input type="hidden" name="user_id" id="edit-user-id">
+            <div class="form-group">
+                <label for="edit-username">Nom d'utilisateur :</label>
+                <input type="text" name="username" id="edit-username" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-email">Email :</label>
+                <input type="email" name="email" id="edit-email" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-role">Rôle :</label>
+                <select name="role" id="edit-role" required>
+                    <option value="commercial">Commercial</option>
+                    <option value="admin">Administrateur</option>
+                    <option value="gestionnaire de stock">Gestionnaire de stock</option>
+                    <option value="magasinier">Magasinier</option>
+                    <option value="gestionnaire de livraison">Gestionnaire de livraison</option>
+                    <option value="livreur">Livreur</option>
+                    <option value="fournisseur">Fournisseur</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 
 
@@ -287,5 +335,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         });
     </script>
     <script src="../actions/script.js"></script>
+    <script>
+document.querySelectorAll('.user-row').forEach(function(row) {
+    row.addEventListener('click', function() {
+        document.getElementById('edit-user-id').value = row.dataset.id;
+        document.getElementById('edit-username').value = row.dataset.username;
+        document.getElementById('edit-email').value = row.dataset.email;
+        document.getElementById('edit-role').value = row.dataset.role;
+        document.getElementById('edit-user-modal').style.display = 'flex';
+    });
+});
+</script>
 </body>
 </html>

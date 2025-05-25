@@ -51,6 +51,20 @@ form input:focus {
     box-shadow: 0 0 5px rgba(241, 95, 97, 0.3);
 }
 
+form select {
+    padding: 0.3em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+form select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(241, 95, 97, 0.3);
+}
+
 button {
     padding: 0.8em;
     background-color: var(--primary-color);
