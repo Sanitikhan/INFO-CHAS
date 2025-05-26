@@ -178,6 +178,11 @@ if (isset($_POST['add_to_cart'])) {
             <h1>Réapprovisionnement</h1>
         </header>
 
+        <section class="btn-section">
+            <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+        </section>
+
     <section class="content">
 
     <table>
@@ -219,6 +224,7 @@ if (isset($_POST['add_to_cart'])) {
 
 
 
-    
+    <script src="../../actions/search.js"></script>
+    <script src="../../actions/script.js"></script>
 </body>
 </html>

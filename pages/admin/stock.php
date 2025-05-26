@@ -173,7 +173,7 @@ try {
         </section>
 
         <div class="form-section" id="add-lot-form-section" style="display:none;">
-            <form action="../actions/ajouter_lot.php" method="POST">
+            <form action="../../actions/ajouter_lot.php" method="POST">
                 <input type="text" name="reference" placeholder="Référence" required>
                 <select name="type" placeholder="Type">
                     <option value="TOP">Top</option>
@@ -210,7 +210,18 @@ try {
 
             <tbody>
                 <?php foreach ($lots as $lot): ?>
-                    <tr class="main-row" style="cursor:pointer;">
+                    <tr class="main-row" style="cursor:pointer;"
+                        data-id="<?= htmlspecialchars($lot['id']) ?>"
+                        data-reference="<?= htmlspecialchars($lot['reference']) ?>"
+                        data-type="<?= htmlspecialchars($lot['type']) ?>"
+                        data-quantite_total="<?= htmlspecialchars($lot['quantite_total']) ?>"
+                        data-disponibilite="<?= htmlspecialchars($lot['disponibilite']) ?>"
+                        data-reserve="<?= htmlspecialchars($lot['reserve']) ?>"
+                        data-a_venir="<?= htmlspecialchars($lot['a_venir']) ?>"
+                        data-etat="<?= htmlspecialchars($lot['etat']) ?>"
+                        data-fournisseur_id="<?= htmlspecialchars($lot['fournisseur_id']) ?>"
+                        data-emplacement="<?= isset($lot['emplacement']) ? htmlspecialchars($lot['emplacement']) : '' ?>"
+                    >
                         <td><?= htmlspecialchars($lot['reference']) ?></td>
                         <td><?= htmlspecialchars($lot['type']) ?></td>
                         <td><?= htmlspecialchars($lot['quantite_total']) ?></td>
@@ -245,6 +256,57 @@ try {
             </tbody>
         </table>
 
+        <div id="edit-lot-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center; z-index:1000;">
+            <div style="background:#fff; padding:2em; border-radius:10px; min-width:300px; position:relative;">
+                <button onclick="document.getElementById('edit-lot-modal').style.display='none'" style="position:absolute;top:10px;right:10px;">&times;</button>
+                <h3>Modifier le lot</h3>
+                <form id="edit-lot-form" method="post" action="../../actions/modifier_lot.php">
+                    <input type="hidden" name="id" id="edit-lot-id">
+                    <div>
+                        <label>Référence :</label>
+                        <input type="text" name="reference" id="edit-lot-reference" required>
+                    </div>
+                    <div>
+                        <label>Type :</label>
+                        <input type="text" name="type" id="edit-lot-type" required>
+                    </div>
+                    <div>
+                        <label>Quantité totale :</label>
+                        <input type="number" name="quantite_total" id="edit-lot-quantite" required>
+                    </div>
+                    <div>
+                        <label>Disponibilité :</label>
+                        <input type="number" name="disponibilite" id="edit-lot-disponibilite" required>
+                    </div>
+                    <div>
+                        <label>Réservé :</label>
+                        <input type="number" name="reserve" id="edit-lot-reserve">
+                    </div>
+                    <div>
+                        <label>À venir :</label>
+                        <input type="number" name="a_venir" id="edit-lot-a_venir">
+                    </div>
+                    <div>
+                        <label>Etat :</label>
+                        <select name="etat" id="edit-lot-etat">
+                            <option value="vert">Vert</option>
+                            <option value="orange">Orange</option>
+                            <option value="rouge">Rouge</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Fournisseur :</label>
+                        <input type="number" name="fournisseur_id" id="edit-lot-fournisseur_id">
+                    </div>
+                    <div>
+                        <label>Emplacement :</label>
+                        <input type="text" name="emplacement" id="edit-lot-emplacement">
+                    </div>
+                    <button type="submit" class="btn">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+
     </section>
 
     <script>
@@ -260,6 +322,24 @@ try {
     document.getElementById('add-lot-btn').addEventListener('click', function() {
     const formSection = document.getElementById('add-lot-form-section');
     formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
+    });
+
+    document.querySelectorAll('#lots-table .main-row').forEach(function(row) {
+        row.addEventListener('click', function() {
+            // Fill the modal with the lot's data
+            document.getElementById('edit-lot-id').value = row.dataset.id;
+            document.getElementById('edit-lot-reference').value = row.dataset.reference;
+            document.getElementById('edit-lot-type').value = row.dataset.type;
+            document.getElementById('edit-lot-quantite').value = row.dataset.quantite_total;
+            document.getElementById('edit-lot-disponibilite').value = row.dataset.disponibilite;
+            document.getElementById('edit-lot-reserve').value = row.dataset.reserve;
+            document.getElementById('edit-lot-a_venir').value = row.dataset.a_venir;
+            document.getElementById('edit-lot-etat').value = row.dataset.etat;
+            document.getElementById('edit-lot-fournisseur_id').value = row.dataset.fournisseur_id;
+            document.getElementById('edit-lot-emplacement').value = row.dataset.emplacement;
+
+            document.getElementById('edit-lot-modal').style.display = 'flex';
+        });
     });
     </script>
 

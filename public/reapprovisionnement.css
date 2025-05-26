@@ -1,0 +1,32 @@
+* {
+    --primary-color: #ADB2D4;
+    --secondary-color: #C7D9DD;
+    --thrid-color: #D5E5D5;
+    --fourth-color: #EEF1DA;
+}
+
+.btn-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 10px 25px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.btn-search {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* Optional: space between p and span */
+}
