@@ -1,5 +1,14 @@
 <?php
 session_start();
+require_once('../../includes/config.php');
+
+// Total lots in stock
+$total_lots = $pdo->query("SELECT COUNT(*) FROM lots")->fetchColumn();
+
+// Lots with état 'rouge'
+$lots_rouge = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'rouge'")->fetchColumn();
+$lots_vert = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'vert'")->fetchColumn();
+$lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->fetchColumn();
 ?>
 
 <!DOCTYPE html>
@@ -9,7 +18,7 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="../../public/style.css">
-    <link rel="stylesheet" href="../../public/dashboard.css">
+    <link rel="stylesheet" href="../../public/tableaudebord.css">
     <link rel="icon" href="../../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -138,7 +147,7 @@ session_start();
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="logout.php" class="nav-link">
+                    <a href="../logout.php" class="nav-link">
                         <span class="material-symbols-rounded">power_settings_new</span>
                         <span class="nav-label">Déconnexion</span>
                     </a>
@@ -154,28 +163,91 @@ session_start();
 
     <section class="main-content">
         <header class="header">
-            <h1>DASHBOARD</h1>
+            <h1>TABLEAU DE BORD</h1>
         </header>
-        <p>Bienvenue </p>
         <p>Vous êtes connecté en tant que <strong><?php echo $_SESSION['role']; ?></strong>.</p>
-        <p>Voici votre tableau de bord où vous pouvez gérer vos tâches quotidiennes.</p>
 
-        <div class="four-square-container">
-            <div class="four-square-item" id="performance">
-                <span>Performance</span>
+        <div class="dashboard-grid">
+            <div class="grid performance" id="performance">
+                <h3>Performances</h3>
+                <div class="perf-grid">
+                    <div class="perf-stats">
+                        <div class="perf-item">
+                            <span class="material-symbols-rounded">inventory_2</span>
+                            <div>
+                                <div class="perf-label">Lots total en stock</div>
+                                <div class="perf-value"><?= $total_lots ?></div>
+                            </div>
+                        </div>
+                        <div class="perf-item">
+                            <span class="material-symbols-rounded">warning</span>
+                            <div>
+                                <div class="perf-label">Lots sous le seuil</div>
+                                <div class="perf-value"><?= $lots_rouge ?></div>
+                            </div>
+                        </div>
+                        <div class="perf-item">
+                            <span class="material-symbols-rounded">local_shipping</span>
+                            <div>
+                                <div class="perf-label">Livraisons en attente</div>
+                                <div class="perf-value">0<!-- <?= $livraisons_attente ?> --></div>
+                            </div>
+                        </div>
+                        <div class="perf-item">
+                            <span class="material-symbols-rounded">package</span>
+                            <div>
+                                <div class="perf-label">Livraisons passées</div>
+                                <div class="perf-value">6<!-- <?= $livraisons_passees ?> --></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="perf-graph">
+                        <div class="perf-label">Etat du stock</div>
+                        <div class="graph-content">
+                            <canvas id="perfChart" class="graph"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="four-square-item" id="alertes">
-                <span>Alertes</span>
+            <div class="grid recents" id="recents">
+                <h3>Activité récente</h3>
+                <ul>
+                    <li>DSS-VST-JN-BLU-M ajouté par admin</li>
+                    <li>Livraison #456 en attente</li>
+                </ul>
             </div>
-            <div class="four-square-item" id="acces-rapides">
-                <span>Accès rapides</span>
+            <div class="grid acces" id="acces-rapides">
+                <h3>Accès rapides</h3>
+                    <button class="btn">Ajouter un lot</button>
+                    <button class="btn">Nouvelle livraison</button>
+                    <button class="btn">Ajouter un fournisseur</button>
             </div>
-            <div class="four-square-item" id="recents">
-                <span>Récents</span>
+            <div class="grid alertes" id="alertes">
+                <h3>Alertes</h3>
             </div>
         </div>
     </section>
 
     <script src="../../actions/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('perfChart').getContext('2d');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Vert', 'Orange', 'Rouge'],
+        datasets: [{
+            data: [<?= $lots_vert ?>, <?= $lots_orange ?>, <?= $lots_rouge ?>],
+            backgroundColor: ['#4caf50', '#ff9800', '#f44336'],
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { display: true, position: 'bottom' }
+        },
+        cutout: '70%',
+    }
+});
+</script>
 </body>
 </html>
