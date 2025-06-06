@@ -170,6 +170,12 @@ try {
         <section class="btn-section">
             <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+            <div class="sort-buttons">
+                <button data-sort-sort="name">Trier par Nom</button>
+                <button data-sort-sort="quantity">Trier par Quantité</button>
+                <button data-sort-sort="etat">Trier par État</button>
+                <button data-sort-sort="fournisseur">Trier par Fournisseur</button>
+            </div>
         </section>
 
         <div class="form-section" id="add-lot-form-section" style="display:none;">

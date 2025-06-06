@@ -210,7 +210,7 @@ $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->f
                 </div>
             </div>
             <div class="grid recents" id="recents">
-                <h3>Activité récente</h3>
+                <h3>Activités récentes</h3>
                 <ul>
                     <li>DSS-VST-JN-BLU-M ajouté par admin</li>
                     <li>Livraison #456 en attente</li>
