@@ -1,0 +1,40 @@
+* {
+    --primary-color: #222831;
+    --secondary-color: #393E46;
+    --thrid-color: #948979;
+    --fourth-color: #DFD0B8;
+}
+
+/* Change calendar background and text */
+#calendar .fc {
+    background: var(--fourth-color);
+    color: var(--primary-color);
+}
+
+/* Change header background and text */
+#calendar .fc-toolbar {
+    background: var(--secondary-color);
+    color: #fff;
+    border-radius: 8px 8px 0 0;
+    padding: 8px;
+}
+
+/* Change day cell background */
+#calendar .fc-daygrid-day {
+    background: #fff;
+    color: var(--thrid-color);
+}
+
+/* Change event colors */
+#calendar .fc-event {
+    background: var(--thrid-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 2px 6px;
+}
+
+/* Change today highlight */
+#calendar .fc-day-today {
+    background: var(--fourth-color) !important;
+}

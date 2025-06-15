@@ -11,10 +11,12 @@ require_once('../../includes/config.php');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="../../public/style.css">
-    <link rel="stylesheet" href="../../public/tableaudebord.css">
+    <link rel="stylesheet" href="../../public/calendrier.css">
     <link rel="icon" href="../../img/logo_fc.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
 </head>
 <body>
 <!-- Mobile Sidebar Menu Button -->
@@ -158,8 +160,38 @@ require_once('../../includes/config.php');
         <header class="header">
             <h1>CALENDRIER</h1>
         </header>
-
+        <div id="calendar"></div>
     </section>
 
+    <!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="../../actions/script.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'fr', // French
+        height: 600,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: [
+            // Example events, replace with PHP or AJAX for dynamic events
+            {
+                title: 'Livraison prévue',
+                start: '2025-06-20'
+            },
+            {
+                title: 'Réunion fournisseur',
+                start: '2025-06-22T14:00:00'
+            }
+        ]
+    });
+    calendar.render();
+});
+</script>
 </body>
 </html>
