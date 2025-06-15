@@ -139,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="calendrier.php" class="nav-link">
                         <span class="material-symbols-rounded">calendar_today</span>
                         <span class="nav-label">Calendrier</span>
                     </a>
