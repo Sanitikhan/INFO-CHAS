@@ -1,8 +1,8 @@
 * {
-    --primary-color: #ADB2D4;
-    --secondary-color: #C7D9DD;
-    --thrid-color: #D5E5D5;
-    --fourth-color: #EEF1DA;
+    --primary-color: #222831;
+    --secondary-color: #393E46;
+    --thrid-color: #948979;
+    --fourth-color: #DFD0B8;
 }
 
 .btn-section {
@@ -64,4 +64,3 @@
 .etat-square.rouge {
     background: #f44336;
 }
-
