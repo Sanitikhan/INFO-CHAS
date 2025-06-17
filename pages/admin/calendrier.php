@@ -12,7 +12,7 @@ require_once('../../includes/config.php');
     <title>Dashboard</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/calendrier.css">
-    <link rel="icon" href="../../img/logo_fc.png" type="image/png">
+    <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <!-- FullCalendar CSS -->
@@ -28,7 +28,7 @@ require_once('../../includes/config.php');
         <!-- Sidebar Header -->
         <hearder class="sidebar-header">
             <a href="" class="header-logo">
-                <img src="../../img/logo_fc.png" alt="FASHION CHIC">
+                <img src="../../img/logo_w.png" alt="FASHION CHIC">
                 <!-- Faire en sorte que l'image soit différente quand la sidebar est collapsed -->
             </a>
             <button class="sidebar-toggler">

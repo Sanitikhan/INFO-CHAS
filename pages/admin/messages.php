@@ -35,8 +35,8 @@ if (isset($_SESSION['user_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messagerie</title>
     <link rel="stylesheet" href="../../public/style.css">
-    <link rel="stylesheet" href="../../public/messages.css">
-    <link rel="icon" href="../../img/logo_fc.png" type="image/png">
+    <link rel="stylesheet" href="../../public/mesmessages.css">
+    <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
@@ -50,7 +50,7 @@ if (isset($_SESSION['user_id'])) {
         <!-- Sidebar Header -->
         <hearder class="sidebar-header">
             <a href="" class="header-logo">
-                <img src="../../img/logo_fc.png" alt="FASHION CHIC">
+                <img src="../../img/logo_w.png" alt="FASHION CHIC">
                 <!-- Faire en sorte que l'image soit différente quand la sidebar est collapsed -->
             </a>
             <button class="sidebar-toggler">
