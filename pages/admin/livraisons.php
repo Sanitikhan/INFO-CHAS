@@ -44,11 +44,18 @@ $livraisons = $stmt->fetchAll();
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/livraisons.css">
+    <link rel="stylesheet" href="../../public/notifications.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
+    <?php if (isset($_SESSION['flash_message'])): ?>
+    <div class="flash-message" id="flash-message">
+        <?= htmlspecialchars($_SESSION['flash_message']) ?>
+    </div>
+    <?php unset($_SESSION['flash_message']); ?>
+<?php endif; ?>
 <!-- Mobile Sidebar Menu Button -->
     <button class="sidebar-menu-button">
         <span class="material-symbols-rounded">menu</span>
@@ -328,68 +335,78 @@ $livraisons = $stmt->fetchAll();
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('sort-select').addEventListener('change', function() {
-        const sortType = this.value;
-        const table = document.getElementById('livraisons-table');
-        if (!table) return;
-        const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('.main-row'));
+        document.getElementById('sort-select').addEventListener('change', function() {
+            const sortType = this.value;
+            const table = document.getElementById('livraisons-table');
+            if (!table) return;
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('.main-row'));
 
-        // Column indexes: adjust if your table structure is different
-        const colIndexes = {
-            numero: 0,
-            fournisseur: 1,
-            date_prevue: 2,
-            statut: 3
-        };
+            // Column indexes: adjust if your table structure is different
+            const colIndexes = {
+                numero: 0,
+                fournisseur: 1,
+                date_prevue: 2,
+                statut: 3
+            };
 
-        function getCellValue(row, idx) {
-            return row.cells[idx] ? row.cells[idx].textContent.trim() : '';
-        }
-
-        rows.sort((a, b) => {
-            let valA, valB;
-            switch (sortType) {
-                case 'numero':
-                    valA = getCellValue(a, colIndexes.numero);
-                    valB = getCellValue(b, colIndexes.numero);
-                    // If numero is numeric, sort as number
-                    if (!isNaN(valA) && !isNaN(valB)) {
-                        return parseInt(valA, 10) - parseInt(valB, 10);
-                    }
-                    return valA.localeCompare(valB, undefined, {numeric: true});
-                case 'date_prevue':
-                    function parseFrDate(str) {
-                        const [d, m, y] = str.split('/');
-                        return new Date(`${y}-${m}-${d}`);
-                    }
-                    valA = parseFrDate(getCellValue(a, colIndexes.date_prevue));
-                    valB = parseFrDate(getCellValue(b, colIndexes.date_prevue));
-                    return valA - valB;
-                case 'fournisseur':
-                    valA = getCellValue(a, colIndexes.fournisseur).toLowerCase();
-                    valB = getCellValue(b, colIndexes.fournisseur).toLowerCase();
-                    return valA.localeCompare(valB, undefined, {numeric: true});
-                case 'statut':
-                    valA = getCellValue(a, colIndexes.statut).toLowerCase();
-                    valB = getCellValue(b, colIndexes.statut).toLowerCase();
-                    return valA.localeCompare(valB, undefined, {numeric: true});
-                default:
-                    return 0;
+            function getCellValue(row, idx) {
+                return row.cells[idx] ? row.cells[idx].textContent.trim() : '';
             }
-        });
 
-        // Remove all rows
-        while (tbody.firstChild) {
-            tbody.removeChild(tbody.firstChild);
-        }
+            rows.sort((a, b) => {
+                let valA, valB;
+                switch (sortType) {
+                    case 'numero':
+                        valA = getCellValue(a, colIndexes.numero);
+                        valB = getCellValue(b, colIndexes.numero);
+                        // If numero is numeric, sort as number
+                        if (!isNaN(valA) && !isNaN(valB)) {
+                            return parseInt(valA, 10) - parseInt(valB, 10);
+                        }
+                        return valA.localeCompare(valB, undefined, {numeric: true});
+                    case 'date_prevue':
+                        function parseFrDate(str) {
+                            const [d, m, y] = str.split('/');
+                            return new Date(`${y}-${m}-${d}`);
+                        }
+                        valA = parseFrDate(getCellValue(a, colIndexes.date_prevue));
+                        valB = parseFrDate(getCellValue(b, colIndexes.date_prevue));
+                        return valA - valB;
+                    case 'fournisseur':
+                        valA = getCellValue(a, colIndexes.fournisseur).toLowerCase();
+                        valB = getCellValue(b, colIndexes.fournisseur).toLowerCase();
+                        return valA.localeCompare(valB, undefined, {numeric: true});
+                    case 'statut':
+                        valA = getCellValue(a, colIndexes.statut).toLowerCase();
+                        valB = getCellValue(b, colIndexes.statut).toLowerCase();
+                        return valA.localeCompare(valB, undefined, {numeric: true});
+                    default:
+                        return 0;
+                }
+            });
 
-        // Re-add sorted rows
-        rows.forEach(row => {
-            tbody.appendChild(row);
+            // Remove all rows
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+
+            // Re-add sorted rows
+            rows.forEach(row => {
+                tbody.appendChild(row);
+            });
         });
     });
-});
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const flash = document.getElementById('flash-message');
+        if (flash) {
+            setTimeout(() => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 500); // Remove after fade out
+            }, 5000); // 5 seconds
+        }
+    });
     </script>
     <script src="../../actions/search.js"></script>
     <script src="../../actions/livraisons.js"></script>

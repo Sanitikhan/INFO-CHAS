@@ -9,7 +9,7 @@ if (
         $stmt = $pdo->prepare("INSERT INTO livraisons 
             (numero_livraison, fournisseur_id, date_prevue, date_livraison, statut, transporteur, notes, created_by)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
+        if ($stmt->execute([
             $_POST['numero_livraison'],
             $_POST['fournisseur_id'],
             $_POST['date_prevue'],
@@ -18,9 +18,11 @@ if (
             $_POST['transporteur'] ?? null,
             $_POST['notes'] ?? null,
             $_SESSION['user_id'] ?? null
-        ]);
-        header('Location: ../pages/admin/livraisons.php');
-        exit();
+        ])) {
+            $_SESSION['flash_message'] = "Livraison ajoutée avec succès !";
+            header('Location: ../pages/admin/livraisons.php');
+            exit();
+        }
     } catch (PDOException $e) {
         echo "Erreur : " . $e->getMessage();
     }
