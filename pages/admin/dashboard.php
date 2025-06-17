@@ -90,10 +90,10 @@ $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->f
                             <a class="nav-link dropdown-title">Livraisons</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link dropdown-link">Toutes les livraisons</a>
+                            <a href="livraisons.php" class="nav-link dropdown-link">Toutes les livraisons</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link dropdown-link">Mes livraisons</a>
+                            <a href="meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
                         </li>
                     </ul>
                 </li>

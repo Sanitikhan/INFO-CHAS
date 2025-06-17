@@ -1,13 +1,5 @@
 <?php
 require_once '../../includes/config.php';
-
-try {
-    $stmt = $pdo->query("SELECT * FROM lots");
-    $lots = $stmt->fetchAll();
-} catch (PDOException $e) {
-    echo "Erreur : " . $e->getMessage();
-    $lots = [];
-}
 ?>
 
 <!DOCTYPE html>
@@ -15,10 +7,10 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock</title>
+    <title>Livraisons</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
-    <link rel="stylesheet" href="../../public/stock.css">
+    <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -319,40 +311,6 @@ try {
         </div>
 
     </section>
-
-    <script>
-    document.querySelectorAll('#lots-table .main-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-            const detailsRow = row.nextElementSibling;
-            if (detailsRow && detailsRow.classList.contains('details-row')) {
-                detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
-            }
-        });
-    });
-
-    document.getElementById('add-lot-btn').addEventListener('click', function() {
-    const formSection = document.getElementById('add-lot-form-section');
-    formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-    });
-
-    document.querySelectorAll('#lots-table .main-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-            // Fill the modal with the lot's data
-            document.getElementById('edit-lot-id').value = row.dataset.id;
-            document.getElementById('edit-lot-reference').value = row.dataset.reference;
-            document.getElementById('edit-lot-type').value = row.dataset.type;
-            document.getElementById('edit-lot-quantite').value = row.dataset.quantite_total;
-            document.getElementById('edit-lot-disponibilite').value = row.dataset.disponibilite;
-            document.getElementById('edit-lot-reserve').value = row.dataset.reserve;
-            document.getElementById('edit-lot-a_venir').value = row.dataset.a_venir;
-            document.getElementById('edit-lot-etat').value = row.dataset.etat;
-            document.getElementById('edit-lot-fournisseur_id').value = row.dataset.fournisseur_id;
-            document.getElementById('edit-lot-emplacement').value = row.dataset.emplacement;
-
-            document.getElementById('edit-lot-modal').style.display = 'flex';
-        });
-    });
-    </script>
 
     <script src="../../actions/search.js"></script>
     <script src="../../actions/script.js"></script>

@@ -108,10 +108,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <a class="nav-link dropdown-title">Livraisons</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link dropdown-link">Toutes les livraisons</a>
+                            <a href="livraisons.php" class="nav-link dropdown-link">Toutes les livraisons</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link dropdown-link">Mes livraisons</a>
+                            <a href="meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
                         </li>
                     </ul>
                 </li>
