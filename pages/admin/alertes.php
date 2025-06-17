@@ -2,6 +2,12 @@
 session_start();
 require_once('../../includes/config.php');
 
+// Query for lots with etat 'rouge'
+$stmt = $pdo->query("SELECT * FROM lots WHERE etat = 'rouge'");
+$lots_rouge = $stmt->fetchAll();
+
+$stmt = $pdo->query("SELECT * FROM livraisons WHERE statut = 'probleme'");
+$livraisons_probleme = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -9,9 +15,9 @@ require_once('../../includes/config.php');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendrier</title>
+    <title>Alertes</title>
     <link rel="stylesheet" href="../../public/style.css">
-    <link rel="stylesheet" href="../../public/calendrier.css">
+    <link rel="stylesheet" href="../../public/alertes.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -116,13 +122,13 @@ require_once('../../includes/config.php');
                     <!-- Dropdown menu -->
                     <ul class="dropdown-menu">
                         <li class="nav-item">
-                            <a class="nav-link dropdown-title">Messagerie</a>
+                            <a class="nav-link active dropdown-title">Messagerie</a>
                         </li>
                         <li class="nav-item">
                             <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link dropdown-link">Mes alertes</a>
+                            <a href="alertes.php" class="nav-link active dropdown-link">Alertes</a>
                         </li>
                         <li class="nav-item">
                             <a href="fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
@@ -130,7 +136,7 @@ require_once('../../includes/config.php');
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="calendrier.php" class="nav-link active">
+                    <a href="calendrier.php" class="nav-link">
                         <span class="material-symbols-rounded">calendar_today</span>
                         <span class="nav-label">Calendrier</span>
                     </a>
@@ -172,40 +178,53 @@ require_once('../../includes/config.php');
 
     <section class="main-content">
         <header class="header">
-            <h1>CALENDRIER</h1>
+            <h1>Alertes</h1>
         </header>
-        <div id="calendar"></div>
+
+        <div class="alertes-grid">
+            <div class="grid">
+                <h3>Alertes de stock</h3>
+                <?php if (
+                    isset($_SESSION['role']) &&
+                    ( $_SESSION['role'] === 'gestionnaire de stock' || $_SESSION['role'] === 'admin' ) &&
+                    !empty($lots_rouge)
+                ): ?>
+                    <div class="alert alert-danger">
+                        <strong>Attention :</strong> Certains lots sont en état <strong>rouge</strong> !
+                        <ul>
+                            <?php foreach ($lots_rouge as $lot): ?>
+                                <li><span class="material-symbols-rounded">warning</span> <?= htmlspecialchars($lot['reference']) ?> (<?= htmlspecialchars($lot['type']) ?>)</li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="grid alertes">
+                <h3>Alertes de livraisons</h3>
+                <?php if (!empty($livraisons_probleme)): ?>
+                    <strong>Attention :</strong> Certaines livraisons rencontrent un problème !
+                    <ul>
+                        <?php foreach ($livraisons_probleme as $livraison): ?>
+                            <li><span class="material-symbols-rounded">warning</span> 
+                                Livraison n°<?= htmlspecialchars($livraison['numero_livraison']) ?>
+                                <?php if (!empty($livraison['notes'])): ?>
+                                    - <?= htmlspecialchars($livraison['notes']) ?>
+                                <?php endif; ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <div class="alert alert-success">
+                        Aucune alerte de livraison.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
     </section>
 
-    <!-- FullCalendar JS -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
     <script src="../../actions/script.js"></script>
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'fr', // French
-        height: 600,
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        events: [
-            // Example events, replace with PHP or AJAX for dynamic events
-            {
-                title: 'Livraison prévue',
-                start: '2025-06-20'
-            },
-            {
-                title: 'Réunion fournisseur',
-                start: '2025-06-22T14:00:00'
-            }
-        ]
-    });
-    calendar.render();
-});
+ 
 </script>
 </body>
 </html>
