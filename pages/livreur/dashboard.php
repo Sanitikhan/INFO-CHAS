@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once('../../includes/config.php');
+require_once '../../includes/config.php';
 
 // Total lots in stock
 $total_lots = $pdo->query("SELECT COUNT(*) FROM lots")->fetchColumn();
@@ -56,7 +56,7 @@ $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->f
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="stock.php" class="nav-link">
+                    <a href="../admin/stock.php" class="nav-link">
                         <span class="material-symbols-rounded">inventory_2</span>
                         <span class="nav-label">Stock</span>
                     </a>
@@ -67,7 +67,7 @@ $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->f
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="reapprovisionnement.php" class="nav-link">
+                    <a href="../admin/reapprovisionnement.php" class="nav-link">
                         <span class="material-symbols-rounded">shopping_cart</span>
                         <span class="nav-label">Réapprovisionnement</span>
                     </a>
@@ -77,26 +77,40 @@ $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->f
                         </li>
                     </ul>
                 </li>
-                <!-- Dropdown -->
-                <li class="nav-item dropdown-container">
-                    <a href="#" class="nav-link dropdown-toggle">
-                        <span class="material-symbols-rounded">local_shipping</span>
-                        <span class="nav-label">Livraisons</span>
-                        <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
-                    </a>
-                    <!-- Dropdown menu -->
-                    <ul class="dropdown-menu">
-                        <li class="nav-item">
-                            <a class="nav-link dropdown-title">Livraisons</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link dropdown-link">Toutes les livraisons</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
-                        </li>
-                    </ul>
-                </li>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'livreur'): ?>
+                    <!-- Dropdown for livreur -->
+                    <li class="nav-item dropdown-container">
+                        <a href="#" class="nav-link dropdown-toggle">
+                            <span class="material-symbols-rounded">local_shipping</span>
+                            <span class="nav-label">Livraisons</span>
+                            <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a class="nav-link active dropdown-title">Livraisons</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../admin/livraisons.php" class="nav-link active dropdown-link">Toutes les livraisons</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../livreur/meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php else: ?>
+                    <!-- Simple link for others -->
+                    <li class="nav-item">
+                        <a href="../admin/livraisons.php" class="nav-link">
+                            <span class="material-symbols-rounded">local_shipping</span>
+                            <span class="nav-label">Livraisons</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a class="nav-link dropdown-title">Livraisons</a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php endif; ?>
                 <!-- Dropdown -->
                 <li class="nav-item dropdown-container">
                     <a href="#" class="nav-link dropdown-toggle">
@@ -110,18 +124,18 @@ $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->f
                             <a class="nav-link dropdown-title">Messagerie</a>
                         </li>
                         <li class="nav-item">
-                            <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
+                            <a href="../admin/messages.php" class="nav-link dropdown-link">Mes messages</a>
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>
                         </li>
                         <li class="nav-item">
-                            <a href="fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
+                            <a href="../admin/fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="../admin/calendrier.php" class="nav-link">
                         <span class="material-symbols-rounded">calendar_today</span>
                         <span class="nav-label">Calendrier</span>
                     </a>
@@ -136,7 +150,7 @@ $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->f
             <!-- Secondary Bottom Nav -->
             <ul class="nav-list secondary-nav">
                 <li class="nav-item">
-                    <a href="parameters.php" class="nav-link">
+                    <a href="../admin/parameters.php" class="nav-link">
                         <span class="material-symbols-rounded">settings</span>
                         <span class="nav-label">Paramètres</span>
                     </a>

@@ -1,6 +1,6 @@
 <?php
-require_once '../../includes/config.php';
 session_start();
+require_once '../../includes/config.php';
 
 try {
     $stmt = $pdo->query("SELECT * FROM lots");
@@ -78,26 +78,40 @@ try {
                         </li>
                     </ul>
                 </li>
-                <!-- Dropdown -->
-                <li class="nav-item dropdown-container">
-                    <a href="#" class="nav-link dropdown-toggle">
-                        <span class="material-symbols-rounded">local_shipping</span>
-                        <span class="nav-label">Livraisons</span>
-                        <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
-                    </a>
-                    <!-- Dropdown menu -->
-                    <ul class="dropdown-menu">
-                        <li class="nav-item">
-                            <a class="nav-link dropdown-title">Livraisons</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="livraisons.php" class="nav-link dropdown-link">Toutes les livraisons</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
-                        </li>
-                    </ul>
-                </li>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'livreur'): ?>
+                    <!-- Dropdown for livreur -->
+                    <li class="nav-item dropdown-container">
+                        <a href="#" class="nav-link dropdown-toggle">
+                            <span class="material-symbols-rounded">local_shipping</span>
+                            <span class="nav-label">Livraisons</span>
+                            <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a class="nav-link active dropdown-title">Livraisons</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="livraisons.php" class="nav-link active dropdown-link">Toutes les livraisons</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../livreur/meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php else: ?>
+                    <!-- Simple link for others -->
+                    <li class="nav-item">
+                        <a href="livraisons.php" class="nav-link">
+                            <span class="material-symbols-rounded">local_shipping</span>
+                            <span class="nav-label">Livraisons</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a class="nav-link dropdown-title">Livraisons</a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php endif; ?>
                 <!-- Dropdown -->
                 <li class="nav-item dropdown-container">
                     <a href="#" class="nav-link dropdown-toggle">
