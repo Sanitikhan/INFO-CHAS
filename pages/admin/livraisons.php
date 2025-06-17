@@ -1,5 +1,35 @@
 <?php
+session_start();
 require_once '../../includes/config.php';
+
+$user = null;
+if (isset($_SESSION['user_id'])) {
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+// Récupérer les livraisons avec jointures
+$sql = "SELECT l.*, f.nom as fournisseur_nom, u.username as createur_username,
+        COUNT(ld.id) as nb_lots,
+        SUM(CASE WHEN ld.quantite_recue > 0 THEN 1 ELSE 0 END) as lots_recus
+        FROM livraisons l
+        LEFT JOIN fournisseurs f ON l.fournisseur_id = f.id
+        LEFT JOIN users u ON l.created_by = u.id
+        LEFT JOIN livraisons_details ld ON l.id = ld.livraison_id
+        GROUP BY l.id
+        ORDER BY l.date_prevue DESC";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$stmt = $pdo->query("
+    SELECT lots.*, fournisseurs.nom AS fournisseur_nom
+    FROM lots
+    LEFT JOIN fournisseurs ON lots.fournisseur_id = fournisseurs.id
+");
+$lots = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -162,157 +192,135 @@ require_once '../../includes/config.php';
         <section class="btn-section">
             <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+                <button class="btn btn-add" id="add-livraisons-btn">Ajouter un lot</button>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-                        <option value="name">Nom</option>
-                        <option value="quantity">Quantité</option>
-                        <option value="etat">État</option>
-                        <option value="fournisseur">Fournisseur</option>
+                        <option value="">...</option>
+                        <option value="en_attente">En attente</option>
+                        <option value="en_cours">En cours</option>
+                        <option value="livree">Livrée</option>
+                        <option value="Problème">Problème</option>
                     </select>
                 </div>
             </div>
         </section>
 
-        <div class="form-section" id="add-lot-form-section" style="display:none;">
-            <form action="../../actions/ajouter_lot.php" method="POST">
-                <input type="text" name="reference" placeholder="Référence" required>
-                <select name="type" placeholder="Type">
-                    <option value="TOP">Top</option>
-                    <option value="BAS">Bas</option>
-                    <option value="ENS">Ensemble</option>
-                    <option value="DSS">Dessus</option>
+        <div class="form-section" id="add-livraisons-form-section" style="display:none;">
+            <form action="../../actions/ajouter_livraisons.php" method="POST">
+                <input name="numero_livraison" placeholder="Numéro de livraison" required>
+                <input name="fournisseur_id" placeholder="Fournisseur" required>
+                <input name="date_prevue" type="date" placeholder="Date prévue" required>
+                <select name="statut" required>
+                    <option value="en_attente">En attente</option>
+                    <option value="en_cours">En cours</option>
+                    <option value="livree">Livrée</option>
+                    <option value="probleme">Problème</option>
                 </select>
-                <input type="number" name="quantite_total" placeholder="Quantité totale">
-                <input type="number" name="disponibilite" placeholder="Disponible">
-                <input type="number" name="reserve" placeholder="Réservé">
-                <input type="number" name="a_venir" placeholder="À venir">
-                <select name="etat">
-                    <option value="vert">Vert</option>
-                    <option value="orange">Orange</option>
-                    <option value="rouge">Rouge</option>
-                </select>
-                <input type="number" name="fournisseur_id" placeholder="Fournisseur">
-                <button type="submit">Ajouter le lot</button>
+                <input type="text" name="transporteur" placeholder="Transporteur" required>
+                <input type="texte" name="notes" placeholder="Notes">
+                <button type="submit">Ajouter la livraison</button>
             </form>
         </div>
 
-        <!-- Affichage des lots existants -->
-        <h2>Lots enregistrés</h2>
-        <table id="lots-table" border="1" cellpadding="5">
+        <!-- Affichage des livraisons existantes -->
+        <h2>Livraisons</h2>
+        <table id="livraisons-table" border="1" cellpadding="5">
             <thead>
                 <tr>
-                    <th>Référence</th>
-                    <th>Type</th>
-                    <th>Quantité</th>
-                    <th>Disponibilité</th>
-                    <th>Etat</th>
+                    <th>N° Livraison</th>
+                    <th>Fournisseur</th>
+                    <th>Date prévue</th>
+                    <th>Statut</th>
+                    <th>Progression</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
 
-            <tbody>
-                <?php foreach ($lots as $lot): ?>
-                    <tr class="main-row" style="cursor:pointer;"
-                        data-id="<?= htmlspecialchars($lot['id']) ?>"
-                        data-reference="<?= htmlspecialchars($lot['reference']) ?>"
-                        data-type="<?= htmlspecialchars($lot['type']) ?>"
-                        data-quantite_total="<?= htmlspecialchars($lot['quantite_total']) ?>"
-                        data-disponibilite="<?= htmlspecialchars($lot['disponibilite']) ?>"
-                        data-reserve="<?= htmlspecialchars($lot['reserve']) ?>"
-                        data-a_venir="<?= htmlspecialchars($lot['a_venir']) ?>"
-                        data-etat="<?= htmlspecialchars($lot['etat']) ?>"
-                        data-fournisseur_id="<?= htmlspecialchars($lot['fournisseur_id']) ?>"
-                        data-emplacement="<?= isset($lot['emplacement']) ? htmlspecialchars($lot['emplacement']) : '' ?>"
-                    >
-                        <td><?= htmlspecialchars($lot['reference']) ?></td>
-                        <td><?= htmlspecialchars($lot['type']) ?></td>
-                        <td><?= htmlspecialchars($lot['quantite_total']) ?></td>
-                        <td><?= htmlspecialchars($lot['disponibilite']) ?></td>
-                        <td>
-                            <span class="etat-square <?= htmlspecialchars($lot['etat']) ?>"></span>
-                        </td>
-                    </tr>
-                    <tr class="details-row" style="display:none; background:#f9f9f9;">
-                        <td colspan="8">
-                            <table style="width:100%; background:#f9f9f9;">
-                                <thead>
-                                    <tr>
-                                        <th>Fournisseur</th>
-                                        <th>Réservé</th>
-                                        <th>À venir</th>
-                                        <th>Emplacement</th>
-                                    </tr>
-                                </thead>    
-                                <tbody>
-                                    <tr>
-                                        <td><?= htmlspecialchars($lot['fournisseur_id']) ?></td>
-                                        <td><?= htmlspecialchars($lot['reserve']) ?></td>
-                                        <td><?= htmlspecialchars($lot['a_venir']) ?></td>
-                                        <td><?= isset($lot['emplacement']) ? htmlspecialchars($lot['emplacement']) : '-' ?></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
+                <tbody>
+                    <?php foreach ($livraisons as $livraison): ?>
+                        <tr data-statut="<?= $livraison['statut'] ?>" 
+                            data-fournisseur="<?= strtolower($livraison['fournisseur_nom']) ?>"
+                            data-date="<?= $livraison['date_prevue'] ?>">
+                            
+                            <td class="numero-livraison">
+                                <strong><?= htmlspecialchars($livraison['numero_livraison']) ?></strong>
+                            </td>
+                            
+                            <td><?= isset($livraison['fournisseur_nom']) && $livraison['fournisseur_nom'] !== null ? htmlspecialchars($livraison['fournisseur_nom']) : '-' ?></td>
+                            
+                            <td>
+                                <?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>
+                                <?php if ($livraison['date_livraison']): ?>
+                                    <br><small>Livrée le <?= date('d/m/Y H:i', strtotime($livraison['date_livraison'])) ?></small>
+                                <?php endif; ?>
+                            </td>
+                            
+                            <td>
+                                <span class="statut-badge statut-<?= $livraison['statut'] ?>">
+                                    <?= ucfirst(str_replace('_', ' ', $livraison['statut'])) ?>
+                                </span>
+                            </td>
+                            
+                            <td>
+                                <div class="progress-bar">
+                                    <?php 
+                                    $progress = $livraison['nb_lots'] > 0 ? 
+                                        ($livraison['lots_recus'] / $livraison['nb_lots']) * 100 : 0;
+                                    ?>
+                                    <div class="progress-fill" style="width: <?= $progress ?>%"></div>
+                                    <span class="progress-text">
+                                        <?= $livraison['lots_recus'] ?>/<?= $livraison['nb_lots'] ?> lots
+                                    </span>
+                                </div>
+                            </td>
+                            
+                            <td class="actions">
+                                <button class="btn btn-sm btn-info" 
+                                        onclick="voirDetails(<?= $livraison['id'] ?>)">
+                                    Voir
+                                </button>
+                                
+                                <?php if ($livraison['statut'] !== 'livree' && 
+                                         ($_SESSION['users_role'] === 'magasinier' || $_SESSION['users_role'] === 'admin')): ?>
+                                    <button class="btn btn-sm btn-success" 
+                                            onclick="window.location.href='recevoir.php?id=<?= $livraison['id'] ?>'">
+                                        Recevoir
+                                    </button>
+                                <?php endif; ?>
+                                
+                                <?php if ($_SESSION['users_role'] === 'admin'): ?>
+                                    <button class="btn btn-sm btn-danger" 
+                                            onclick="supprimerLivraison(<?= $livraison['id'] ?>)">
+                                        Suppr.
+                                    </button>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
         </table>
 
-        <div id="edit-lot-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center; z-index:1000;">
-            <div style="background:#fff; padding:2em; border-radius:10px; min-width:300px; position:relative;">
-                <button onclick="document.getElementById('edit-lot-modal').style.display='none'" style="position:absolute;top:10px;right:10px;">&times;</button>
-                <h3>Modifier le lot</h3>
-                <form id="edit-lot-form" method="post" action="../../actions/modifier_lot.php">
-                    <input type="hidden" name="id" id="edit-lot-id">
-                    <div>
-                        <label>Référence :</label>
-                        <input type="text" name="reference" id="edit-lot-reference" required>
-                    </div>
-                    <div>
-                        <label>Type :</label>
-                        <input type="text" name="type" id="edit-lot-type" required>
-                    </div>
-                    <div>
-                        <label>Quantité totale :</label>
-                        <input type="number" name="quantite_total" id="edit-lot-quantite" required>
-                    </div>
-                    <div>
-                        <label>Disponibilité :</label>
-                        <input type="number" name="disponibilite" id="edit-lot-disponibilite" required>
-                    </div>
-                    <div>
-                        <label>Réservé :</label>
-                        <input type="number" name="reserve" id="edit-lot-reserve">
-                    </div>
-                    <div>
-                        <label>À venir :</label>
-                        <input type="number" name="a_venir" id="edit-lot-a_venir">
-                    </div>
-                    <div>
-                        <label>Etat :</label>
-                        <select name="etat" id="edit-lot-etat">
-                            <option value="vert">Vert</option>
-                            <option value="orange">Orange</option>
-                            <option value="rouge">Rouge</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Fournisseur :</label>
-                        <input type="number" name="fournisseur_id" id="edit-lot-fournisseur_id">
-                    </div>
-                    <div>
-                        <label>Emplacement :</label>
-                        <input type="text" name="emplacement" id="edit-lot-emplacement">
-                    </div>
-                    <button type="submit" class="btn">Enregistrer</button>
-                </form>
+        <!-- Modal détails -->
+        <div id="modal-details" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="fermerModal()">&times;</span>
+                <div id="details-content">
+                    <!-- Contenu chargé dynamiquement -->
+                </div>
             </div>
         </div>
 
     </section>
 
+    <script>
+        document.getElementById('add-livraisons-btn').addEventListener('click', function() {
+            const formSection = document.getElementById('add-livraisons-form-section');
+            formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
+    });
+    </script>
     <script src="../../actions/search.js"></script>
+    <script src="../../actions/livraisons.js"></script>
     <script src="../../actions/script.js"></script>
     <script src="../../actions/sort.js"></script>
 </body>

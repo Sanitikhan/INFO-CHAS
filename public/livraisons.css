@@ -1,0 +1,310 @@
+* {
+    --primary-color: #222831;
+    --secondary-color: #393E46;
+    --thrid-color: #948979;
+    --fourth-color: #DFD0B8;
+}
+
+/* Boutons */
+.btn-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-section-right {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+.btn {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 10px 25px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.btn-success {
+    background-color: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #229954;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+/* Filtres */
+.filters {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filters select,
+.filters input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.filters input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Tableau */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.livraisons-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.livraisons-table th {
+    background-color: #34495e;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.livraisons-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.livraisons-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.numero-livraison {
+    font-family: monospace;
+}
+
+/* Badges de statut */
+.statut-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.statut-attendue {
+    background-color: #ffeaa7;
+    color: #d63031;
+}
+
+.statut-en_cours {
+    background-color: #74b9ff;
+    color: white;
+}
+
+.statut-livree {
+    background-color: #00b894;
+    color: white;
+}
+
+.statut-probleme {
+    background-color: #e17055;
+    color: white;
+}
+
+/* Barre de progression */
+.progress-bar {
+    position: relative;
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    height: 20px;
+    overflow: hidden;
+    min-width: 120px;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.details-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.details-info p {
+    margin-bottom: 8px;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.details-table th,
+.details-table td {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.details-table th {
+    background-color: #f1f2f6;
+    font-weight: 600;
+}
+
+/* Statuts des lots */
+.lot-statut {
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.lot-complet {
+    background-color: #d1f2eb;
+    color: #00b894;
+}
+
+.lot-partiel {
+    background-color: #fef9e7;
+    color: #f39c12;
+}
+
+.lot-attente {
+    background-color: #fadbd8;
+    color: #e74c3c;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .filters {
+        flex-direction: column;
+    }
+    
+    .filters input[type="text"] {
+        min-width: auto;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .livraisons-table {
+        font-size: 14px;
+    }
+    
+    .livraisons-table th,
+    .livraisons-table td {
+        padding: 8px;
+    }
+    
+    .actions {
+        flex-direction: column;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 2% auto;
+    }
+}
