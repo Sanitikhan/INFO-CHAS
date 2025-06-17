@@ -30,6 +30,8 @@ $stmt = $pdo->query("
     LEFT JOIN fournisseurs ON lots.fournisseur_id = fournisseurs.id
 ");
 $lots = $stmt->fetchAll();
+
+$_SESSION['user_role'] = $user['role'];
 ?>
 
 <!DOCTYPE html>
@@ -281,19 +283,22 @@ $lots = $stmt->fetchAll();
                                     Voir
                                 </button>
                                 
-                                <?php if ($livraison['statut'] !== 'livree' && 
-                                         ($_SESSION['users_role'] === 'magasinier' || $_SESSION['users_role'] === 'admin')): ?>
-                                    <button class="btn btn-sm btn-success" 
-                                            onclick="window.location.href='recevoir.php?id=<?= $livraison['id'] ?>'">
-                                        Recevoir
-                                    </button>
-                                <?php endif; ?>
-                                
-                                <?php if ($_SESSION['users_role'] === 'admin'): ?>
-                                    <button class="btn btn-sm btn-danger" 
-                                            onclick="supprimerLivraison(<?= $livraison['id'] ?>)">
-                                        Suppr.
-                                    </button>
+                                <?php if ($_SESSION['user_role'] === 'admin'): ?>
+                                    <button class="btn">Voir</button>
+                                    <button class="btn">Modifier</button>
+                                    <button class="btn">Supprimer</button>
+                                <?php elseif ($_SESSION['user_role'] === 'livreur'): ?>
+                                    <button class="btn">Voir</button>
+                                    <button class="btn">Confirmer Livraison</button>
+                                <?php elseif ($_SESSION['user_role'] === 'gestionnaire de livraison'): ?>
+                                    <button class="btn">Voir</button>
+                                    <button class="btn">Attribuer</button>
+                                    <button class="btn">Confirmer Livraison</button>
+                                <?php elseif ($_SESSION['user_role'] === 'gestionnaire de stock'): ?>
+                                    <button class="btn">Voir</button>
+                                    <button class="btn">Mettre à jour Stock</button>
+                                <?php else: ?>
+                                    <button class="btn">Voir</button>
                                 <?php endif; ?>
                             </td>
                         </tr>
