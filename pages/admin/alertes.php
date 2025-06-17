@@ -5,9 +5,20 @@ require_once('../../includes/config.php');
 // Query for lots with etat 'rouge'
 $stmt = $pdo->query("SELECT * FROM lots WHERE etat = 'rouge'");
 $lots_rouge = $stmt->fetchAll();
+$count_rouge = count($lots_rouge);
 
+// Query for lots with etat 'orange'
+$stmt = $pdo->query("SELECT * FROM lots WHERE etat = 'orange'");
+$lots_orange = $stmt->fetchAll();
+$count_orange = count($lots_orange);
+
+// Query for livraisons with statut 'probleme'
 $stmt = $pdo->query("SELECT * FROM livraisons WHERE statut = 'probleme'");
 $livraisons_probleme = $stmt->fetchAll();
+$count_probleme = count($livraisons_probleme);
+
+// Total "problème critique"
+$total_critique = $count_rouge + $count_probleme;
 ?>
 
 <!DOCTYPE html>
@@ -181,41 +192,76 @@ $livraisons_probleme = $stmt->fetchAll();
             <h1>Alertes</h1>
         </header>
 
-        <div class="alertes-grid">
-            <div class="grid">
-                <h3>Alertes de stock</h3>
-                <?php if (
-                    isset($_SESSION['role']) &&
-                    ( $_SESSION['role'] === 'gestionnaire de stock' || $_SESSION['role'] === 'admin' ) &&
-                    !empty($lots_rouge)
-                ): ?>
-                    <div class="alert alert-danger">
-                        <strong>Attention :</strong> Certains lots sont en état <strong>rouge</strong> !
-                        <ul>
-                            <?php foreach ($lots_rouge as $lot): ?>
-                                <li><span class="material-symbols-rounded">warning</span> <?= htmlspecialchars($lot['reference']) ?> (<?= htmlspecialchars($lot['type']) ?>)</li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                <?php endif; ?>
+        <div class="alert-summary" style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div style="background: #393E46; color: #fff; padding: 10px 20px; border-radius: 5px;">
+                <strong>Total alertes :</strong> <?= $total_critique ?>
             </div>
-            <div class="grid alertes">
-                <h3>Alertes de livraisons</h3>
-                <?php if (!empty($livraisons_probleme)): ?>
-                    <strong>Attention :</strong> Certaines livraisons rencontrent un problème !
-                    <ul>
-                        <?php foreach ($livraisons_probleme as $livraison): ?>
-                            <li><span class="material-symbols-rounded">warning</span> 
-                                Livraison n°<?= htmlspecialchars($livraison['numero_livraison']) ?>
-                                <?php if (!empty($livraison['notes'])): ?>
-                                    - <?= htmlspecialchars($livraison['notes']) ?>
-                                <?php endif; ?>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
+            <div id="show-rouge" style="cursor:pointer; background: #f44336; color: #fff; padding: 10px 20px; border-radius: 5px;">
+                <span class="material-symbols-rounded">inventory_2</span>
+                <strong>Lots rouge :</strong> <?= $count_rouge ?>
+            </div>
+            <div id="show-orange" style="cursor:pointer; background: #ff9800; color: #fff; padding: 10px 20px; border-radius: 5px;">
+                <span class="material-symbols-rounded">local_shipping</span>
+                <strong>Lots orange :</strong> <?= $count_orange ?>
+            </div>
+            <div id="show-probleme" style="cursor:pointer; background:rgb(255, 213, 0); color: #fff; padding: 10px 20px; border-radius: 5px;">
+                <span class="material-symbols-rounded">local_shipping</span>
+                <strong>Problèmes livraisons :</strong> <?= $count_probleme ?>
+            </div>
+        </div>
+
+        <div class="alertes-grid">
+
+
+            <div class="grid" id="list-rouge" style="display:none; margin-bottom:20px;">
+                <h3>Lots rouge</h3>
+                <?php foreach ($lots_rouge as $lot): ?>
+                    <div><?= htmlspecialchars($lot['reference']) ?> (<?= htmlspecialchars($lot['type']) ?>)</div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="grid" id="list-orange" style="display:none; margin-bottom:20px;">
+                <h3>Lots orange</h3>
+                <?php foreach ($lots_orange as $lot): ?>
+                    <div><?= htmlspecialchars($lot['reference']) ?> (<?= htmlspecialchars($lot['type']) ?>)</div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="grid" id="list-probleme" style="display:none; margin-bottom:20px;">
+                <h3>Problèmes livraisons</h3>
+                <?php foreach ($livraisons_probleme as $livraison): ?>
+                    <div>
+                        Livraison n°<?= htmlspecialchars($livraison['numero_livraison']) ?> :
+                        <?= !empty($livraison['notes']) ? htmlspecialchars($livraison['notes']) : "Problème signalé." ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+        
+            <div class="grid">
+                <h3>Problèmes critiques</h3>
+                <?php if ($total_critique > 0): ?>
+                    <?php foreach ($lots_rouge as $lot): ?>
+                        <div class="alert alert-danger" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span class="material-symbols-rounded" style="color: #fff;">warning</span>
+                            <div>
+                                <strong>Lot critique :</strong>
+                                <?= htmlspecialchars($lot['reference']) ?> (<?= htmlspecialchars($lot['type']) ?>)
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    <?php foreach ($livraisons_probleme as $livraison): ?>
+                        <div class="alert alert-danger" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span class="material-symbols-rounded" style="color: #fff;">warning</span>
+                            <div>
+                                <strong>Livraison n°<?= htmlspecialchars($livraison['numero_livraison']) ?> :</strong>
+                                <?= !empty($livraison['notes']) ? htmlspecialchars($livraison['notes']) : "Problème signalé." ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 <?php else: ?>
                     <div class="alert alert-success">
-                        Aucune alerte de livraison.
+                        Aucun problème critique détecté.
                     </div>
                 <?php endif; ?>
             </div>
@@ -224,7 +270,19 @@ $livraisons_probleme = $stmt->fetchAll();
 
 
     <script src="../../actions/script.js"></script>
- 
+    <script>
+document.getElementById('show-rouge').onclick = function() {
+    document.getElementById('list-rouge').style.display =
+        document.getElementById('list-rouge').style.display === 'none' ? 'block' : 'none';
+};
+document.getElementById('show-orange').onclick = function() {
+    document.getElementById('list-orange').style.display =
+        document.getElementById('list-orange').style.display === 'none' ? 'block' : 'none';
+};
+document.getElementById('show-probleme').onclick = function() {
+    document.getElementById('list-probleme').style.display =
+        document.getElementById('list-probleme').style.display === 'none' ? 'block' : 'none';
+};
 </script>
 </body>
 </html>
