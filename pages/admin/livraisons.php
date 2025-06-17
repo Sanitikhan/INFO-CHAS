@@ -125,7 +125,7 @@ $livraisons = $stmt->fetchAll();
                 <?php else: ?>
                     <!-- Simple link for others -->
                     <li class="nav-item">
-                        <a href="livraisons.php" class="nav-link">
+                        <a href="livraisons.php" class="nav-link active">
                             <span class="material-symbols-rounded">local_shipping</span>
                             <span class="nav-label">Livraisons</span>
                         </a>
@@ -213,7 +213,6 @@ $livraisons = $stmt->fetchAll();
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-                        <option value="default">--</option>
                         <option value="numero">Numéro</option>
                         <option value="fournisseur">Fournisseur</option>
                         <option value="date_prevue">Date prévue</option>
