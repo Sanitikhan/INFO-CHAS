@@ -25,13 +25,14 @@ $stmt->execute();
 $livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $stmt = $pdo->query("
-    SELECT lots.*, fournisseurs.nom AS fournisseur_nom
-    FROM lots
-    LEFT JOIN fournisseurs ON lots.fournisseur_id = fournisseurs.id
+    SELECT l.*, 
+           f.nom AS fournisseur_nom, 
+           u.username AS livreur_nom
+    FROM livraisons l
+    LEFT JOIN fournisseurs f ON l.fournisseur_id = f.id
+    LEFT JOIN users u ON l.livreur_id = u.id
 ");
-$lots = $stmt->fetchAll();
-
-$_SESSION['user_role'] = $user['role'];
+$livraisons = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -212,7 +213,7 @@ $_SESSION['user_role'] = $user['role'];
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-                        <option value="default">Sélectionner un critère</option>
+                        <option value="default">--</option>
                         <option value="numero">Numéro</option>
                         <option value="fournisseur">Fournisseur</option>
                         <option value="date_prevue">Date prévue</option>
@@ -241,14 +242,14 @@ $_SESSION['user_role'] = $user['role'];
 
         <!-- Affichage des livraisons existantes -->
         <h2>Livraisons</h2>
-        <table id="livraisons-table" border="1" cellpadding="5">
+        <table id="livraisons-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
                     <th>N° Livraison</th>
                     <th>Fournisseur</th>
                     <th>Date prévue</th>
                     <th>Statut</th>
-                    <th>Progression</th>
+                    <th>Livreur assigné</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -277,24 +278,14 @@ $_SESSION['user_role'] = $user['role'];
                                     <?= ucfirst(str_replace('_', ' ', $livraison['statut'])) ?>
                                 </span>
                             </td>
+
+                            <td><?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?></td>
                             
-                            <td>
-                                <div class="progress-bar">
-                                    <?php 
-                                    $progress = $livraison['nb_lots'] > 0 ? 
-                                        ($livraison['lots_recus'] / $livraison['nb_lots']) * 100 : 0;
-                                    ?>
-                                    <div class="progress-fill" style="width: <?= $progress ?>%"></div>
-                                    <span class="progress-text">
-                                        <?= $livraison['lots_recus'] ?>/<?= $livraison['nb_lots'] ?> lots
-                                    </span>
-                                </div>
-                            </td>
                             
                             <td class="actions">
                                 <button class="btn btn-sm btn-info" 
                                         onclick="voirDetails(<?= $livraison['id'] ?>)">
-                                    Voir
+                                    Détails
                                 </button>
                                 
                                 <?php if ($_SESSION['user_role'] === 'admin'): ?>
