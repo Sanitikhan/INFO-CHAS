@@ -56,6 +56,12 @@ $livraisons = $stmt->fetchAll();
     </div>
     <?php unset($_SESSION['flash_message']); ?>
 <?php endif; ?>
+<?php if (isset($_SESSION['flash_message'])): ?>
+    <div class="flash-message <?= isset($_SESSION['flash_type']) && $_SESSION['flash_type'] === 'error' ? 'flash-error' : '' ?>" id="flash-message">
+        <?= htmlspecialchars($_SESSION['flash_message']) ?>
+    </div>
+    <?php unset($_SESSION['flash_message'], $_SESSION['flash_type']); ?>
+<?php endif; ?>
 <!-- Mobile Sidebar Menu Button -->
     <button class="sidebar-menu-button">
         <span class="material-symbols-rounded">menu</span>
