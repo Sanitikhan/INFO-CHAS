@@ -99,10 +99,10 @@ if (isset($_POST['add_to_cart'])) {
                         </a>
                         <ul class="dropdown-menu">
                             <li class="nav-item">
-                                <a class="nav-link active dropdown-title">Livraisons</a>
+                                <a class="nav-link dropdown-title">Livraisons</a>
                             </li>
                             <li class="nav-item">
-                                <a href="livraisons.php" class="nav-link active dropdown-link">Toutes les livraisons</a>
+                                <a href="livraisons.php" class="nav-link dropdown-link">Toutes les livraisons</a>
                             </li>
                             <li class="nav-item">
                                 <a href="../livreur/meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
@@ -173,7 +173,7 @@ if (isset($_POST['add_to_cart'])) {
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="logout.php" class="nav-link">
+                    <a href="../logout.php" class="nav-link">
                         <span class="material-symbols-rounded">power_settings_new</span>
                         <span class="nav-label">Déconnexion</span>
                     </a>
@@ -194,7 +194,12 @@ if (isset($_POST['add_to_cart'])) {
 
         <section class="btn-section">
             <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+            <?php if (
+                (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
+                (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
+            ): ?>
+                <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+            <?php endif; ?>
         </section>
 
     <section class="content">

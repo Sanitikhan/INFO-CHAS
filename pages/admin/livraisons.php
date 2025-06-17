@@ -240,7 +240,6 @@ $livraisons = $stmt->fetchAll();
         </div>
 
         <!-- Affichage des livraisons existantes -->
-        <h2>Livraisons</h2>
         <table id="livraisons-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
@@ -287,18 +286,18 @@ $livraisons = $stmt->fetchAll();
                                     Détails
                                 </button>
                                 
-                                <?php if ($_SESSION['user_role'] === 'admin'): ?>
+                                <?php if ($_SESSION['role'] === 'admin'): ?>
                                     <button class="btn">Voir</button>
                                     <button class="btn">Modifier</button>
                                     <button class="btn">Supprimer</button>
-                                <?php elseif ($_SESSION['user_role'] === 'livreur'): ?>
+                                <?php elseif ($_SESSION['role'] === 'livreur'): ?>
                                     <button class="btn">Voir</button>
                                     <button class="btn">Confirmer Livraison</button>
-                                <?php elseif ($_SESSION['user_role'] === 'gestionnaire de livraison'): ?>
+                                <?php elseif ($_SESSION['role'] === 'gestionnaire de livraison'): ?>
                                     <button class="btn">Voir</button>
                                     <button class="btn">Attribuer</button>
                                     <button class="btn">Confirmer Livraison</button>
-                                <?php elseif ($_SESSION['user_role'] === 'gestionnaire de stock'): ?>
+                                <?php elseif ($_SESSION['role'] === 'gestionnaire de stock'): ?>
                                     <button class="btn">Voir</button>
                                     <button class="btn">Mettre à jour Stock</button>
                                 <?php else: ?>

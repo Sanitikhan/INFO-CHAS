@@ -185,7 +185,12 @@ try {
         <section class="btn-section">
             <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+                <?php if (
+                    (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
+                    (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
+                ): ?>
+                    <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+                <?php endif; ?>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
