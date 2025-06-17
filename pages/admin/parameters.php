@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messagerie</title>
+    <title>Paramètres</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/parameters.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
@@ -195,10 +195,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <button class="btn btn-edit" id="edit-infos-btn">Modifier</button>
             </div>
+
+            <button id="show-user-form-btn" class="btn">Ajouter un nouvel utilisateur</button>
             
-            <div class="container" style="flex: 1;">
+            <div class="container" id="user-form-section" style="display:none; position:relative; flex: 1;">
                 <h2>Ajouter un nouvel utilisateur</h2>
                 <?php if (isset($_SESSION['error'])) { echo "<p style='color:red'>" . $_SESSION['error'] . "</p>"; unset($_SESSION['error']); } ?>
+                <button type="button" id="close-user-form-btn" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:1.5em; cursor:pointer; color:#000;">&times;</button>
                 <form method="post">
                     <div class="form-group">
                         <label for="username">Nom d'utilisateur :</label>
@@ -266,7 +269,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <section class="section-content">
             <div class="container">
                 <h2>Liste des utilisateurs</h2>
-                <table border="1" cellpadding="3" style="width:100%; background:#fff;">
+                <table border="1" cellpadding="3" style="width:100%;">
                     <thead>
                         <tr>
                             <th>Nom d'utilisateur</th>
@@ -329,6 +332,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const showBtn = document.getElementById('show-user-form-btn');
+            const formSection = document.getElementById('user-form-section');
+            const closeBtn = document.getElementById('close-user-form-btn');
+
+            showBtn.addEventListener('click', function() {
+                formSection.style.display = 'block';
+                showBtn.style.display = 'none';
+            });
+
+            closeBtn.addEventListener('click', function() {
+                formSection.style.display = 'none';
+                showBtn.style.display = 'inline-block'; // or 'block' depending on your layout
+            });
+        });
+
         document.getElementById('edit-infos-btn').addEventListener('click', function() {
         const formSection = document.getElementById('edit-infos-form-section');
         formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';

@@ -19,6 +19,10 @@ h3 {
     color: #fff;
 }
 
+ul {
+    color: #fff;
+}
+
 .grid {
     background-color: var(--primary-color);
     border-radius: 10px;
