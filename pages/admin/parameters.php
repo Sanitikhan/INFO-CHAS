@@ -209,8 +209,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <button class="btn btn-edit" id="edit-infos-btn">Modifier</button>
             </div>
-
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
             <button id="show-user-form-btn" class="btn">Ajouter un nouvel utilisateur</button>
+            <?php endif; ?>
             
             <div class="container" id="user-form-section" style="display:none; position:relative; flex: 1;">
                 <h2>Ajouter un nouvel utilisateur</h2>
@@ -280,6 +281,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </section>
 
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <section class="section-content">
             <div class="container">
                 <h2>Liste des utilisateurs</h2>
@@ -307,6 +309,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </table>
             </div>
         </section>
+        <?php endif; ?>
 
         <!-- Edit User Modal/Form -->
 <div id="edit-user-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); align-items:center; justify-content:center;">
