@@ -9,6 +9,11 @@ $total_lots = $pdo->query("SELECT COUNT(*) FROM lots")->fetchColumn();
 $lots_rouge = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'rouge'")->fetchColumn();
 $lots_vert = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'vert'")->fetchColumn();
 $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->fetchColumn();
+
+$stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'en_attente'");
+$livraisons_attente = $stmt->fetchColumn();
+$stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'livree'");
+$livraisons_livree = $stmt->fetchColumn();
 ?>
 
 <!DOCTYPE html>
@@ -204,14 +209,14 @@ $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->f
                             <span class="material-symbols-rounded">local_shipping</span>
                             <div>
                                 <div class="perf-label">Livraisons en attente</div>
-                                <div class="perf-value">0<!-- <?= $livraisons_attente ?> --></div>
+                                <div class="perf-value"><?= $livraisons_attente ?></div>
                             </div>
                         </div>
                         <div class="perf-item">
                             <span class="material-symbols-rounded">package</span>
                             <div>
-                                <div class="perf-label">Livraisons passées</div>
-                                <div class="perf-value">6<!-- <?= $livraisons_passees ?> --></div>
+                                <div class="perf-label">Livraisons Livrée</div>
+                                <div class="perf-value"><?= $livraisons_livree ?></div>
                             </div>
                         </div>
                     </div>
