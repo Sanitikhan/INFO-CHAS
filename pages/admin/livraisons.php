@@ -190,17 +190,17 @@ $lots = $stmt->fetchAll();
         </header>
         
         <section class="btn-section">
-            <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <input type="text" id="search-lot-input" placeholder="Rechercher une livraisons.." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn btn-add" id="add-livraisons-btn">Ajouter un lot</button>
+                <button class="btn btn-add" id="add-livraisons-btn">Ajouter une livraison</button>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-                        <option value="">...</option>
-                        <option value="en_attente">En attente</option>
-                        <option value="en_cours">En cours</option>
-                        <option value="livree">Livrée</option>
-                        <option value="Problème">Problème</option>
+                        <option value="default">Sélectionner un critère</option>
+                        <option value="numero">Numéro</option>
+                        <option value="fournisseur">Fournisseur</option>
+                        <option value="date_prevue">Date prévue</option>
+                        <option value="statut">Statut</option>
                     </select>
                 </div>
             </div>
@@ -239,7 +239,7 @@ $lots = $stmt->fetchAll();
 
                 <tbody>
                     <?php foreach ($livraisons as $livraison): ?>
-                        <tr data-statut="<?= $livraison['statut'] ?>" 
+                        <tr class="main-row" data-statut="<?= $livraison['statut'] ?>" 
                             data-fournisseur="<?= strtolower($livraison['fournisseur_nom']) ?>"
                             data-date="<?= $livraison['date_prevue'] ?>">
                             
@@ -318,10 +318,73 @@ $lots = $stmt->fetchAll();
             const formSection = document.getElementById('add-livraisons-form-section');
             formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('sort-select').addEventListener('change', function() {
+        const sortType = this.value;
+        const table = document.getElementById('livraisons-table');
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('.main-row'));
+
+        // Column indexes: adjust if your table structure is different
+        const colIndexes = {
+            numero: 0,
+            fournisseur: 1,
+            date_prevue: 2,
+            statut: 3
+        };
+
+        function getCellValue(row, idx) {
+            return row.cells[idx] ? row.cells[idx].textContent.trim() : '';
+        }
+
+        rows.sort((a, b) => {
+            let valA, valB;
+            switch (sortType) {
+                case 'numero':
+                    valA = getCellValue(a, colIndexes.numero);
+                    valB = getCellValue(b, colIndexes.numero);
+                    // If numero is numeric, sort as number
+                    if (!isNaN(valA) && !isNaN(valB)) {
+                        return parseInt(valA, 10) - parseInt(valB, 10);
+                    }
+                    return valA.localeCompare(valB, undefined, {numeric: true});
+                case 'date_prevue':
+                    function parseFrDate(str) {
+                        const [d, m, y] = str.split('/');
+                        return new Date(`${y}-${m}-${d}`);
+                    }
+                    valA = parseFrDate(getCellValue(a, colIndexes.date_prevue));
+                    valB = parseFrDate(getCellValue(b, colIndexes.date_prevue));
+                    return valA - valB;
+                case 'fournisseur':
+                    valA = getCellValue(a, colIndexes.fournisseur).toLowerCase();
+                    valB = getCellValue(b, colIndexes.fournisseur).toLowerCase();
+                    return valA.localeCompare(valB, undefined, {numeric: true});
+                case 'statut':
+                    valA = getCellValue(a, colIndexes.statut).toLowerCase();
+                    valB = getCellValue(b, colIndexes.statut).toLowerCase();
+                    return valA.localeCompare(valB, undefined, {numeric: true});
+                default:
+                    return 0;
+            }
+        });
+
+        // Remove all rows
+        while (tbody.firstChild) {
+            tbody.removeChild(tbody.firstChild);
+        }
+
+        // Re-add sorted rows
+        rows.forEach(row => {
+            tbody.appendChild(row);
+        });
+    });
+});
     </script>
     <script src="../../actions/search.js"></script>
     <script src="../../actions/livraisons.js"></script>
     <script src="../../actions/script.js"></script>
-    <script src="../../actions/sort.js"></script>
 </body>
 </html>
