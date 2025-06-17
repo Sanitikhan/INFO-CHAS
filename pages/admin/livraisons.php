@@ -78,7 +78,7 @@ $lots = $stmt->fetchAll();
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="stock.php" class="nav-link active">
+                    <a href="stock.php" class="nav-link">
                         <span class="material-symbols-rounded">inventory_2</span>
                         <span class="nav-label">Stock</span>
                     </a>
@@ -109,13 +109,13 @@ $lots = $stmt->fetchAll();
                     <!-- Dropdown menu -->
                     <ul class="dropdown-menu">
                         <li class="nav-item">
-                            <a class="nav-link dropdown-title">Livraisons</a>
+                            <a class="nav-link active dropdown-title">Livraisons</a>
                         </li>
                         <li class="nav-item">
-                            <a href="livraisons.php" class="nav-link dropdown-link">Toutes les livraisons</a>
+                            <a href="livraisons.php" class="nav-link active dropdown-link">Toutes les livraisons</a>
                         </li>
                         <li class="nav-item">
-                            <a href="meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
+                            <a href="../livreur/meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
                         </li>
                     </ul>
                 </li>
@@ -186,11 +186,11 @@ $lots = $stmt->fetchAll();
     <section class="main-content">
         
         <header class="header">
-            <h1>STOCK</h1>
+            <h1>LIVRAISONS</h1>
         </header>
         
         <section class="btn-section">
-            <input type="text" id="search-lot-input" placeholder="Rechercher une livraisons.." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <input type="text" id="search-lot-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
                 <button class="btn btn-add" id="add-livraisons-btn">Ajouter une livraison</button>
                 <div class="sort-dropdown" style="display:inline-block;">
