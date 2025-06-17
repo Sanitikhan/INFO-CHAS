@@ -61,7 +61,7 @@ $livraisons = $stmt->fetchAll();
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="stock.php" class="nav-link">
+                    <a href="../admin/stock.php" class="nav-link">
                         <span class="material-symbols-rounded">inventory_2</span>
                         <span class="nav-label">Stock</span>
                     </a>
@@ -72,7 +72,7 @@ $livraisons = $stmt->fetchAll();
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="reapprovisionnement.php" class="nav-link">
+                    <a href="../admin/reapprovisionnement.php" class="nav-link">
                         <span class="material-symbols-rounded">shopping_cart</span>
                         <span class="nav-label">Réapprovisionnement</span>
                     </a>
@@ -95,17 +95,17 @@ $livraisons = $stmt->fetchAll();
                                 <a class="nav-link active dropdown-title">Livraisons</a>
                             </li>
                             <li class="nav-item">
-                                <a href="livraisons.php" class="nav-link active dropdown-link">Toutes les livraisons</a>
+                                <a href="../admin/livraisons.php" class="nav-link dropdown-link">Toutes les livraisons</a>
                             </li>
                             <li class="nav-item">
-                                <a href="../livreur/meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
+                                <a href="../livreur/meslivraisons.php" class="nav-link active dropdown-link">Mes livraisons</a>
                             </li>
                         </ul>
                     </li>
                 <?php else: ?>
                     <!-- Simple link for others -->
                     <li class="nav-item">
-                        <a href="livraisons.php" class="nav-link">
+                        <a href="../admin/livraisons.php" class="nav-link">
                             <span class="material-symbols-rounded">local_shipping</span>
                             <span class="nav-label">Livraisons</span>
                         </a>
@@ -129,18 +129,18 @@ $livraisons = $stmt->fetchAll();
                             <a class="nav-link dropdown-title">Messagerie</a>
                         </li>
                         <li class="nav-item">
-                            <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
+                            <a href="../admin/messages.php" class="nav-link dropdown-link">Mes messages</a>
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link dropdown-link">Mes alertes</a>
                         </li>
                         <li class="nav-item">
-                            <a href="fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
+                            <a href="../admin/fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="calendrier.php" class="nav-link">
+                    <a href="../admin/calendrier.php" class="nav-link">
                         <span class="material-symbols-rounded">calendar_today</span>
                         <span class="nav-label">Calendrier</span>
                     </a>
@@ -155,7 +155,7 @@ $livraisons = $stmt->fetchAll();
             <!-- Secondary Bottom Nav -->
             <ul class="nav-list secondary-nav">
                 <li class="nav-item">
-                    <a href="parameters.php" class="nav-link">
+                    <a href="../admin/parameters.php" class="nav-link">
                         <span class="material-symbols-rounded">settings</span>
                         <span class="nav-label">Paramètres</span>
                     </a>
@@ -208,5 +208,7 @@ $livraisons = $stmt->fetchAll();
             <?php endif; ?>
         </tbody>
     </table>
+
+    <script src="../../actions/script.js"></script>
 </body>
 </html>

@@ -227,7 +227,6 @@ try {
         </div>
 
         <!-- Affichage des lots existants -->
-        <h2>Lots enregistrés</h2>
         <table id="lots-table" border="1" cellpadding="5">
             <thead>
                 <tr>
