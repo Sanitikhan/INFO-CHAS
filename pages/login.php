@@ -62,8 +62,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
-    <link rel="stylesheet" href="../public/login.css">
-    <link rel="icon" type="image/png" href="../img/logo_fc.png" />
+    <link rel="stylesheet" href="../public/loginpage.css">
+    <link rel="icon" type="image/png" href="../img/logo_w.png" />
     <!-- Boxicons CSS -->
   <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -72,6 +72,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <section class="container forms">
         <div class="form login">
             <div class="form-content">
+                <section class="logo-section">
+                    <img src="../img/logo_b.png" alt="Logo" class="logo">
+                </section>
                 <header>Connexion</header>
 
                 <form method="post">
@@ -90,37 +93,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     <div class="field button-field">
                         <button type="submit">Connexion</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Sign Form -->
-
-        <div class="form signup">
-            <div class="form-content">
-                <header>Signup</header>
-
-                <form action="post">
-                    <div class="field input-field">
-                        <input type="email" placeholder="Email" class="input" required>
-                    </div>
-
-                    <div class="field input-field">
-                        <input type="password" placeholder="Create password" class="password" required>
-                    </div>
-
-                    <div class="field input-field">
-                        <input type="password" placeholder="Confirm password" class="password" required>
-                        <i class='bx bx-hide eye-icon'></i>
-                    </div>
-
-                    <div class="field button-field">
-                        <button>Signup</button>
-                    </div>
-
-                    <div class="form-link">
-                        <span>Already have an account? <a href="#" class="link login-link">Login</a></span>
                     </div>
                 </form>
             </div>
