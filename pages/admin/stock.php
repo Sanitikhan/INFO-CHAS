@@ -18,7 +18,7 @@ try {
     <title>Stock</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
-    <link rel="stylesheet" href="../../public/lot.css">
+    <link rel="stylesheet" href="../../public/stock.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -169,15 +169,17 @@ try {
         
         <section class="btn-section">
             <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
-            <div class="sort-dropdown" style="display:inline-block;">
-                <label for="sort-select" style="margin-right:8px;">Trier par :</label>
-                <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-                    <option value="name">Nom</option>
-                    <option value="quantity">Quantité</option>
-                    <option value="etat">État</option>
-                    <option value="fournisseur">Fournisseur</option>
-                </select>
+            <div class="btn-section-right">
+                <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+                <div class="sort-dropdown" style="display:inline-block;">
+                    <label for="sort-select" style="margin-right:8px;">Trier par :</label>
+                    <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                        <option value="name">Nom</option>
+                        <option value="quantity">Quantité</option>
+                        <option value="etat">État</option>
+                        <option value="fournisseur">Fournisseur</option>
+                    </select>
+                </div>
             </div>
         </section>
 
