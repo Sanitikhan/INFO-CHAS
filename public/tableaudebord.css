@@ -34,12 +34,7 @@ ul {
     grid-column: 1 / 2;
     grid-row: 1 / 3; /* Span both rows */
 }
-
 .grid.alertes {
-    grid-column: 1 / 3;
-    grid-row: 3 / 4;
-}
-.grid.acces {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
 }

@@ -16,9 +16,21 @@ $stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'livree'");
 $livraisons_livree = $stmt->fetchColumn();
 
 // Example: Log when a user adds a new lot
-$reference = $_POST['reference'] ?? '';
+$reference = $_POST['reference'] ?? null;
+$type = $_POST['type'] ?? null;
 
 $activities = $stmt->fetchAll();
+
+// Count lots in etat 'rouge' or 'orange'
+$stmt = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat IN ('rouge', 'orange')");
+$total_lots_alertes = $stmt->fetchColumn();
+
+// Count livraisons with statut 'probleme'
+$stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'probleme'");
+$total_livraisons_alertes = $stmt->fetchColumn();
+
+// Total alertes
+$total_alertes = $total_lots_alertes + $total_livraisons_alertes;
 ?>
 
 <!DOCTYPE html>
@@ -259,29 +271,15 @@ $activities = $stmt->fetchAll();
                     <?php endif; ?>
                 </ul>
             </div>
-            <div class="grid acces" id="acces-rapides">
-                <h3>Accès rapides</h3>
-                    <button class="btn">Ajouter un lot</button>
-                    <button class="btn">Nouvelle livraison</button>
-                    <button class="btn">Ajouter un fournisseur</button>
-            </div>
             <div class="grid alertes" id="alertes">
                 <h3>Alertes</h3>
+                <div class="alert-summary" style="display: flex; gap: 20px; margin-bottom: 20px;">
+                    <div style="background: #f44336; color: #fff; padding: 10px 20px; border-radius: 5px;">
+                    <strong>Total alertes :</strong> <?= $total_alertes ?>
+                    </div>
+                    <a href="alertes.php" class="btn" style="text-decoration: none;">Voir les alertes</a>
+                </div>
             </div>
-        </div>
-
-        <div class="activity-history">
-            <h3>Historique d’activité</h3>
-            <ul>
-                <?php foreach ($activities as $activity): ?>
-                    <li>
-                        <strong><?= htmlspecialchars($activity['username']) ?></strong>
-                        <?= htmlspecialchars($activity['action']) ?>
-                        <em><?= htmlspecialchars($activity['details']) ?></em>
-                        <span style="color: #888;"><?= $activity['created_at'] ?></span>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
         </div>
     </section>
 
@@ -308,43 +306,3 @@ new Chart(ctx, {
 </script>
 </body>
 </html>
-
-<?php
-// After validating and inserting the new lot:
-$stmt = $pdo->prepare("INSERT INTO lots (reference, type, ...) VALUES (?, ?, ...)");
-$success = $stmt->execute([
-    $_POST['reference'],
-    $_POST['type'],
-    // ...other fields
-]);
-
-if ($success) {
-    // Log the activity only if the insert succeeded
-    $reference = $_POST['reference'];
-    $user_id = $_SESSION['user_id'];
-    $stmt = $pdo->prepare("INSERT INTO activity_log (user_id, action, details) VALUES (?, ?, ?)");
-    $stmt->execute([
-        $user_id,
-        'Ajout de lot',
-        'Lot référence: ' . $reference
-    ]);
-}
-
-// After validating and inserting the new fournisseur:
-$stmt = $pdo->prepare("INSERT INTO fournisseurs (nom, adresse, telephone) VALUES (?, ?, ?)");
-$success = $stmt->execute([
-    $_POST['nom'],
-    $_POST['adresse'],
-    $_POST['telephone']
-]);
-
-if ($success) {
-    $fournisseur_nom = $_POST['nom'];
-    $user_id = $_SESSION['user_id'];
-    $stmt = $pdo->prepare("INSERT INTO activity_log (user_id, action, details) VALUES (?, ?, ?)");
-    $stmt->execute([
-        $user_id,
-        'Ajout de fournisseur',
-        'Fournisseur : ' . $fournisseur_nom
-    ]);
-}
