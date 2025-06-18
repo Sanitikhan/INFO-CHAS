@@ -2,6 +2,8 @@
 session_start();
 require_once('../../includes/config.php');
 
+$stmt = $pdo->query("SELECT id, numero_livraison, date_prevue FROM livraisons");
+$livraisons = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -177,7 +179,7 @@ require_once('../../includes/config.php');
         <div id="calendar"></div>
     </section>
 
-    <!-- FullCalendar JS -->
+<!-- FullCalendar JS -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script src="../../actions/script.js"></script>
     <script>
@@ -193,15 +195,12 @@ document.addEventListener('DOMContentLoaded', function() {
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         events: [
-            // Example events, replace with PHP or AJAX for dynamic events
+            <?php foreach ($livraisons as $livraison): ?>
             {
-                title: 'Livraison prévue',
-                start: '2025-06-20'
+                title: "Livraison #<?= htmlspecialchars($livraison['numero_livraison']) ?>",
+                start: "<?= $livraison['date_prevue'] ?>"
             },
-            {
-                title: 'Réunion fournisseur',
-                start: '2025-06-22T14:00:00'
-            }
+            <?php endforeach; ?>
         ]
     });
     calendar.render();
