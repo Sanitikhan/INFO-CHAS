@@ -14,6 +14,11 @@ $stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'en_attente'
 $livraisons_attente = $stmt->fetchColumn();
 $stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'livree'");
 $livraisons_livree = $stmt->fetchColumn();
+
+// Example: Log when a user adds a new lot
+$reference = $_POST['reference'] ?? '';
+
+$activities = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -231,8 +236,27 @@ $livraisons_livree = $stmt->fetchColumn();
             <div class="grid recents" id="recents">
                 <h3>Activités récentes</h3>
                 <ul>
-                    <li>DSS-VST-JN-BLU-M ajouté par admin</li>
-                    <li>Livraison #456 en attente</li>
+                    <?php
+                    // Fetch the 10 most recent activities
+                    $stmt = $pdo->query("
+                        SELECT a.*, u.username 
+                        FROM activity_log a
+                        LEFT JOIN users u ON a.user_id = u.id
+                        ORDER BY a.created_at DESC
+                        LIMIT 10
+                    ");
+                    $activities = $stmt->fetchAll();
+                    foreach ($activities as $activity): ?>
+                        <li>
+                            <?= htmlspecialchars($activity['action']) ?>
+                            <?= !empty($activity['details']) ? ' - ' . htmlspecialchars($activity['details']) : '' ?>
+                            ajouté par <strong><?= htmlspecialchars($activity['username']) ?></strong>
+                            <span style="color:#888; font-size:0.9em;">(<?= $activity['created_at'] ?>)</span>
+                        </li>
+                    <?php endforeach; ?>
+                    <?php if (empty($activities)): ?>
+                        <li>Aucune activité récente.</li>
+                    <?php endif; ?>
                 </ul>
             </div>
             <div class="grid acces" id="acces-rapides">
@@ -244,6 +268,20 @@ $livraisons_livree = $stmt->fetchColumn();
             <div class="grid alertes" id="alertes">
                 <h3>Alertes</h3>
             </div>
+        </div>
+
+        <div class="activity-history">
+            <h3>Historique d’activité</h3>
+            <ul>
+                <?php foreach ($activities as $activity): ?>
+                    <li>
+                        <strong><?= htmlspecialchars($activity['username']) ?></strong>
+                        <?= htmlspecialchars($activity['action']) ?>
+                        <em><?= htmlspecialchars($activity['details']) ?></em>
+                        <span style="color: #888;"><?= $activity['created_at'] ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
         </div>
     </section>
 
@@ -270,3 +308,43 @@ new Chart(ctx, {
 </script>
 </body>
 </html>
+
+<?php
+// After validating and inserting the new lot:
+$stmt = $pdo->prepare("INSERT INTO lots (reference, type, ...) VALUES (?, ?, ...)");
+$success = $stmt->execute([
+    $_POST['reference'],
+    $_POST['type'],
+    // ...other fields
+]);
+
+if ($success) {
+    // Log the activity only if the insert succeeded
+    $reference = $_POST['reference'];
+    $user_id = $_SESSION['user_id'];
+    $stmt = $pdo->prepare("INSERT INTO activity_log (user_id, action, details) VALUES (?, ?, ?)");
+    $stmt->execute([
+        $user_id,
+        'Ajout de lot',
+        'Lot référence: ' . $reference
+    ]);
+}
+
+// After validating and inserting the new fournisseur:
+$stmt = $pdo->prepare("INSERT INTO fournisseurs (nom, adresse, telephone) VALUES (?, ?, ?)");
+$success = $stmt->execute([
+    $_POST['nom'],
+    $_POST['adresse'],
+    $_POST['telephone']
+]);
+
+if ($success) {
+    $fournisseur_nom = $_POST['nom'];
+    $user_id = $_SESSION['user_id'];
+    $stmt = $pdo->prepare("INSERT INTO activity_log (user_id, action, details) VALUES (?, ?, ?)");
+    $stmt->execute([
+        $user_id,
+        'Ajout de fournisseur',
+        'Fournisseur : ' . $fournisseur_nom
+    ]);
+}

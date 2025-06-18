@@ -190,7 +190,7 @@ try {
         </section>
 
         <div class="form-section" id="add-fournisseur-form-section" style="display:none;">
-            <form class="form-fournisseur" method="POST" action="../actions/ajouter_fournisseur.php">
+            <form class="form-fournisseur" method="POST" action="../../actions/ajouter_fournisseur.php">
                 <input type="text" name="nom" placeholder="Nom du fournisseur" required>
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="text" name="telephone" placeholder="Téléphone" required>
@@ -275,6 +275,7 @@ try {
     const sortSelect = document.getElementById('sort-select');
     const table = document.getElementById('fournisseurs-table');
     const tbody = table.querySelector('tbody');
+    });
 
     </script>
     <script src="../../actions/script.js"></script>
