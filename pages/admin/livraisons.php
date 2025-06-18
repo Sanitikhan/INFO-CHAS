@@ -232,7 +232,7 @@ $livreurs = $stmt->fetchAll();
         </header>
         
         <section class="btn-section">
-            <input type="text" id="search-lot-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <input type="text" id="search-livraison-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
                 <button class="btn btn-add" id="add-livraisons-btn">Ajouter une livraison</button>
                 <div class="sort-dropdown" style="display:inline-block;">
@@ -439,8 +439,17 @@ $livreurs = $stmt->fetchAll();
             }, 5000); // 5 seconds
         }
     });
+
+    /* Search 'livraison' */
+    document.getElementById('search-livraison-input').addEventListener('input', function() {
+    const search = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#livraisons-table tbody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(search) ? '' : 'none';
+    });
+    });
     </script>
-    <script src="../../actions/search.js"></script>
     <script src="../../actions/livraisons.js"></script>
     <script src="../../actions/script.js"></script>
 </body>
