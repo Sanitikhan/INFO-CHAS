@@ -265,7 +265,6 @@ $livreurs = $stmt->fetchAll();
                     <option value="livree">Livrée</option>
                     <option value="probleme">Problème</option>
                 </select>
-                <label for="transporteur">Transporteur :</label>
                 <select name="livreur_id" id="livreur_id" required>
                     <option value="">Sélectionner un livreur</option>
                     <?php foreach ($livreurs as $livreur): ?>
