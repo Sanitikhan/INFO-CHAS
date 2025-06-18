@@ -194,7 +194,7 @@ try {
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-                        <option value="name">Nom</option>
+                        <option value="name">Référence</option>
                         <option value="quantity">Quantité</option>
                         <option value="etat">État</option>
                         <option value="fournisseur">Fournisseur</option>
@@ -373,8 +373,68 @@ try {
     });
     </script>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sortSelect = document.getElementById('sort-select');
+        const table = document.getElementById('lots-table');
+        const tbody = table.querySelector('tbody');
+
+        // Map sort type to column index
+        const colIndexes = {
+            name: 0,        // Référence
+            quantity: 2,    // Quantité
+            etat: 4,        // État
+            fournisseur: null // Not shown in main row, so we'll use data attribute
+        };
+
+        sortSelect.addEventListener('change', function() {
+            const sortType = this.value;
+            const rows = Array.from(tbody.querySelectorAll('.main-row'));
+
+            rows.sort((a, b) => {
+                let valA, valB;
+                switch (sortType) {
+                    case 'name':
+                        valA = a.cells[colIndexes.name].textContent.trim().toLowerCase();
+                        valB = b.cells[colIndexes.name].textContent.trim().toLowerCase();
+                        return valA.localeCompare(valB, undefined, {numeric: true});
+                    case 'quantity':
+                        valA = parseInt(a.cells[colIndexes.quantity].textContent.trim(), 10) || 0;
+                        valB = parseInt(b.cells[colIndexes.quantity].textContent.trim(), 10) || 0;
+                        return valA - valB;
+                    case 'etat':
+                        valA = a.dataset.etat.toLowerCase();
+                        valB = b.dataset.etat.toLowerCase();
+                        return valA.localeCompare(valB);
+                    case 'fournisseur':
+                        valA = a.dataset.fournisseur_id;
+                        valB = b.dataset.fournisseur_id;
+                        return valA.localeCompare(valB, undefined, {numeric: true});
+                    default:
+                        return 0;
+                }
+            });
+
+            // Remove all rows (and their details rows)
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+
+            // Re-add sorted rows and their details rows
+            rows.forEach(row => {
+                const detailsRow = row.nextElementSibling && row.nextElementSibling.classList.contains('details-row')
+                    ? row.nextElementSibling
+                    : null;
+                tbody.appendChild(row);
+                if (detailsRow) {
+                    tbody.appendChild(detailsRow);
+                }
+            });
+        });
+    });
+    </script>
+
     <script src="../../actions/search.js"></script>
     <script src="../../actions/script.js"></script>
-    <script src="../../actions/sort.js"></script>
 </body>
 </html>
