@@ -9,16 +9,35 @@ $lots = $stmt->fetchAll();
 // Handle add to cart
 if (isset($_POST['add_to_cart'])) {
     $lot_id = $_POST['lot_id'];
-    // Initialize cart if not set
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
+    $quantity = max(1, intval($_POST['quantity']));
+    // Fetch the lot to get its fournisseur_id
+    $stmt = $pdo->prepare("SELECT fournisseur_id FROM lots WHERE id = ?");
+    $stmt->execute([$lot_id]);
+    $lot = $stmt->fetch();
+    if ($lot) {
+        $fournisseur_id = $lot['fournisseur_id'];
+        if (!isset($_SESSION['cart'])) {
+            $_SESSION['cart'] = [];
+        }
+        // Group by fournisseur, then by lot
+        if (!isset($_SESSION['cart'][$fournisseur_id])) {
+            $_SESSION['cart'][$fournisseur_id] = [];
+        }
+        $_SESSION['cart'][$fournisseur_id][$lot_id] = $quantity;
     }
-    // Add lot to cart (you can add quantity logic if needed)
-    $_SESSION['cart'][] = $lot_id;
-    // Optional: Redirect to avoid resubmission
     header('Location: reapprovisionnement.php');
     exit();
 }
+
+// Fetch all lots with fournisseur name
+$stmt = $pdo->query("
+    SELECT lots.*, fournisseurs.nom AS fournisseur_nom
+    FROM lots
+    LEFT JOIN fournisseurs ON lots.fournisseur_id = fournisseurs.id
+");
+$lots = $stmt->fetchAll();
+
+$cart = $_SESSION['cart'] ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -29,6 +48,7 @@ if (isset($_POST['add_to_cart'])) {
     <title>Réapprovisionnement</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/reapprovisionnement.css">
+    <link rel="stylesheet" href="../../public/cart.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -194,16 +214,21 @@ if (isset($_POST['add_to_cart'])) {
 
         <section class="btn-section">
             <input type="text" id="search-lot-input" placeholder="Rechercher un lot..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <?php if (
-                (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
-                (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
-            ): ?>
-                <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
-            <?php endif; ?>
+            <div class="btn-section-right">
+                <?php if (
+                    (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
+                    (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
+                ): ?>
+                    <div style="text-align:center;">
+                        <button class="btn" id="open-cart-modal">Voir mon panier</button>
+                    </div>
+                    <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
+                <?php endif; ?>
+            </div>
         </section>
 
     <section class="content">
-
+        
     <table>
         <thead>
             <tr>
@@ -222,13 +247,14 @@ if (isset($_POST['add_to_cart'])) {
                     <td><?= htmlspecialchars($lot['type']) ?></td>
                     <td><?= htmlspecialchars($lot['quantite_total']) ?></td>
                     <td><?= htmlspecialchars($lot['disponibilite']) ?></td>
-                    <td><?= htmlspecialchars($lot['fournisseur_id']) ?></td>
+                    <td><?= htmlspecialchars($lot['fournisseur_nom']) ?></td>
                     <td>
                         <form method="post" style="margin:0;">
                             <input type="hidden" name="lot_id" value="<?= $lot['id'] ?>">
+                            <input type="number" name="quantity" value="1" min="1" style="width:60px;" required>
                             <button type="submit" name="add_to_cart" class="btn"
-                                <?php if (isset($_SESSION['cart']) && in_array($lot['id'], $_SESSION['cart'])) echo 'disabled'; ?>>
-                                <?= (isset($_SESSION['cart']) && in_array($lot['id'], $_SESSION['cart'])) ? 'Ajouté' : 'Ajouter au panier' ?>
+                                <?php if (isset($_SESSION['cart']) && array_key_exists($lot['id'], $_SESSION['cart'])) echo 'disabled'; ?>>
+                                <?= (isset($_SESSION['cart']) && array_key_exists($lot['id'], $_SESSION['cart'])) ? 'Ajouté' : 'Ajouter au panier' ?>
                             </button>
                         </form>
                     </td>
@@ -236,14 +262,75 @@ if (isset($_POST['add_to_cart'])) {
             <?php endforeach; ?>
         </tbody>
     </table>
-    <div style="text-align:center; margin-top:2em;">
-        <a href="cart.php" class="btn">Voir mon panier</a>
-    </div>
     </section>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" id="close-cart-modal">&times;</span>
+            <h2>Mon Panier</h2>
+            <?php
+            $cart = $_SESSION['cart'] ?? [];
+            if (empty($cart)): ?>
+                <p>Votre panier est vide.</p>
+            <?php else: ?>
+                <?php foreach ($cart as $fournisseur_id => $lots): ?>
+                    <h3>
+                        Fournisseur: 
+                        <?php
+                        $stmt = $pdo->prepare("SELECT nom FROM fournisseurs WHERE id = ?");
+                        $stmt->execute([$fournisseur_id]);
+                        echo htmlspecialchars($stmt->fetchColumn());
+                        ?>
+                    </h3>
+                    <ul>
+                        <?php if (is_array($lots)): ?>
+                            <?php foreach ($lots as $lot_id => $quantity): ?>
+                                <li>
+                                    <?php
+                                    $stmt = $pdo->prepare("SELECT reference, type FROM lots WHERE id = ?");
+                                    $stmt->execute([$lot_id]);
+                                    $lot = $stmt->fetch();
+                                    ?>
+                                    <?= htmlspecialchars($lot['reference']) ?> (<?= htmlspecialchars($lot['type']) ?>) - <strong>Quantité : <?= $quantity ?></strong>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </ul>
+                <?php endforeach; ?>
+                <form method="post">
+                    <button type="submit" name="place_order" class="btn">Passer la commande</button>
+                </form>
+            <?php endif; ?>
+        </div>
+    </div>
 
 
 
     <script src="../../actions/search.js"></script>
     <script src="../../actions/script.js"></script>
+    <script>
+        document.getElementById('open-cart-modal').onclick = function() {
+            document.getElementById('cart-modal').style.display = 'block';
+        };
+        document.getElementById('close-cart-modal').onclick = function() {
+            document.getElementById('cart-modal').style.display = 'none';
+        };
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('cart-modal')) {
+                document.getElementById('cart-modal').style.display = 'none';
+            }
+        };
+</script>
 </body>
 </html>
+
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
+    // Place your order logic here (insert into commandes, etc.)
+    unset($_SESSION['cart']);
+    $_SESSION['flash_message'] = "Commande passée avec succès !";
+    header('Location: reapprovisionnement.php');
+    exit();
+}
+?>
