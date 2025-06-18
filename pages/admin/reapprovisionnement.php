@@ -361,6 +361,16 @@ $cart = $_SESSION['cart'] ?? [];
                 document.getElementById('cart-modal').style.display = 'none';
             }
         };
+
+    /* Search 'lot' */
+    document.getElementById('search-lot-input').addEventListener('input', function() {
+        const search = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#lots-table tbody tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(search) ? '' : 'none';
+        });
+        });
 </script>
 </body>
 </html>
