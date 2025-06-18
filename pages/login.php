@@ -19,6 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // After successful authentication
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
+            $_SESSION['username'] = $user['username'];
 
             // Redirect all users to the admin dashboard
             header('Location: admin/dashboard.php');
