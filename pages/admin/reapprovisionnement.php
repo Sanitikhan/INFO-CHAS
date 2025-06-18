@@ -224,12 +224,21 @@ $cart = $_SESSION['cart'] ?? [];
                     </div>
                     <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
                 <?php endif; ?>
+                <div class="sort-dropdown" style="display:inline-block;">
+                    <label for="sort-select" style="margin-right:8px;">Trier par :</label>
+                    <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                        <option value="name">Référence</option>
+                        <option value="quantity">Quantité</option>
+                        <option value="type">Type</option>
+                        <option value="fournisseur">Fournisseur</option>
+                    </select>
+                </div>
             </div>
         </section>
 
     <section class="content">
         
-    <table>
+    <table id="lots-table">
         <thead>
             <tr>
                 <th>Référence</th>
@@ -306,10 +315,41 @@ $cart = $_SESSION['cart'] ?? [];
     </div>
 
 
-
-    <script src="../../actions/search.js"></script>
     <script src="../../actions/script.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sortSelect = document.getElementById('sort-select');
+            const table = document.getElementById('lots-table');
+            const tbody = table.querySelector('tbody');
+
+            // Map sort type to column index
+            const colIndexes = {
+                name: 0,        // Référence
+                type: 1,        // Type
+                quantity: 2,    // Quantité
+                fournisseur: 4  // Fournisseur (adjust if needed)
+            };
+
+            sortSelect.addEventListener('change', function() {
+                const sortType = this.value;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                rows.sort((a, b) => {
+                    let valA = a.cells[colIndexes[sortType]].textContent.trim().toLowerCase();
+                    let valB = b.cells[colIndexes[sortType]].textContent.trim().toLowerCase();
+
+                    if (sortType === 'quantity') {
+                        return (parseInt(valA, 10) || 0) - (parseInt(valB, 10) || 0);
+                    }
+                    return valA.localeCompare(valB, undefined, {numeric: true});
+                });
+
+                // Remove and re-add sorted rows
+                while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+
         document.getElementById('open-cart-modal').onclick = function() {
             document.getElementById('cart-modal').style.display = 'block';
         };
