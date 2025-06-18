@@ -33,6 +33,18 @@ $stmt = $pdo->query("
     LEFT JOIN users u ON l.livreur_id = u.id
 ");
 $livraisons = $stmt->fetchAll();
+
+// Fetch fournisseurs from the database
+$stmt = $pdo->query("SELECT id, nom FROM fournisseurs");
+$fournisseurs = $stmt->fetchAll();
+
+// Fetch all users with role 'transporteur'
+$stmt = $pdo->query("SELECT id, username FROM users WHERE role = 'transporteur'");
+$transporteurs = $stmt->fetchAll();
+
+// Fetch all livreurs
+$stmt = $pdo->query("SELECT id, username FROM users WHERE role = 'livreur'");
+$livreurs = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -238,7 +250,14 @@ $livraisons = $stmt->fetchAll();
         <div class="form-section" id="add-livraisons-form-section" style="display:none;">
             <form action="../../actions/ajouter_livraisons.php" method="POST">
                 <input name="numero_livraison" placeholder="Numéro de livraison" required>
-                <input name="fournisseur_id" placeholder="Fournisseur" required>
+                <select name="fournisseur_id" id="fournisseur_id" required>
+                    <option value="">Sélectionner un fournisseur</option>
+                    <?php foreach ($fournisseurs as $fournisseur): ?>
+                        <option value="<?= $fournisseur['id'] ?>">
+                            <?= htmlspecialchars($fournisseur['nom']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
                 <input name="date_prevue" type="date" placeholder="Date prévue" required>
                 <select name="statut" required>
                     <option value="en_attente">En attente</option>
@@ -246,7 +265,15 @@ $livraisons = $stmt->fetchAll();
                     <option value="livree">Livrée</option>
                     <option value="probleme">Problème</option>
                 </select>
-                <input type="text" name="transporteur" placeholder="Transporteur" required>
+                <label for="transporteur">Transporteur :</label>
+                <select name="livreur_id" id="livreur_id" required>
+                    <option value="">Sélectionner un livreur</option>
+                    <?php foreach ($livreurs as $livreur): ?>
+                        <option value="<?= $livreur['id'] ?>">
+                            <?= htmlspecialchars($livreur['username']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
                 <input type="texte" name="notes" placeholder="Notes">
                 <button type="submit">Ajouter la livraison</button>
             </form>
