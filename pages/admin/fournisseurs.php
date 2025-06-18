@@ -184,7 +184,9 @@ try {
 
         <section class="btn-section">
             <input type="text" id="search-fournisseur-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="btn btn-add" id="add-fournisseur-btn">Ajouter un fournisseur</button>
+            <div class="btn-section-right">
+                <button class="btn btn-add" id="add-fournisseur-btn">Ajouter un fournisseur</button>
+            </div>
         </section>
 
         <div class="form-section" id="add-fournisseur-form-section" style="display:none;">
@@ -201,7 +203,6 @@ try {
         <table id="fournisseurs-table" border="1" cellpadding="5">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nom</th>
                     <th>Email</th>
                     <th>Téléphone</th>
@@ -210,7 +211,6 @@ try {
             <tbody>
                 <?php foreach ($fournisseurs as $fournisseur): ?>
                 <tr>
-                    <td><?= htmlspecialchars($fournisseur['id']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['nom']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['email']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['telephone']) ?></td>
@@ -270,6 +270,12 @@ try {
     const formSection = document.getElementById('add-fournisseur-form-section');
     formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const sortSelect = document.getElementById('sort-select');
+    const table = document.getElementById('fournisseurs-table');
+    const tbody = table.querySelector('tbody');
+
     </script>
     <script src="../../actions/script.js"></script>
     <script src="../../actions/modal.js"></script>

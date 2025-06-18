@@ -11,6 +11,12 @@
     align-items: center;
 }
 
+.btn-section-right {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
 .btn {
     background-color: var(--primary-color);
     border: none;
