@@ -132,7 +132,7 @@ $livraisons_livree = $stmt->fetchColumn();
                             <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
                         </li>
                         <li class="nav-item">
-                            <a href="alertes.php" class="nav-link dropdown-link">Mes alertes</a>
+                            <a href="alertes.php" class="nav-link dropdown-link">Alertes</a>
                         </li>
                         <li class="nav-item">
                             <a href="fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
