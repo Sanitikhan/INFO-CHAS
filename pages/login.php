@@ -16,36 +16,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Vérification du mot de passe
         if (password_verify($password, $user['password'])) {
+            // After successful authentication
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
-            
-            switch ($_SESSION['role']) {
-                case 'admin':
-                    header('Location: admin/dashboard.php');
-                    break;
-                case 'commercial':
-                    header('Location: commercial/dashboard.php');
-                    break;
-                case 'gestionnaire de stock':
-                    header('Location: gds/dashboard.php');
-                    break;
-                case 'gestionnaire de livraison':
-                    header('Location: gdl/dashboard.php');
-                    break;
-                case 'magasinier':
-                    header('Location: magasinier/dashboard.php');
-                    break;
-                case 'livreur':
-                    header('Location: livreur/dashboard.php');
-                    break;
-                case 'fournisseur':
-                    header('Location: fournisseur/dashboard.php');
-                    break;
-                default:
-                    header('Location: login.php');
-            }
+
+            // Redirect all users to the admin dashboard
+            header('Location: admin/dashboard.php');
             exit();
         } else {
             echo "<p style='color:red'>Mot de passe incorrect.</p>";
