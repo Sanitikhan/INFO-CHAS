@@ -187,7 +187,7 @@ if (isset($_SESSION['user_id'])) {
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="logout.php" class="nav-link">
+                    <a href="../logout.php" class="nav-link">
                         <span class="material-symbols-rounded">power_settings_new</span>
                         <span class="nav-label">Déconnexion</span>
                     </a>
