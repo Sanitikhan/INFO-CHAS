@@ -426,7 +426,11 @@ if (isset($_GET['details'])) {
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de livraison'): ?>
                                     <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
                                     <button class="btn btn-attribuer" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">Attribuer</button>
-                                    <button class="btn" style="padding: 5px 10px;">Confirmer Livraison</button>
+                                    <?php if ($livraison['statut'] !== 'livrée'): ?>
+                                        <button class="btn btn-confirmer-livraison" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">
+                                            Confirmer Livraison
+                                        </button>
+                                <?php endif; ?>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de stock'): ?>
                                     <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
                                     <button class="btn" style="padding: 5px 10px;">Mettre à jour Stock</button>
@@ -716,6 +720,26 @@ if (isset($_GET['details'])) {
         .then(response => response.text())
         .then(result => {
             window.location.reload();
+        });
+    });
+
+    // Confirm Livraison for gestionnaire de livraison
+    document.querySelectorAll('.btn-confirmer-livraison').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const livraisonId = this.dataset.id;
+            if (!livraisonId) return;
+            if (!confirm('Confirmer que cette livraison est livrée ?')) return;
+
+            fetch('../../actions/confirmer_livraison.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'livraison_id=' + encodeURIComponent(livraisonId)
+            })
+            .then(response => response.text())
+            .then(result => {
+                window.location.reload();
+            })
+            .catch(() => alert('Erreur lors de la confirmation.'));
         });
     });
 
