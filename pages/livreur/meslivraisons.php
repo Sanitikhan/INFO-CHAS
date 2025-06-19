@@ -58,7 +58,7 @@ $livraisons = $stmt->fetchAll();
             <!-- Primary Top Nav -->
             <ul class="nav-list primary-nav">
                 <li class="nav-item">
-                    <a href="dashboard.php" class="nav-link">
+                    <a href="../admin/dashboard.php" class="nav-link">
                         <span class="material-symbols-rounded">dashboard</span>
                         <span class="nav-label">Tableau de bord</span>
                     </a>
