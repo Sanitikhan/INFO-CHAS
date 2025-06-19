@@ -45,6 +45,80 @@ $transporteurs = $stmt->fetchAll();
 // Fetch all livreurs
 $stmt = $pdo->query("SELECT id, username FROM users WHERE role = 'livreur'");
 $livreurs = $stmt->fetchAll();
+
+$detailsHtml = '';
+if (isset($_GET['details'])) {
+    $livraison_id = intval($_GET['details']);
+
+    // Fetch livraison info
+    $stmt = $pdo->prepare("
+        SELECT l.*, 
+            u.username AS livreur_nom, 
+            f.nom AS fournisseur_nom,
+            uc.username AS createur_username
+        FROM livraisons l
+        LEFT JOIN users u ON l.livreur_id = u.id
+        LEFT JOIN fournisseurs f ON l.fournisseur_id = f.id
+        LEFT JOIN users uc ON l.created_by = uc.id
+        WHERE l.id = ?
+    ");
+    $stmt->execute([$livraison_id]);
+    $livraison = $stmt->fetch();
+
+    // Fetch livraison details
+    /*$stmt = $pdo->prepare("
+        SELECT ld.*, lots.reference, lots.type
+        FROM livraisons_details ld
+        LEFT JOIN lots ON ld.lot_id = lots.id
+        WHERE ld.livraison_id = ?
+    ");
+    $stmt->execute([$livraison_id]);
+    $details = $stmt->fetchAll();*/
+
+    ob_start();
+    if ($livraison) {
+        ?>
+        <h2>Livraison #<?= htmlspecialchars($livraison['numero_livraison']) ?></h2>
+        <p><strong>Fournisseur:</strong> <?= htmlspecialchars($livraison['fournisseur_nom']) ?></p>
+        <p><strong>Date prévue:</strong> <?= htmlspecialchars($livraison['date_prevue']) ?></p>
+        <p><strong>Statut:</strong>
+            <span class="statut-badge statut-<?= htmlspecialchars($livraison['statut']) ?>">
+                <?= ucfirst(str_replace('_', ' ', $livraison['statut'])) ?>
+            </span>
+        </p>
+        <p><strong>Livreur:</strong> <?= htmlspecialchars($livraison['livreur_nom']) ?></p>
+        <p><strong>Notes:</strong> <?= htmlspecialchars($livraison['notes'] ?? '-') ?></p>
+        <p><strong>Créé par:</strong> <?= htmlspecialchars($livraison['createur_username']) ?></p>
+        <p><strong>Date de création:</strong> <?= htmlspecialchars(date('d/m/Y H:i', strtotime($livraison['created_at']))) ?></p>
+        <!--<h3>Détails des lots</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Référence lot</th>
+                    <th>Type</th>
+                    <th>Quantité attendue</th>
+                    <th>Quantité reçue</th>
+                    <th>Commentaire</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($details as $d): ?>
+                <tr>
+                    <td><?= htmlspecialchars($d['reference']) ?></td>
+                    <td><?= htmlspecialchars($d['type']) ?></td>
+                    <td><?= htmlspecialchars($d['quantite_attendue']) ?></td>
+                    <td><?= htmlspecialchars($d['quantite_recue']) ?></td>
+                    <td><?= htmlspecialchars($d['commentaire']) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>-->
+        <?php
+    } else {
+        echo "<p>Aucune information trouvée pour cette livraison.</p>";
+    }
+    $detailsHtml = ob_get_clean();
+}
 ?>
 
 <!DOCTYPE html>
@@ -322,7 +396,7 @@ $livreurs = $stmt->fetchAll();
                             <td class="actions">
                                 
                                 <?php if ($_SESSION['role'] === 'admin'): ?>
-                                    <button class="btn">Voir</button>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
                                     <button class="btn">Modifier</button>
                                     <button class="btn">Supprimer</button>
                                 <?php elseif ($_SESSION['role'] === 'livreur'): ?>
@@ -345,11 +419,11 @@ $livreurs = $stmt->fetchAll();
         </table>
 
         <!-- Modal détails -->
-        <div id="modal-details" class="modal" style="display: none;">
+        <div id="modal-details" class="modal" style="display: <?= !empty($detailsHtml) ? 'block' : 'none' ?>;">
             <div class="modal-content">
                 <span class="close" onclick="fermerModal()">&times;</span>
                 <div id="details-content">
-                    <!-- Contenu chargé dynamiquement -->
+                    <?= $detailsHtml ?>
                 </div>
             </div>
         </div>
@@ -445,6 +519,18 @@ $livreurs = $stmt->fetchAll();
         row.style.display = text.includes(search) ? '' : 'none';
     });
     });
+
+    // Modal close function
+    function fermerModal() {
+        document.getElementById('modal-details').style.display = 'none';
+        // Remove ?details=... from URL without reloading
+        if (window.history.replaceState) {
+            const url = new URL(window.location);
+            url.searchParams.delete('details');
+            window.history.replaceState({}, document.title, url.pathname + url.search);
+        }
+    }
+
     </script>
     <script src="../../actions/livraisons.js"></script>
     <script src="../../actions/script.js"></script>

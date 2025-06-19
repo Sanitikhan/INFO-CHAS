@@ -128,6 +128,7 @@
 }
 
 .statut-attendue {
+    border: 1px solid #000;
     background-color: #ffeaa7;
     color: #d63031;
 }
