@@ -21,6 +21,7 @@ try {
     <link rel="stylesheet" href="../../public/modal.css">
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/fournisseurs.css">
+    <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="stylesheet" href="../../public/flashmessage.css">
     <title>Paramètres</title>
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
@@ -232,6 +233,7 @@ try {
                     <th>Nom</th>
                     <th>Email</th>
                     <th>Téléphone</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -240,12 +242,25 @@ try {
                     <td><?= htmlspecialchars($fournisseur['nom']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['email']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['telephone']) ?></td>
+                    <td>
+                        <button class="btn btn-delete-fournisseur" data-id="<?= $fournisseur['id'] ?>">Supprimer</button>
+                    </td>
                 </tr>
             </tbody>
             <?php endforeach; ?>
         </table>
 
     </section>
+
+    <div id="modal-supprimer-fournisseur" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="fermerSupprimerFournisseurModal()">&times;</span>
+            <h2>Confirmer la suppression</h2>
+            <p>Voulez-vous vraiment supprimer ce fournisseur ?</p>
+            <button id="btn-confirm-supprimer-fournisseur" class="btn btn-confirm-delete">Oui, supprimer</button>
+            <button type="button" class="btn" onclick="fermerSupprimerFournisseurModal()">Annuler</button>
+        </div>
+    </div>
 
     
 
@@ -294,6 +309,36 @@ try {
             }, 4000);
         }
     });
+
+
+    let fournisseurToDelete = null;
+
+    document.querySelectorAll('.btn-delete-fournisseur').forEach(btn => {
+        btn.addEventListener('click', function() {
+            fournisseurToDelete = this.dataset.id;
+            document.getElementById('modal-supprimer-fournisseur').style.display = 'block';
+        });
+    });
+
+    document.getElementById('btn-confirm-supprimer-fournisseur').addEventListener('click', function() {
+        if (!fournisseurToDelete) return;
+        fetch('../../actions/supprimer_fournisseur.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'id=' + encodeURIComponent(fournisseurToDelete)
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Erreur lors de la suppression.');
+            }
+        });
+    });
+
+    function fermerSupprimerFournisseurModal() {
+        document.getElementById('modal-supprimer-fournisseur').style.display = 'none';
+    }
 
     </script>
     <script src="../../actions/script.js"></script>
