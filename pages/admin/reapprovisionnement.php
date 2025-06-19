@@ -38,6 +38,38 @@ $stmt = $pdo->query("
 $lots = $stmt->fetchAll();
 
 $cart = $_SESSION['cart'] ?? [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
+    if (!empty($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $fournisseur_id => $lots) {
+            // 1. Create a new commande for this fournisseur
+            $reference = 'CMD-' . strtoupper(uniqid());
+            $date_commande = date('Y-m-d');
+            $etat = 'en-attente';
+
+            $stmt = $pdo->prepare("INSERT INTO commandes (reference, preparateur, livreur, date_commande, date_livraison, etat) VALUES (?, NULL, NULL, ?, NULL, ?)");
+            $stmt->execute([$reference, $date_commande, $etat]);
+            $commande_id = $pdo->lastInsertId();
+
+            // 2. For each lot in this commande, create a commande_lots entry
+            foreach ($lots as $lot_id => $quantity) {
+                $stmt = $pdo->prepare("INSERT INTO commande_lots (commande_id, lot_id, quantite, etat, lieu_stock) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([
+                    $commande_id,
+                    $lot_id,
+                    $quantity,
+                    'en-attente', // or another default status
+                    null          // or set a default location if needed
+                ]);
+            }
+        }
+        unset($_SESSION['cart']);
+        $_SESSION['flash_message'] = "Commande(s) passée(s) avec succès !";
+    }
+    header('Location: reapprovisionnement.php');
+    exit();
+}
+
 ?>
 
 <!DOCTYPE html>
