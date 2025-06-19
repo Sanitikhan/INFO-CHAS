@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($user) {
         // Affiche l'utilisateur pour déboguer
-        echo "<pre>"; print_r($user); echo "</pre>"; 
+        /*echo "<pre>"; print_r($user); echo "</pre>";*/
 
         // Vérification du mot de passe
         if (password_verify($password, $user['password'])) {
