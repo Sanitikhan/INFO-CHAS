@@ -13,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($reference) {
         $stmt = $pdo->prepare("INSERT INTO commandes (reference, preparateur, livreur, date_commande, date_livraison, etat) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$reference, $preparateur, $livreur, $date_commande, $date_livraison, $etat]);
+        $_SESSION['flash_message'] = "Commande ajoutée avec succès.";
+        $_SESSION['flash_type'] = "success";
     }
     header('Location: ../pages/admin/commandes.php');
     exit();

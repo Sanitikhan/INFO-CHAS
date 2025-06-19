@@ -13,8 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $stmt = $pdo->prepare("DELETE FROM livraisons WHERE id = ?");
     $stmt->execute([$id]);
 
-    // Optionally log activity...
-
+    $_SESSION['flash_message'] = "Livraison supprimée avec succès.";
+    $_SESSION['flash_type'] = "error";
     http_response_code(200);
     exit();
 } else {

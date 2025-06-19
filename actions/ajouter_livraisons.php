@@ -15,20 +15,18 @@ if (
                 date_prevue,
                 date_livraison,
                 statut,
-                transporteur,
                 notes,
                 created_by,
                 livreur_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         if ($stmt->execute([
             $_POST['numero_livraison'],      // numero_livraison
             $_POST['fournisseur_id'],        // fournisseur_id
             $_POST['date_prevue'],           // date_prevue
-            $_POST['date_livraison'],        // date_livraison
+            $_POST['date_livraison'] ?? null,        // date_livraison
             $_POST['statut'],                // statut
-            $livreur_id,                     // transporteur (store the ID)
             $_POST['notes'] ?? null,         // notes (optional)
             $_SESSION['user_id'] ?? null,    // created_by (from session)
             $livreur_id                       // livreur_id (associate with transporteur)

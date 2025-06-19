@@ -5,7 +5,7 @@
     transform: translateX(-50%);
     min-width: 240px;
     max-width: 400px;
-    background: #f44336;
+    background: #fff;
     color: #fff;
     padding: 12px 20px;
     border-radius: 8px;
@@ -18,4 +18,8 @@
 }
 .flash-error {
     background: #f44336;
+}
+
+.flash-success {
+    background: #4caf50;
 }

@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $stmt->execute([$id]);
 
     $_SESSION['flash_message'] = "Commande supprimée avec succès.";
+    $_SESSION['flash_type'] = "error";
     http_response_code(200);
     echo 'ok';
     exit();
