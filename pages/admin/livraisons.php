@@ -407,7 +407,7 @@ if (isset($_GET['details'])) {
                                     data-livreur="<?= $livraison['livreur_id'] ?>"
                                     data-notes="<?= htmlspecialchars($livraison['notes'] ?? '') ?>"
                                     >Modifier</a>
-                                    <button class="btn">Supprimer</button>
+                                    <button class="btn btn-delete" data-id="<?= $livraison['id'] ?>">Supprimer</button>
                                 <?php elseif ($_SESSION['role'] === 'livreur'): ?>
                                     <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
                                     <button class="btn">Confirmer Livraison</button>
@@ -489,6 +489,16 @@ if (isset($_GET['details'])) {
                     
                     <button type="submit">Enregistrer</button>
                 </form>
+            </div>
+        </div>
+
+        <div id="modal-supprimer" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" onclick="fermerSupprimerModal()">&times;</span>
+                <h2>Confirmer la suppression</h2>
+                <p>Voulez-vous vraiment supprimer cette livraison ?</p>
+                <button id="btn-confirm-supprimer" class="btn btn-confirm-delete">Oui, supprimer</button>
+                <button type="button" class="btn" onclick="fermerSupprimerModal()">Annuler</button>
             </div>
         </div>
 
@@ -595,6 +605,7 @@ if (isset($_GET['details'])) {
         }
     }
 
+    // Modal edit
     document.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -609,12 +620,48 @@ if (isset($_GET['details'])) {
         });
     });
 
+    // Modal delete
+    let livraisonToDelete = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Only attach to table delete buttons
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                livraisonToDelete = this.dataset.id;
+                document.getElementById('modal-supprimer').style.display = 'block';
+            });
+        });
+
+        // Attach event to the confirm button in the modal
+        const confirmBtn = document.getElementById('btn-confirm-supprimer');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                if (!livraisonToDelete) return;
+                fetch('../../actions/supprimer_livraison.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'id=' + encodeURIComponent(livraisonToDelete)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Erreur lors de la suppression.');
+                    }
+                });
+            });
+        }
+    });
+
+    function fermerSupprimerModal() {
+        document.getElementById('modal-supprimer').style.display = 'none';
+    }
+
     function fermerEditModal() {
         document.getElementById('modal-edit').style.display = 'none';
     }
 
     </script>
-    <script src="../../actions/livraisons.js"></script>
     <script src="../../actions/script.js"></script>
 </body>
 </html>
