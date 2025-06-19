@@ -320,10 +320,6 @@ $livreurs = $stmt->fetchAll();
                             
                             
                             <td class="actions">
-                                <button class="btn btn-sm btn-info" 
-                                        onclick="voirDetails(<?= $livraison['id'] ?>)">
-                                    Détails
-                                </button>
                                 
                                 <?php if ($_SESSION['role'] === 'admin'): ?>
                                     <button class="btn">Voir</button>
