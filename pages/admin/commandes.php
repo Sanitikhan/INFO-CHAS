@@ -88,11 +88,19 @@ if (isset($_GET['details'])) {
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/stock.css">
     <link rel="stylesheet" href="../../public/livraisons.css">
+    <link rel="stylesheet" href="../../public/flashmessage.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
+    <?php if (isset($_SESSION['flash_message'])): ?>
+        <div class="flash-message" id="flash-message">
+            <?= htmlspecialchars($_SESSION['flash_message']) ?>
+        </div>
+        <?php unset($_SESSION['flash_message']); ?>
+    <?php endif; ?>
+
 <!-- Mobile Sidebar Menu Button -->
     <button class="sidebar-menu-button">
         <span class="material-symbols-rounded">menu</span>
@@ -414,6 +422,16 @@ if (isset($_GET['details'])) {
             </div>
         </div>
 
+        <div id="modal-supprimer-commande" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" onclick="fermerSupprimerCommandeModal()">&times;</span>
+                <h2>Confirmer la suppression</h2>
+                <p>Voulez-vous vraiment supprimer cette commande ?</p>
+                <button id="btn-confirm-supprimer-commande" class="btn btn-confirm-delete">Oui, supprimer</button>
+                <button type="button" class="btn" onclick="fermerSupprimerCommandeModal()">Annuler</button>
+            </div>
+        </div>
+
         
 
     </section>
@@ -544,6 +562,34 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+let commandeToDelete = null;
+
+document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', function() {
+        commandeToDelete = this.dataset.id;
+        document.getElementById('modal-supprimer-commande').style.display = 'block';
+    });
+});
+
+document.getElementById('btn-confirm-supprimer-commande').addEventListener('click', function() {
+    if (!commandeToDelete) return;
+    fetch('../../actions/supprimer_commande.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'id=' + encodeURIComponent(commandeToDelete)
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            alert('Erreur lors de la suppression.');
+        }
+    });
+});
+
+function fermerSupprimerCommandeModal() {
+    document.getElementById('modal-supprimer-commande').style.display = 'none';
+}
     </script>
 
     <script src="../../actions/search.js"></script>
