@@ -425,7 +425,7 @@ if (isset($_GET['details'])) {
                                     <button class="btn" style="padding: 5px 10px;">Confirmer Livraison</button>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de livraison'): ?>
                                     <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
-                                    <button class="btn" style="padding: 5px 10px;">Attribuer</button>
+                                    <button class="btn btn-attribuer" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">Attribuer</button>
                                     <button class="btn" style="padding: 5px 10px;">Confirmer Livraison</button>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de stock'): ?>
                                     <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
@@ -511,6 +511,24 @@ if (isset($_GET['details'])) {
                 <p>Voulez-vous vraiment supprimer cette livraison ?</p>
                 <button id="btn-confirm-supprimer" class="btn btn-confirm-delete">Oui, supprimer</button>
                 <button type="button" class="btn" onclick="fermerSupprimerModal()">Annuler</button>
+            </div>
+        </div>
+
+        <div id="modal-attribuer" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" onclick="fermerAttribuerModal()">&times;</span>
+                <h2>Attribuer un livreur</h2>
+                <form id="attribuer-form" method="POST" style="color: #fff;">
+                    <input type="hidden" name="livraison_id" id="attribuer-livraison-id">
+                    <label for="attribuer-livreur-id">Sélectionner un livreur :</label>
+                    <select name="livreur_id" id="attribuer-livreur-id" required>
+                        <option value="">Sélectionner</option>
+                        <?php foreach ($livreurs as $livreur): ?>
+                            <option value="<?= $livreur['id'] ?>"><?= htmlspecialchars($livreur['username']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="submit" class="btn btn-success" style="margin-top:10px;">Attribuer</button>
+                </form>
             </div>
         </div>
 
@@ -672,6 +690,34 @@ if (isset($_GET['details'])) {
     function fermerEditModal() {
         document.getElementById('modal-edit').style.display = 'none';
     }
+
+    // Open modal on "Attribuer" button click
+    document.querySelectorAll('.btn-attribuer').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('attribuer-livraison-id').value = this.dataset.id;
+            document.getElementById('modal-attribuer').style.display = 'block';
+        });
+    });
+
+    function fermerAttribuerModal() {
+        document.getElementById('modal-attribuer').style.display = 'none';
+    }
+
+    // Handle form submit via AJAX
+    document.getElementById('attribuer-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const livraisonId = document.getElementById('attribuer-livraison-id').value;
+        const livreurId = document.getElementById('attribuer-livreur-id').value;
+        fetch('../../actions/attribuer_livreur.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'livraison_id=' + encodeURIComponent(livraisonId) + '&livreur_id=' + encodeURIComponent(livreurId)
+        })
+        .then(response => response.text())
+        .then(result => {
+            window.location.reload();
+        });
+    });
 
     </script>
     <script src="../../actions/script.js"></script>
