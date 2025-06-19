@@ -14,6 +14,68 @@ try {
 $stmt = $pdo->prepare("SELECT id, username FROM users WHERE role = 'livreur'");
 $stmt->execute();
 $livreurs = $stmt->fetchAll();
+
+$detailsHtml = '';
+if (isset($_GET['details'])) {
+    $commande_id = intval($_GET['details']);
+
+    // Fetch commande info
+    $stmt = $pdo->prepare("SELECT * FROM commandes WHERE id = ?");
+    $stmt->execute([$commande_id]);
+    $commande = $stmt->fetch();
+
+    // Fetch lots for this commande
+    $stmt = $pdo->prepare("
+        SELECT cl.*, l.reference, l.type
+        FROM commande_lots cl
+        LEFT JOIN lots l ON cl.lot_id = l.id
+        WHERE cl.commande_id = ?
+    ");
+    $stmt->execute([$commande_id]);
+    $lots = $stmt->fetchAll();
+
+    ob_start();
+    if ($commande) {
+        ?>
+        <h2>Commande #<?= htmlspecialchars($commande['reference']) ?></h2>
+        <p><strong>Préparateur :</strong> <?= htmlspecialchars($commande['preparateur']) ?></p>
+        <p><strong>Livreur :</strong> <?= htmlspecialchars($commande['livreur']) ?></p>
+        <p><strong>Date commande :</strong> <?= htmlspecialchars($commande['date_commande']) ?></p>
+        <p><strong>Date livraison :</strong> <?= htmlspecialchars($commande['date_livraison']) ?></p>
+        <p><strong>État :</strong>
+            <span class="statut-badge statut-<?= htmlspecialchars($commande['etat']) ?>">
+                <?= ucfirst(str_replace('_', ' ', $commande['etat'])) ?>
+            </span>
+        </p>
+        <h3>Lots commandés</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Référence lot</th>
+                    <th>Type</th>
+                    <th>Quantité</th>
+                    <th>État</th>
+                    <th>Lieu stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($lots as $lot): ?>
+                <tr>
+                    <td><?= htmlspecialchars($lot['reference']) ?></td>
+                    <td><?= htmlspecialchars($lot['type']) ?></td>
+                    <td><?= htmlspecialchars($lot['quantite']) ?></td>
+                    <td><?= htmlspecialchars($lot['etat']) ?></td>
+                    <td><?= htmlspecialchars($lot['lieu_stock']) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
+    } else {
+        echo "<p>Aucune information trouvée pour cette commande.</p>";
+    }
+    $detailsHtml = ob_get_clean();
+}
 ?>
 
 <!DOCTYPE html>
@@ -269,7 +331,7 @@ $livreurs = $stmt->fetchAll();
                         <td><?= htmlspecialchars($commande['date_livraison']) ?></td>
                         <td><?= htmlspecialchars($commande['etat']) ?></td>
                         <td>
-                            <button class="btn btn-view" data-id="<?= $commande['id'] ?>">Voir</button>
+                            <a href="?details=<?= $commande['id'] ?>" class="btn btn-view">Voir</a>
                             <button class="btn btn-edit" data-id="<?= $commande['id'] ?>">Modifier</button>
                             <button class="btn btn-delete" data-id="<?= $commande['id'] ?>">Supprimer</button>
                         </td>
@@ -277,6 +339,15 @@ $livreurs = $stmt->fetchAll();
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <div id="modal-details" class="modal" style="display: <?= !empty($detailsHtml) ? 'block' : 'none' ?>;">
+            <div class="modal-content">
+                <span class="close" onclick="fermerModal()">&times;</span>
+                <div id="details-content">
+                    <?= $detailsHtml ?>
+                </div>
+            </div>
+        </div>
 
         
 
@@ -373,6 +444,17 @@ $livreurs = $stmt->fetchAll();
             });
         });
     });
+
+    function fermerModal() {
+    document.getElementById('modal-details').style.display = 'none';
+    // Remove ?details=... from URL without reloading
+    if (window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('details');
+        window.history.replaceState({}, document.title, url.pathname + url.search);
+    }
+}
+
     </script>
 
     <script src="../../actions/search.js"></script>
