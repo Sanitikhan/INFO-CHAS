@@ -207,44 +207,60 @@ $livraisons = $stmt->fetchAll();
         <header class="header">
             <h1>MES LIVRAISONS</h1>
         </header>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>N° Livraison</th>
-                <th>Fournisseur</th>
-                <th>Date prévue</th>
-                <th>Statut</th>
-                <th>Actions</th> 
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($livraisons as $livraison): ?>
+
+        <section class="btn-section">
+            <input type="text" id="search-livraison-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <div class="btn-section-right">
+                <div class="sort-dropdown" style="display:inline-block;">
+                    <label for="sort-select" style="margin-right:8px;">Trier par :</label>
+                    <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                        <option value="numero">Numéro</option>
+                        <option value="fournisseur">Fournisseur</option>
+                        <option value="date_prevue">Date prévue</option>
+                        <option value="statut">Statut</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <table border="1">
+            <thead>
                 <tr>
-                    <td><?= htmlspecialchars($livraison['numero_livraison']) ?></td>
-                    <td><?= htmlspecialchars($livraison['fournisseur_nom']) ?></td>
-                    <td><?= htmlspecialchars($livraison['date_prevue']) ?></td>
-                    <td>
-                        <span class="statut-badge statut-<?= $livraison['statut'] ?>">
-                            <?= ucfirst(str_replace('_', ' ', $livraison['statut'])) ?>
-                        </span>
-                    </td>
-                    <td>
-                        <?php if ($livraison['statut'] !== 'livrée'): ?>
-                            <button
-                                class="btn btn-success btn-marquer-livree"
-                                data-id="<?= $livraison['id'] ?>"
-                                style="padding: 5px 10px;">
-                                Marquer comme livrée
-                            </button>
-                        <?php endif; ?>
-                    </td>
+                    <th>N° Livraison</th>
+                    <th>Fournisseur</th>
+                    <th>Date prévue</th>
+                    <th>Statut</th>
+                    <th>Actions</th> 
                 </tr>
-            <?php endforeach; ?>
-            <?php if (empty($livraisons)): ?>
-                <tr><td colspan="4">Aucune livraison assignée.</td></tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($livraisons as $livraison): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($livraison['numero_livraison']) ?></td>
+                        <td><?= htmlspecialchars($livraison['fournisseur_nom']) ?></td>
+                        <td><?= htmlspecialchars($livraison['date_prevue']) ?></td>
+                        <td>
+                            <span class="statut-badge statut-<?= $livraison['statut'] ?>">
+                                <?= ucfirst(str_replace('_', ' ', $livraison['statut'])) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <?php if ($livraison['statut'] !== 'livrée'): ?>
+                                <button
+                                    class="btn btn-success btn-marquer-livree"
+                                    data-id="<?= $livraison['id'] ?>"
+                                    style="padding: 5px 10px;">
+                                    Marquer comme livrée
+                                </button>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if (empty($livraisons)): ?>
+                    <tr><td colspan="4">Aucune livraison assignée.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
 
     <script>
         document.querySelectorAll('.btn-marquer-livree').forEach(btn => {
@@ -263,6 +279,72 @@ $livraisons = $stmt->fetchAll();
                     window.location.reload();
                 })
                 .catch(() => alert('Erreur lors de la mise à jour.'));
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const sortSelect = document.getElementById('sort-select');
+            const table = document.querySelector('table');
+            const tbody = table.querySelector('tbody');
+
+            sortSelect.addEventListener('change', function() {
+                const sortType = this.value;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                // Column indexes: 0: Numéro, 1: Fournisseur, 2: Date prévue, 3: Statut
+                const colIndexes = {
+                    numero: 0,
+                    fournisseur: 1,
+                    date_prevue: 2,
+                    statut: 3
+                };
+
+                function getCellValue(row, idx) {
+                    return row.cells[idx] ? row.cells[idx].textContent.trim() : '';
+                }
+
+                rows.sort((a, b) => {
+                    let valA, valB;
+                    switch (sortType) {
+                        case 'numero':
+                            valA = getCellValue(a, colIndexes.numero);
+                            valB = getCellValue(b, colIndexes.numero);
+                            return valA.localeCompare(valB, undefined, {numeric: true});
+                        case 'fournisseur':
+                            valA = getCellValue(a, colIndexes.fournisseur).toLowerCase();
+                            valB = getCellValue(b, colIndexes.fournisseur).toLowerCase();
+                            return valA.localeCompare(valB, undefined, {numeric: true});
+                        case 'date_prevue':
+                            valA = getCellValue(a, colIndexes.date_prevue);
+                            valB = getCellValue(b, colIndexes.date_prevue);
+                            return valA.localeCompare(valB);
+                        case 'statut':
+                            valA = getCellValue(a, colIndexes.statut).toLowerCase();
+                            valB = getCellValue(b, colIndexes.statut).toLowerCase();
+                            return valA.localeCompare(valB, undefined, {numeric: true});
+                        default:
+                            return 0;
+                    }
+                });
+
+                // Remove all rows
+                while (tbody.firstChild) {
+                    tbody.removeChild(tbody.firstChild);
+                }
+
+                // Re-add sorted rows
+                rows.forEach(row => {
+                    tbody.appendChild(row);
+                });
+            });
+        });
+
+        document.getElementById('search-livraison-input').addEventListener('input', function() {
+            const search = this.value.toLowerCase();
+            const rows = document.querySelectorAll('table tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
             });
         });
     </script>
