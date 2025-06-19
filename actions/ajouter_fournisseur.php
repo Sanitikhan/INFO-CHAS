@@ -1,24 +1,33 @@
 <?php
+require_once '../includes/config.php';
 session_start();
-require_once '../../includes/config.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nom = $_POST['nom'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $telephone = $_POST['telephone'] ?? '';
+if (
+    isset($_POST['nom'], $_POST['email'], $_POST['telephone'])
+) {
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO fournisseurs (
+                nom,
+                email,
+                telephone
+            ) VALUES (?, ?, ?)
+        ");
 
-    if ($nom && $email && $telephone) {
-        $stmt = $pdo->prepare("INSERT INTO fournisseurs (nom, email, telephone) VALUES (?, ?, ?)");
-        $success = $stmt->execute([$nom, $email, $telephone]);
-
-        if ($success) {
+        if ($stmt->execute([
+            $_POST['nom'],
+            $_POST['email'],
+            $_POST['telephone']
+        ])) {
+            $_SESSION['flash_message'] = "Fournisseur ajouté avec succès.";
+            $_SESSION['flash_type'] = "success";
             header('Location: ../pages/admin/fournisseurs.php');
             exit();
-        } else {
-            echo "Erreur lors de l'ajout du fournisseur.";
         }
-    } else {
-        echo "Tous les champs sont obligatoires.";
+    } catch (PDOException $e) {
+        echo "Erreur : " . $e->getMessage();
     }
+} else {
+    echo "Champs obligatoires manquants.";
 }
 ?>

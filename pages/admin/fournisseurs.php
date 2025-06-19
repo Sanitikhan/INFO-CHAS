@@ -21,12 +21,23 @@ try {
     <link rel="stylesheet" href="../../public/modal.css">
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/fournisseurs.css">
+    <link rel="stylesheet" href="../../public/flashmessage.css">
     <title>Paramètres</title>
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
+
+<?php if (isset($_SESSION['flash_message'])): ?>
+    <div class="flash-message
+        <?= isset($_SESSION['flash_type']) && $_SESSION['flash_type'] === 'success' ? 'flash-success' : '' ?>
+        <?= isset($_SESSION['flash_type']) && $_SESSION['flash_type'] === 'error' ? 'flash-error' : '' ?>"
+        id="flash-message">
+        <?= htmlspecialchars($_SESSION['flash_message']) ?>
+    </div>
+    <?php unset($_SESSION['flash_message'], $_SESSION['flash_type']); ?>
+<?php endif; ?>
 
     <!-- Mobile Sidebar Menu Button -->
     <button class="sidebar-menu-button">
@@ -234,24 +245,6 @@ try {
             <?php endforeach; ?>
         </table>
 
-        <div class="wrapper">
-            <!-- Modal de succès -->
-            <div id="modal-success" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeModal('modal-success')">&times;</span>
-                    <p>Fournisseur ajouté avec succès !</p>
-                </div>
-            </div>
-
-            <!-- Modal d'erreur -->
-            <div id="modal-error" class="modal">
-                <div class="modal-content">
-                    <span class="close" onclick="closeModal('modal-error')">&times;</span>
-                    <p>Erreur lors de l'ajout du fournisseur.</p>
-                </div>
-            </div>
-        </div>
-
     </section>
 
     
@@ -292,8 +285,17 @@ try {
     const tbody = table.querySelector('tbody');
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const flash = document.getElementById('flash-message');
+        if (flash) {
+            setTimeout(() => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 500);
+            }, 4000);
+        }
+    });
+
     </script>
     <script src="../../actions/script.js"></script>
-    <script src="../../actions/modal.js"></script>
 </body>
 </html>
