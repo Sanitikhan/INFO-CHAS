@@ -29,6 +29,14 @@ $livraisons = $stmt->fetchAll();
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
+
+<?php if (isset($_SESSION['flash_message'])): ?>
+    <div class="flash-message <?= isset($_SESSION['flash_type']) && $_SESSION['flash_type'] === 'success' ? 'flash-success' : '' ?><?= isset($_SESSION['flash_type']) && $_SESSION['flash_type'] === 'error' ? ' flash-error' : '' ?>" id="flash-message">
+        <?= htmlspecialchars($_SESSION['flash_message']) ?>
+    </div>
+    <?php unset($_SESSION['flash_message'], $_SESSION['flash_type']); ?>
+<?php endif; ?>
+
 <!-- Mobile Sidebar Menu Button -->
     <button class="sidebar-menu-button">
         <span class="material-symbols-rounded">menu</span>
@@ -206,6 +214,7 @@ $livraisons = $stmt->fetchAll();
                 <th>Fournisseur</th>
                 <th>Date prévue</th>
                 <th>Statut</th>
+                <th>Actions</th> 
             </tr>
         </thead>
         <tbody>
@@ -214,7 +223,21 @@ $livraisons = $stmt->fetchAll();
                     <td><?= htmlspecialchars($livraison['numero_livraison']) ?></td>
                     <td><?= htmlspecialchars($livraison['fournisseur_nom']) ?></td>
                     <td><?= htmlspecialchars($livraison['date_prevue']) ?></td>
-                    <td><?= htmlspecialchars($livraison['statut']) ?></td>
+                    <td>
+                        <span class="statut-badge statut-<?= $livraison['statut'] ?>">
+                            <?= ucfirst(str_replace('_', ' ', $livraison['statut'])) ?>
+                        </span>
+                    </td>
+                    <td>
+                        <?php if ($livraison['statut'] !== 'livrée'): ?>
+                            <button
+                                class="btn btn-success btn-marquer-livree"
+                                data-id="<?= $livraison['id'] ?>"
+                                style="margin-left:10px;">
+                                Marquer comme livrée
+                            </button>
+                        <?php endif; ?>
+                    </td>
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($livraisons)): ?>
@@ -223,6 +246,26 @@ $livraisons = $stmt->fetchAll();
         </tbody>
     </table>
 
+    <script>
+        document.querySelectorAll('.btn-marquer-livree').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const livraisonId = this.dataset.id;
+                if (!livraisonId) return;
+
+                fetch('../../actions/marquer_livraison_livree.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'livraison_id=' + encodeURIComponent(livraisonId)
+                })
+                .then(response => response.text())
+                .then(result => {
+                    // Optionally, show a flash message or reload the page
+                    window.location.reload();
+                })
+                .catch(() => alert('Erreur lors de la mise à jour.'));
+            });
+        });
+    </script>
     <script src="../../actions/script.js"></script>
 </body>
 </html>
