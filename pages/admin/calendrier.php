@@ -5,6 +5,9 @@ require_once('../../includes/config.php');
 $stmt = $pdo->query("SELECT id, numero_livraison, date_prevue FROM livraisons");
 $livraisons = $stmt->fetchAll();
 
+$stmt = $pdo->query("SELECT id, reference, date_livraison FROM commandes WHERE date_livraison IS NOT NULL");
+$commandes = $stmt->fetchAll();
+
 $stmt = $pdo->query("SELECT id, title, date FROM evenements");
 $evenements = $stmt->fetchAll();
 ?>
@@ -242,6 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 title: "<?= htmlspecialchars($evt['title']) ?>",
                 start: "<?= $evt['date'] ?>"
+            },
+            <?php endforeach; ?>
+            <?php foreach ($commandes as $commande): ?>
+            {
+                title: "Commande #<?= htmlspecialchars($commande['reference']) ?>",
+                start: "<?= $commande['date_livraison'] ?>"
             },
             <?php endforeach; ?>
         ]
