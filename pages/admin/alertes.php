@@ -22,6 +22,15 @@ $total_critique = $count_rouge + $count_probleme;
 
 $stmt = $pdo->query("SELECT DISTINCT role FROM users WHERE role IS NOT NULL AND role != ''");
 $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+$user_role = $_SESSION['role'] ?? null;
+
+$alertes = [];
+if ($user_role) {
+    $stmt = $pdo->prepare("SELECT * FROM alertes WHERE role = ? ORDER BY created_at DESC");
+    $stmt->execute([$user_role]);
+    $alertes = $stmt->fetchAll();
+}
 ?>
 
 <!DOCTYPE html>
@@ -221,7 +230,7 @@ $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 <strong>Problèmes livraisons :</strong> <?= $count_probleme ?>
             </div>
             <div class="btn-section-right">
-                <button id="open-alert-modal" style="border:none; cursor:pointer; font-weight:800; background:#393E46; color: #fff; padding: 10px 20px; border-radius: 5px;">Envoyer une alerte aux admins</button>
+                <button id="open-alert-modal" style="border:none; cursor:pointer; font-weight:800; background:#393E46; color: #fff; padding: 10px 20px; border-radius: 5px;">Envoyer une alerte</button>
             </div>
         </div>
 
@@ -299,6 +308,26 @@ $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 <?php else: ?>
                     <div class="alert alert-success">
                         Aucun problème critique détecté.
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="grid">
+                <h3>Alertes reçues</h3>
+                <?php if (!empty($alertes)): ?>
+                    <?php foreach ($alertes as $alerte): ?>
+                        <div class="alert alert-danger" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span class="material-symbols-rounded" style="color: #fff;">notification_important</span>
+                            <div>
+                                <?= nl2br(htmlspecialchars($alerte['message'])) ?>
+                                <div style="font-size:0.9em; color:#ccc;">
+                                    <?= htmlspecialchars($alerte['created_at']) ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="alert alert-success">
+                        Aucune alerte reçue.
                     </div>
                 <?php endif; ?>
             </div>
