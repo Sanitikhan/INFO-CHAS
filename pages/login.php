@@ -11,24 +11,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user = $stmt->fetch();
 
     if ($user) {
-        // Affiche l'utilisateur pour déboguer
-        /*echo "<pre>"; print_r($user); echo "</pre>";*/
-
-        // Vérification du mot de passe
         if (password_verify($password, $user['password'])) {
-            // After successful authentication
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['username'] = $user['username'];
-
-            // Redirect all users to the admin dashboard
             header('Location: admin/dashboard.php');
             exit();
         } else {
-            echo "<p style='color:red'>Mot de passe incorrect.</p>";
+            $_SESSION['flash_message'] = "Mot de passe incorrect.";
+            $_SESSION['flash_type'] = "error";
+            header('Location: login.php');
+            exit();
         }
     } else {
-        echo "<p style='color:red'>Utilisateur non trouvé.</p>";
+        $_SESSION['flash_message'] = "Utilisateur non trouvé.";
+        $_SESSION['flash_type'] = "error";
+        header('Location: login.php');
+        exit();
     }
 }
 ?>
@@ -40,12 +39,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
     <link rel="stylesheet" href="../public/loginpage.css">
+    <link rel="stylesheet" href="../public/flashmessage.css">
     <link rel="icon" type="image/png" href="../img/logo_w.png" />
     <!-- Boxicons CSS -->
   <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
+
+    <?php if (isset($_SESSION['flash_message'])): ?>
+        <div class="flash-message <?= isset($_SESSION['flash_type']) && $_SESSION['flash_type'] === 'error' ? 'flash-error' : '' ?>" id="flash-message">
+            <?= htmlspecialchars($_SESSION['flash_message']) ?>
+        </div>
+        <?php unset($_SESSION['flash_message'], $_SESSION['flash_type']); ?>
+    <?php endif; ?>
+
     <section class="container forms">
         <div class="form login">
             <div class="form-content">
@@ -77,5 +85,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </section>
     
     <script src="../actions/login.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flash = document.getElementById('flash-message');
+            if (flash) {
+                setTimeout(() => {
+                    flash.style.opacity = '0';
+                    setTimeout(() => flash.remove(), 500);
+                }, 5000);
+            }
+        });
+    </script>
 </body>
 </html>
