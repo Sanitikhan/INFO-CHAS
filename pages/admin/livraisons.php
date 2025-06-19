@@ -397,20 +397,29 @@ if (isset($_GET['details'])) {
                                 
                                 <?php if ($_SESSION['role'] === 'admin'): ?>
                                     <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
-                                    <button class="btn">Modifier</button>
+                                    <a href="#" 
+                                    class="btn btn-edit" 
+                                    data-id="<?= $livraison['id'] ?>"
+                                    data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                    data-fournisseur="<?= $livraison['fournisseur_id'] ?>"
+                                    data-date="<?= $livraison['date_prevue'] ?>"
+                                    data-statut="<?= $livraison['statut'] ?>"
+                                    data-livreur="<?= $livraison['livreur_id'] ?>"
+                                    data-notes="<?= htmlspecialchars($livraison['notes'] ?? '') ?>"
+                                    >Modifier</a>
                                     <button class="btn">Supprimer</button>
                                 <?php elseif ($_SESSION['role'] === 'livreur'): ?>
-                                    <button class="btn">Voir</button>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
                                     <button class="btn">Confirmer Livraison</button>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de livraison'): ?>
-                                    <button class="btn">Voir</button>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
                                     <button class="btn">Attribuer</button>
                                     <button class="btn">Confirmer Livraison</button>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de stock'): ?>
-                                    <button class="btn">Voir</button>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
                                     <button class="btn">Mettre à jour Stock</button>
                                 <?php else: ?>
-                                    <button class="btn">Voir</button>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -425,6 +434,61 @@ if (isset($_GET['details'])) {
                 <div id="details-content">
                     <?= $detailsHtml ?>
                 </div>
+            </div>
+        </div>
+
+        <div id="modal-edit" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" onclick="fermerEditModal()">&times;</span>
+                <h2>Modifier la livraison</h2>
+                <form id="edit-livraison-form" method="POST" action="../../actions/modifier_livraison.php" style="color: #fff;">
+                    <input type="hidden" name="id" id="edit-id">
+                    
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-numero">Numéro de livraison</label>
+                        <input name="numero_livraison" id="edit-numero" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-fournisseur">Fournisseur</label>
+                        <select name="fournisseur_id" id="edit-fournisseur" required>
+                            <?php foreach ($fournisseurs as $f): ?>
+                                <option value="<?= $f['id'] ?>"><?= htmlspecialchars($f['nom']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-date">Date prévue</label>
+                        <input type="date" name="date_prevue" id="edit-date" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-statut">Statut</label>
+                        <select name="statut" id="edit-statut" required>
+                            <option value="en_attente">En attente</option>
+                            <option value="en_cours">En cours</option>
+                            <option value="livree">Livrée</option>
+                            <option value="probleme">Problème</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-livreur">Livreur</label>
+                        <select name="livreur_id" id="edit-livreur" required>
+                            <?php foreach ($livreurs as $l): ?>
+                                <option value="<?= $l['id'] ?>"><?= htmlspecialchars($l['username']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-notes">Notes</label>
+                        <input name="notes" id="edit-notes">
+                    </div>
+                    
+                    <button type="submit">Enregistrer</button>
+                </form>
             </div>
         </div>
 
@@ -529,6 +593,24 @@ if (isset($_GET['details'])) {
             url.searchParams.delete('details');
             window.history.replaceState({}, document.title, url.pathname + url.search);
         }
+    }
+
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('modal-edit').style.display = 'block';
+            document.getElementById('edit-id').value = this.dataset.id;
+            document.getElementById('edit-numero').value = this.dataset.numero;
+            document.getElementById('edit-fournisseur').value = this.dataset.fournisseur;
+            document.getElementById('edit-date').value = this.dataset.date;
+            document.getElementById('edit-statut').value = this.dataset.statut;
+            document.getElementById('edit-livreur').value = this.dataset.livreur;
+            document.getElementById('edit-notes').value = this.dataset.notes;
+        });
+    });
+
+    function fermerEditModal() {
+        document.getElementById('modal-edit').style.display = 'none';
     }
 
     </script>
