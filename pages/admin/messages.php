@@ -220,7 +220,7 @@ if (isset($_SESSION['user_id'])) {
         <div class="messages-container">
                 <!-- Send Message Form -->
                 <div class="form-section" id="add-message-form-section" style="display:none;">
-                    <form action="../actions/messagerie.php" method="POST">
+                    <form action="../../actions/messagerie.php" method="POST">
                         <label for="receveur_id">Destinataire :</label>
                         <select name="receveur_id" required>
                             <?php foreach ($users as $user): ?>

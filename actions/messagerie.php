@@ -18,7 +18,7 @@ if (
     $stmt = $pdo->prepare("INSERT INTO messages (expediteur_id, receveur_id, objet, corps) VALUES (?, ?, ?, ?)");
     $stmt->execute([$expediteur_id, $receveur_id, $objet, $corps]);
     // Optionally redirect or set a success message here
-    header('Location: ../pages/messages.php');
+    header('Location: ../pages/admin/messages.php');
     exit();
 } else if (isset($_POST['send_message'])) {
     // Optionally handle the error: missing fields
