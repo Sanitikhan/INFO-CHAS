@@ -84,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </li>
                     </ul>
                 </li>
-                <<?php if (
+                <?php if (
                     (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
                     (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
                 ): ?>
@@ -119,10 +119,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </a>
                         <ul class="dropdown-menu">
                             <li class="nav-item">
-                                <a class="nav-link active dropdown-title">Livraisons</a>
+                                <a class="nav-link dropdown-title">Livraisons</a>
                             </li>
                             <li class="nav-item">
-                                <a href="livraisons.php" class="nav-link active dropdown-link">Toutes les livraisons</a>
+                                <a href="livraisons.php" class="nav-link dropdown-link">Toutes les livraisons</a>
                             </li>
                             <li class="nav-item">
                                 <a href="../livreur/meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>

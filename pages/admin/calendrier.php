@@ -105,10 +105,10 @@ $evenements = $stmt->fetchAll();
                         </a>
                         <ul class="dropdown-menu">
                             <li class="nav-item">
-                                <a class="nav-link active dropdown-title">Livraisons</a>
+                                <a class="nav-link dropdown-title">Livraisons</a>
                             </li>
                             <li class="nav-item">
-                                <a href="livraisons.php" class="nav-link active dropdown-link">Toutes les livraisons</a>
+                                <a href="livraisons.php" class="nav-link dropdown-link">Toutes les livraisons</a>
                             </li>
                             <li class="nav-item">
                                 <a href="../livreur/meslivraisons.php" class="nav-link dropdown-link">Mes livraisons</a>
