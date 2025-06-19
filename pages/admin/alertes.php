@@ -19,6 +19,9 @@ $count_probleme = count($livraisons_probleme);
 
 // Total "problème critique"
 $total_critique = $count_rouge + $count_probleme;
+
+$stmt = $pdo->query("SELECT DISTINCT role FROM users WHERE role IS NOT NULL AND role != ''");
+$roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
 ?>
 
 <!DOCTYPE html>
@@ -217,7 +220,32 @@ $total_critique = $count_rouge + $count_probleme;
                 <span class="material-symbols-rounded">local_shipping</span>
                 <strong>Problèmes livraisons :</strong> <?= $count_probleme ?>
             </div>
+            <div class="btn-section-right">
+                <button id="open-alert-modal" style="border:none; cursor:pointer; font-weight:800; background:#393E46; color: #fff; padding: 10px 20px; border-radius: 5px;">Envoyer une alerte aux admins</button>
+            </div>
         </div>
+
+            <div id="alert-modal" class="modal" style="display:none;">
+                <div class="modal-content" style="max-width:400px;">
+                    <span class="close" onclick="closeAlertModal()" style="float:right;cursor:pointer;">&times;</span>
+                    <h2>Envoyer une alerte</h2>
+                    <form id="alert-form" method="POST" action="../../actions/envoyer_alerte.php">
+                        <div style="margin-bottom:1em;">
+                            <select name="role" required>
+                                <option value="">Sélectionner un rôle</option>
+                                <?php foreach ($roles as $role): ?>
+                                    <option value="<?= htmlspecialchars($role) ?>">
+                                        <?= ucfirst(htmlspecialchars($role)) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <label for="alert-message">Message</label><br>
+                            <textarea id="alert-message" name="message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Envoyer</button>
+                    </form>
+                </div>
+            </div>
 
         <div class="alertes-grid">
 
@@ -292,6 +320,13 @@ document.getElementById('show-probleme').onclick = function() {
     document.getElementById('list-probleme').style.display =
         document.getElementById('list-probleme').style.display === 'none' ? 'block' : 'none';
 };
+
+document.getElementById('open-alert-modal').onclick = function() {
+    document.getElementById('alert-modal').style.display = 'flex';
+};
+function closeAlertModal() {
+    document.getElementById('alert-modal').style.display = 'none';
+}
 </script>
 </body>
 </html>
