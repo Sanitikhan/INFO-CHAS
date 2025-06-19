@@ -71,26 +71,31 @@ $livraisons = $stmt->fetchAll();
                         </li>
                     </ul>
                 </li>
-                <!-- Dropdown -->
-                <li class="nav-item dropdown-container">
-                    <a href="#" class="nav-link dropdown-toggle">
-                        <span class="material-symbols-rounded">shopping_cart</span>
-                        <span class="nav-label">Réapprovisionnement</span>
-                        <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
-                    </a>
-                    <!-- Dropdown menu -->
-                    <ul class="dropdown-menu">
-                        <li class="nav-item">
-                            <a class="nav-link dropdown-title">Réapprovisionnement</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../admin/reapprovisionnement.php" class="nav-link dropdown-link">Réapprovisionnement</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../admin/commandes.php" class="nav-link dropdown-link">Commandes</a>
-                        </li>
-                    </ul>
-                </li>
+                <?php if (
+                    (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
+                    (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
+                ): ?>
+                    <!-- Dropdown -->
+                    <li class="nav-item dropdown-container">
+                        <a href="#" class="nav-link dropdown-toggle">
+                            <span class="material-symbols-rounded">shopping_cart</span>
+                            <span class="nav-label">Réapprovisionnement</span>
+                            <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
+                        </a>
+                        <!-- Dropdown menu -->
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a class="nav-link dropdown-title">Réapprovisionnement</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../admin/reapprovisionnement.php" class="nav-link dropdown-link">Réapprovisionnement</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../admin/commandes.php" class="nav-link dropdown-link">Commandes</a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php endif; ?>
                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'livreur'): ?>
                     <!-- Dropdown for livreur -->
                     <li class="nav-item dropdown-container">
