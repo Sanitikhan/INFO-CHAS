@@ -325,6 +325,7 @@ if ($user_role) {
                             <div>
                                 <?= nl2br(htmlspecialchars($alerte['message'])) ?>
                                 <div style="font-size:0.9em; color:#ccc;">
+                                    Envoyé par : <?= htmlspecialchars($alerte['sender'] ?? 'Inconnu') ?><br>
                                     <?= htmlspecialchars($alerte['created_at']) ?>
                                 </div>
                             </div>
