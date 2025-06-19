@@ -87,6 +87,7 @@ if (isset($_GET['details'])) {
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/stock.css">
+    <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -329,10 +330,22 @@ if (isset($_GET['details'])) {
                         <td><?= htmlspecialchars($commande['livreur']) ?></td>
                         <td><?= htmlspecialchars($commande['date_commande']) ?></td>
                         <td><?= htmlspecialchars($commande['date_livraison']) ?></td>
-                        <td><?= htmlspecialchars($commande['etat']) ?></td>
+                        <td>
+                                <span class="statut-badge statut-<?= $commande['etat'] ?>">
+                                    <?= ucfirst(str_replace('_', ' ', $commande['etat'])) ?>
+                                </span>
+                            </td>
                         <td>
                             <a href="?details=<?= $commande['id'] ?>" class="btn btn-view">Voir</a>
-                            <button class="btn btn-edit" data-id="<?= $commande['id'] ?>">Modifier</button>
+                            <button class="btn btn-edit"
+                                data-id="<?= $commande['id'] ?>"
+                                data-reference="<?= htmlspecialchars($commande['reference']) ?>"
+                                data-preparateur="<?= htmlspecialchars($commande['preparateur']) ?>"
+                                data-livreur="<?= htmlspecialchars($commande['livreur']) ?>"
+                                data-date_commande="<?= htmlspecialchars($commande['date_commande']) ?>"
+                                data-date_livraison="<?= htmlspecialchars($commande['date_livraison']) ?>"
+                                data-etat="<?= htmlspecialchars($commande['etat']) ?>"
+                            >Modifier</button>
                             <button class="btn btn-delete" data-id="<?= $commande['id'] ?>">Supprimer</button>
                         </td>
                     </tr>
@@ -346,6 +359,54 @@ if (isset($_GET['details'])) {
                 <div id="details-content">
                     <?= $detailsHtml ?>
                 </div>
+            </div>
+        </div>
+
+        <!-- Modal Modifier Commande -->
+        <div id="modal-edit-commande" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" onclick="fermerEditCommandeModal()">&times;</span>
+                <h2>Modifier la commande</h2>
+                <form id="edit-commande-form" method="POST" action="../../actions/modifier_commande.php" style="color: #fff;">
+                    <input type="hidden" name="id" id="edit-commande-id">
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-commande-reference">Référence</label>
+                        <input name="reference" id="edit-commande-reference" required>
+                    </div>
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-commande-preparateur">Préparateur</label>
+                        <input name="preparateur" id="edit-commande-preparateur">
+                    </div>
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-commande-livreur">Livreur</label>
+                        <select name="livreur" id="edit-commande-livreur" required>
+                            <option value="">Sélectionner un livreur</option>
+                            <?php foreach ($livreurs as $livreur): ?>
+                                <option value="<?= htmlspecialchars($livreur['username']) ?>">
+                                    <?= htmlspecialchars($livreur['username']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-commande-date-commande">Date commande</label>
+                        <input type="date" name="date_commande" id="edit-commande-date-commande">
+                    </div>
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-commande-date-livraison">Date livraison</label>
+                        <input type="date" name="date_livraison" id="edit-commande-date-livraison">
+                    </div>
+                    <div style="margin-bottom: 1em;">
+                        <label for="edit-commande-etat">État</label>
+                        <select name="etat" id="edit-commande-etat" required>
+                            <option value="en-attente">En attente</option>
+                            <option value="en cours">En cours</option>
+                            <option value="livree">Livrée</option>
+                            <option value="probleme">Problème</option>
+                        </select>
+                    </div>
+                    <button type="submit">Enregistrer</button>
+                </form>
             </div>
         </div>
 
@@ -446,13 +507,31 @@ if (isset($_GET['details'])) {
     });
 
     function fermerModal() {
-    document.getElementById('modal-details').style.display = 'none';
-    // Remove ?details=... from URL without reloading
-    if (window.history.replaceState) {
-        const url = new URL(window.location);
-        url.searchParams.delete('details');
-        window.history.replaceState({}, document.title, url.pathname + url.search);
+        document.getElementById('modal-details').style.display = 'none';
+        // Remove ?details=... from URL without reloading
+        if (window.history.replaceState) {
+            const url = new URL(window.location);
+            url.searchParams.delete('details');
+            window.history.replaceState({}, document.title, url.pathname + url.search);
+        }
     }
+
+document.querySelectorAll('.btn-edit').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('modal-edit-commande').style.display = 'block';
+        document.getElementById('edit-commande-id').value = this.dataset.id;
+        document.getElementById('edit-commande-reference').value = this.dataset.reference;
+        document.getElementById('edit-commande-preparateur').value = this.dataset.preparateur;
+        document.getElementById('edit-commande-livreur').value = this.dataset.livreur;
+        document.getElementById('edit-commande-date-commande').value = this.dataset.date_commande;
+        document.getElementById('edit-commande-date-livraison').value = this.dataset.date_livraison;
+        document.getElementById('edit-commande-etat').value = this.dataset.etat;
+    });
+});
+
+function fermerEditCommandeModal() {
+    document.getElementById('modal-edit-commande').style.display = 'none';
 }
 
     </script>
