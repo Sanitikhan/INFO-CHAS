@@ -4,6 +4,9 @@ require_once('../../includes/config.php');
 
 $stmt = $pdo->query("SELECT id, numero_livraison, date_prevue FROM livraisons");
 $livraisons = $stmt->fetchAll();
+
+$stmt = $pdo->query("SELECT id, title, date FROM evenements");
+$evenements = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -14,6 +17,7 @@ $livraisons = $stmt->fetchAll();
     <title>Calendrier</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/calendrier.css">
+    <link rel="stylesheet" href="../../public/calendar.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -185,18 +189,42 @@ $livraisons = $stmt->fetchAll();
         <header class="header">
             <h1>CALENDRIER</h1>
         </header>
-        <div id="calendar"></div>
+        <section class="btn-section">
+            <button id="add-event-btn" class="btn" style="margin-bottom: 20px;">Ajouter un événement</button>
+        </section>
+            
+            <div id="calendar"></div>
+
+        <div id="add-event-modal" class="modal" style="display:none;">
+            <div class="modal-content" style="max-width:350px;">
+                <span class="close" onclick="closeAddEventModal()" style="float:right;cursor:pointer;">&times;</span>
+                <h2>Nouvel événement</h2>
+                <form id="add-event-form">
+                    <div style="margin-bottom:1em;">
+                        <label for="event-title">Titre</label><br>
+                        <input type="text" id="event-title" required>
+                    </div>
+                    <div style="margin-bottom:1em;">
+                        <label for="event-date">Date</label><br>
+                        <input type="date" id="event-date" required>
+                    </div>
+                    <button type="submit" class="btn">Ajouter</button>
+                </form>
+            </div>
+        </div>
     </section>
 
 <!-- FullCalendar JS -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script src="../../actions/script.js"></script>
     <script>
+let calendar;
+
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        locale: 'fr', // French
+        locale: 'fr',
         height: 600,
         headerToolbar: {
             left: 'prev,next today',
@@ -210,10 +238,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 start: "<?= $livraison['date_prevue'] ?>"
             },
             <?php endforeach; ?>
+            <?php foreach ($evenements as $evt): ?>
+            {
+                title: "<?= htmlspecialchars($evt['title']) ?>",
+                start: "<?= $evt['date'] ?>"
+            },
+            <?php endforeach; ?>
         ]
     });
     calendar.render();
+
+    // Modal logic
+    document.getElementById('add-event-btn').onclick = function() {
+        document.getElementById('add-event-modal').style.display = 'flex';
+    };
+    document.getElementById('add-event-form').onsubmit = function(e) {
+        e.preventDefault();
+        const title = document.getElementById('event-title').value.trim();
+        const date = document.getElementById('event-date').value;
+        if (title && date) {
+            fetch('../../actions/ajouter_event.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'title=' + encodeURIComponent(title) + '&date=' + encodeURIComponent(date)
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'ok') {
+                    calendar.addEvent({
+                        title: title,
+                        start: date
+                    });
+                    closeAddEventModal();
+                    document.getElementById('add-event-form').reset();
+                } else {
+                    alert('Erreur lors de l\'ajout de l\'événement.');
+                }
+            });
+        }
+    };
 });
+
+function closeAddEventModal() {
+    document.getElementById('add-event-modal').style.display = 'none';
+}
 </script>
 </body>
 </html>
