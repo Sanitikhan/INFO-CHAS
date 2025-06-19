@@ -2,15 +2,22 @@
 session_start();
 require_once '../includes/config.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message']) && !empty($_POST['role'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['message'])) {
     $message = $_POST['message'];
-    $role = $_POST['role'];
+    $role = $_POST['role'] ?? null;
+    $user_id = !empty($_POST['user_id']) ? $_POST['user_id'] : null;
     $sender = $_SESSION['username'] ?? 'Inconnu';
 
-    $insert = $pdo->prepare("INSERT INTO alertes (role, message, sender, created_at) VALUES (?, ?, ?, NOW())");
-    $insert->execute([$role, $message, $sender]);
+    // Only one of role or user_id should be set
+    $insert = $pdo->prepare("INSERT INTO alertes (role, user_id, message, sender, created_at) VALUES (?, ?, ?, ?, NOW())");
+    $insert->execute([
+        $role ?: null,
+        $user_id,
+        $message,
+        $sender
+    ]);
 
-    $_SESSION['flash_message'] = "Alerte envoyée aux utilisateurs avec le rôle '$role'.";
+    $_SESSION['flash_message'] = "Alerte envoyée.";
     header('Location: ../pages/admin/alertes.php');
     exit();
 }

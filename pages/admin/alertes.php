@@ -24,13 +24,16 @@ $stmt = $pdo->query("SELECT DISTINCT role FROM users WHERE role IS NOT NULL AND 
 $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 $user_role = $_SESSION['role'] ?? null;
+$user_id = $_SESSION['user_id'] ?? null;
 
 $alertes = [];
-if ($user_role) {
-    $stmt = $pdo->prepare("SELECT * FROM alertes WHERE role = ? ORDER BY created_at DESC");
-    $stmt->execute([$user_role]);
+if ($user_role && $user_id) {
+    $stmt = $pdo->prepare("SELECT * FROM alertes WHERE (role = ? OR user_id = ?) ORDER BY created_at DESC");
+    $stmt->execute([$user_role, $user_id]);
     $alertes = $stmt->fetchAll();
 }
+
+$users = $pdo->query("SELECT id, username FROM users ORDER BY username")->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -245,11 +248,19 @@ if ($user_role) {
                     <h2>Envoyer une alerte</h2>
                     <form id="alert-form" method="POST" action="../../actions/envoyer_alerte.php">
                         <div style="margin-bottom:1em;">
-                            <select name="role" required>
-                                <option value="">Sélectionner un rôle</option>
+                            <select name="role">
+                                <option value="">Sélectionner un rôle (optionnel)</option>
                                 <?php foreach ($roles as $role): ?>
                                     <option value="<?= htmlspecialchars($role) ?>">
                                         <?= ucfirst(htmlspecialchars($role)) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <select name="user_id">
+                                <option value="">Ou sélectionner un utilisateur</option>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?= $user['id'] ?>">
+                                        <?= htmlspecialchars($user['username']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
