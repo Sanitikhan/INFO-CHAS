@@ -98,14 +98,23 @@ $cart = $_SESSION['cart'] ?? [];
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a href="reapprovisionnement.php" class="nav-link active">
+                <!-- Dropdown -->
+                <li class="nav-item dropdown-container">
+                    <a href="#" class="nav-link active dropdown-toggle">
                         <span class="material-symbols-rounded">shopping_cart</span>
                         <span class="nav-label">Réapprovisionnement</span>
+                        <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
                     </a>
+                    <!-- Dropdown menu -->
                     <ul class="dropdown-menu">
                         <li class="nav-item">
-                            <a class="nav-link dropdown-title">Réapprovisionnement</a>
+                            <a class="nav-link active dropdown-title">Réapprovisionnement</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="reapprovisionnement.php" class="nav-link active dropdown-link">Réapprovisionnement</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="commandes.php" class="nav-link dropdown-link">Commandes</a>
                         </li>
                     </ul>
                 </li>
