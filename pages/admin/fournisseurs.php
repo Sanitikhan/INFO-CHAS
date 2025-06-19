@@ -243,7 +243,7 @@ try {
                     <td><?= htmlspecialchars($fournisseur['email']) ?></td>
                     <td><?= htmlspecialchars($fournisseur['telephone']) ?></td>
                     <td>
-                        <button class="btn btn-delete-fournisseur" data-id="<?= $fournisseur['id'] ?>">Supprimer</button>
+                        <button class="btn btn-delete-fournisseur" style="padding: 5px 10px;" data-id="<?= $fournisseur['id'] ?>">Supprimer</button>
                     </td>
                 </tr>
             </tbody>

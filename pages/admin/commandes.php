@@ -351,8 +351,9 @@ if (isset($_GET['details'])) {
                                 </span>
                             </td>
                         <td>
-                            <a href="?details=<?= $commande['id'] ?>" class="btn btn-view">Voir</a>
+                            <a href="?details=<?= $commande['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
                             <button class="btn btn-edit"
+                                style="padding: 5px 10px;"
                                 data-id="<?= $commande['id'] ?>"
                                 data-reference="<?= htmlspecialchars($commande['reference']) ?>"
                                 data-preparateur="<?= htmlspecialchars($commande['preparateur']) ?>"
@@ -361,7 +362,7 @@ if (isset($_GET['details'])) {
                                 data-date_livraison="<?= htmlspecialchars($commande['date_livraison']) ?>"
                                 data-etat="<?= htmlspecialchars($commande['etat']) ?>"
                             >Modifier</button>
-                            <button class="btn btn-delete" data-id="<?= $commande['id'] ?>">Supprimer</button>
+                            <button class="btn btn-delete" style="padding: 5px 10px;" data-id="<?= $commande['id'] ?>">Supprimer</button>
                         </td>
                     </tr>
                 <?php endforeach; ?>

@@ -407,9 +407,10 @@ if (isset($_GET['details'])) {
                             <td class="actions">
                                 
                                 <?php if ($_SESSION['role'] === 'admin'): ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
                                     <a href="#" 
                                     class="btn btn-edit" 
+                                    style="padding: 5px 10px;"
                                     data-id="<?= $livraison['id'] ?>"
                                     data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
                                     data-fournisseur="<?= $livraison['fournisseur_id'] ?>"
@@ -418,19 +419,19 @@ if (isset($_GET['details'])) {
                                     data-livreur="<?= $livraison['livreur_id'] ?>"
                                     data-notes="<?= htmlspecialchars($livraison['notes'] ?? '') ?>"
                                     >Modifier</a>
-                                    <button class="btn btn-delete" data-id="<?= $livraison['id'] ?>">Supprimer</button>
+                                    <button class="btn btn-delete" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">Supprimer</button>
                                 <?php elseif ($_SESSION['role'] === 'livreur'): ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
-                                    <button class="btn">Confirmer Livraison</button>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                                    <button class="btn" style="padding: 5px 10px;">Confirmer Livraison</button>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de livraison'): ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
-                                    <button class="btn">Attribuer</button>
-                                    <button class="btn">Confirmer Livraison</button>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                                    <button class="btn" style="padding: 5px 10px;">Attribuer</button>
+                                    <button class="btn" style="padding: 5px 10px;">Confirmer Livraison</button>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de stock'): ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
-                                    <button class="btn">Mettre à jour Stock</button>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                                    <button class="btn" style="padding: 5px 10px;">Mettre à jour Stock</button>
                                 <?php else: ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view">Voir</a>
+                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
                                 <?php endif; ?>
                             </td>
                         </tr>

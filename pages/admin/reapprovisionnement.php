@@ -307,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                         <form method="post" style="margin:0;">
                             <input type="hidden" name="lot_id" value="<?= $lot['id'] ?>">
                             <input type="number" name="quantity" value="1" min="1" style="width:60px;" required>
-                            <button type="submit" name="add_to_cart" class="btn"
+                            <button type="submit" name="add_to_cart" class="btn" style="padding: 5px 10px;"
                                 <?php if (isset($_SESSION['cart']) && array_key_exists($lot['id'], $_SESSION['cart'])) echo 'disabled'; ?>>
                                 <?= (isset($_SESSION['cart']) && array_key_exists($lot['id'], $_SESSION['cart'])) ? 'Ajouté' : 'Ajouter au panier' ?>
                             </button>

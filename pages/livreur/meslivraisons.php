@@ -233,7 +233,7 @@ $livraisons = $stmt->fetchAll();
                             <button
                                 class="btn btn-success btn-marquer-livree"
                                 data-id="<?= $livraison['id'] ?>"
-                                style="margin-left:10px;">
+                                style="padding: 5px 10px;">
                                 Marquer comme livrée
                             </button>
                         <?php endif; ?>
