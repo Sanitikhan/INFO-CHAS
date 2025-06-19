@@ -260,7 +260,7 @@ if (isset($_GET['details'])) {
         </header>
         
         <section class="btn-section">
-            <input type="text" id="search-lot-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <input type="text" id="search-commande-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
                 <?php if (
                     (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
@@ -271,10 +271,11 @@ if (isset($_GET['details'])) {
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-                        <option value="name">Référence</option>
-                        <option value="quantity">Quantité</option>
+                        <option value="reference">Référence</option>
+                        <option value="date_commande">Date de commande</option>
+                        <option value="date_livraison">Date de livraison</option>
+                        <option value="preparateur">Préparateur</option>
                         <option value="etat">État</option>
-                        <option value="fournisseur">Fournisseur</option>
                     </select>
                 </div>
             </div>
@@ -311,7 +312,6 @@ if (isset($_GET['details'])) {
         <table id="commandes-table" border="1" cellpadding="5">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Référence</th>
                     <th>Préparateur</th>
                     <th>Livreur</th>
@@ -324,7 +324,6 @@ if (isset($_GET['details'])) {
             <tbody>
                 <?php foreach ($commandes as $commande): ?>
                     <tr>
-                        <td><?= htmlspecialchars($commande['id']) ?></td>
                         <td><?= htmlspecialchars($commande['reference']) ?></td>
                         <td><?= htmlspecialchars($commande['preparateur']) ?></td>
                         <td><?= htmlspecialchars($commande['livreur']) ?></td>
@@ -448,60 +447,51 @@ if (isset($_GET['details'])) {
     });
 
     document.addEventListener('DOMContentLoaded', function() {
+        // SORT COMMANDES TABLE
         const sortSelect = document.getElementById('sort-select');
-        const table = document.getElementById('lots-table');
+        const table = document.getElementById('commandes-table');
         const tbody = table.querySelector('tbody');
-
-        // Map sort type to column index
-        const colIndexes = {
-            name: 0,        // Référence
-            quantity: 2,    // Quantité
-            etat: 4,        // État
-            fournisseur: null // Not shown in main row, so we'll use data attribute
-        };
 
         sortSelect.addEventListener('change', function() {
             const sortType = this.value;
-            const rows = Array.from(tbody.querySelectorAll('.main-row'));
+            const rows = Array.from(tbody.querySelectorAll('tr'));
 
             rows.sort((a, b) => {
                 let valA, valB;
                 switch (sortType) {
-                    case 'name':
-                        valA = a.cells[colIndexes.name].textContent.trim().toLowerCase();
-                        valB = b.cells[colIndexes.name].textContent.trim().toLowerCase();
+                    case 'reference':
+                        valA = a.children[1].textContent.trim().toLowerCase();
+                        valB = b.children[1].textContent.trim().toLowerCase();
                         return valA.localeCompare(valB, undefined, {numeric: true});
-                    case 'quantity':
-                        valA = parseInt(a.cells[colIndexes.quantity].textContent.trim(), 10) || 0;
-                        valB = parseInt(b.cells[colIndexes.quantity].textContent.trim(), 10) || 0;
-                        return valA - valB;
-                    case 'etat':
-                        valA = a.dataset.etat.toLowerCase();
-                        valB = b.dataset.etat.toLowerCase();
+                    case 'date_commande':
+                        valA = a.children[4].textContent.trim();
+                        valB = b.children[4].textContent.trim();
                         return valA.localeCompare(valB);
-                    case 'fournisseur':
-                        valA = a.dataset.fournisseur_id;
-                        valB = b.dataset.fournisseur_id;
-                        return valA.localeCompare(valB, undefined, {numeric: true});
+                    case 'date_livraison':
+                        valA = a.children[5].textContent.trim();
+                        valB = b.children[5].textContent.trim();
+                        return valA.localeCompare(valB);
+                    case 'preparateur':
+                        valA = a.children[2].textContent.trim().toLowerCase();
+                        valB = b.children[2].textContent.trim().toLowerCase();
+                        return valA.localeCompare(valB);
+                    case 'etat':
+                        valA = a.children[6].textContent.trim().toLowerCase();
+                        valB = b.children[6].textContent.trim().toLowerCase();
+                        return valA.localeCompare(valB);
                     default:
                         return 0;
                 }
             });
 
-            // Remove all rows (and their details rows)
+            // Remove all rows
             while (tbody.firstChild) {
                 tbody.removeChild(tbody.firstChild);
             }
 
-            // Re-add sorted rows and their details rows
+            // Re-add sorted rows
             rows.forEach(row => {
-                const detailsRow = row.nextElementSibling && row.nextElementSibling.classList.contains('details-row')
-                    ? row.nextElementSibling
-                    : null;
                 tbody.appendChild(row);
-                if (detailsRow) {
-                    tbody.appendChild(detailsRow);
-                }
             });
         });
     });
@@ -533,6 +523,21 @@ document.querySelectorAll('.btn-edit').forEach(btn => {
 function fermerEditCommandeModal() {
     document.getElementById('modal-edit-commande').style.display = 'none';
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-commande-input');
+    const table = document.getElementById('commandes-table');
+    const rows = table.querySelectorAll('tbody tr');
+
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        rows.forEach(row => {
+            // Combine all cell text in the row
+            const rowText = row.textContent.toLowerCase();
+            row.style.display = rowText.includes(filter) ? '' : 'none';
+        });
+    });
+});
 
     </script>
 
