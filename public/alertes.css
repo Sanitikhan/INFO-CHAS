@@ -27,6 +27,22 @@ h3 {
     color: #fff;
 }
 
+.grid-critiques {
+    grid-column: 1 / 2; /* Span the first column */
+    grid-row: 1 / 3; /* Span both rows */
+}
+
+.grid.alertes {
+    grid-column: 2 / 3; /* Span both columns */
+    grid-row: 1 / 2; /* Span the first row */
+}
+
+.grid-all-alertes {
+    grid-column: 2 / 3; /* Span the second column */
+    grid-row: 2 / 3; /* Span the second row */
+}
+
+
 .main-content .alert {
     padding: 20px;
     display: flex;

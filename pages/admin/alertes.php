@@ -33,7 +33,21 @@ if ($user_role && $user_id) {
     $alertes = $stmt->fetchAll();
 }
 
-$users = $pdo->query("SELECT id, username FROM users ORDER BY username")->fetchAll();
+$all_alertes = [];
+if ($user_role === 'admin') {
+    $stmt = $pdo->query("SELECT * FROM alertes ORDER BY created_at DESC");
+    $all_alertes = $stmt->fetchAll();
+}
+
+// For the form select (array of arrays)
+$userList = $pdo->query("SELECT id, username FROM users ORDER BY username")->fetchAll();
+
+// For mapping user_id to username (associative array)
+$users = [];
+$stmt = $pdo->query("SELECT id, username FROM users");
+foreach ($stmt->fetchAll() as $user) {
+    $users[$user['id']] = $user['username'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -258,7 +272,7 @@ $users = $pdo->query("SELECT id, username FROM users ORDER BY username")->fetchA
                             </select>
                             <select name="user_id">
                                 <option value="">Ou sélectionner un utilisateur</option>
-                                <?php foreach ($users as $user): ?>
+                                <?php foreach ($userList as $user): ?>
                                     <option value="<?= $user['id'] ?>">
                                         <?= htmlspecialchars($user['username']) ?>
                                     </option>
@@ -300,7 +314,7 @@ $users = $pdo->query("SELECT id, username FROM users ORDER BY username")->fetchA
             </div>
 
         
-            <div class="grid">
+            <div class="grid grid-critiques">
                 <h3>Problèmes critiques</h3>
                 <?php if ($total_critique > 0): ?>
                     <?php foreach ($lots_rouge as $lot): ?>
@@ -327,7 +341,7 @@ $users = $pdo->query("SELECT id, username FROM users ORDER BY username")->fetchA
                     </div>
                 <?php endif; ?>
             </div>
-            <div class="grid">
+            <div class="grid grid-alertes">
                 <h3>Alertes reçues</h3>
                 <?php if (!empty($alertes)): ?>
                     <?php foreach ($alertes as $alerte): ?>
@@ -348,6 +362,37 @@ $users = $pdo->query("SELECT id, username FROM users ORDER BY username")->fetchA
                     </div>
                 <?php endif; ?>
             </div>
+
+            <?php if ($user_role === 'admin'): ?>
+                <div class="grid grid-all-alertes">
+                    <h3>Toutes les alertes</h3>
+                    <?php if (!empty($all_alertes)): ?>
+                        <?php foreach ($all_alertes as $alerte): ?>
+                            <div class="alert alert-danger" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <span class="material-symbols-rounded" style="color: #fff;">notification_important</span>
+                                <div>
+                                    <?= nl2br(htmlspecialchars($alerte['message'])) ?>
+                                    <div style="font-size:0.9em; color:#ccc;">
+                                        Envoyé par : <?= htmlspecialchars($alerte['sender'] ?? 'Inconnu') ?><br>
+                                        <?php if (!empty($alerte['user_id']) && isset($users[$alerte['user_id']])): ?>
+                                            Pour : <?= htmlspecialchars($users[$alerte['user_id']]) ?><br>
+                                        <?php elseif (!empty($alerte['role'])): ?>
+                                            Pour : <?= htmlspecialchars($alerte['role']) ?><br>
+                                        <?php else: ?>
+                                            Pour : Tous<br>
+                                        <?php endif; ?>
+                                        <?= htmlspecialchars($alerte['created_at']) ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="alert alert-success">
+                            Aucune alerte enregistrée.
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
         </div>
     </section>
 
