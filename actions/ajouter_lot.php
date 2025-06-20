@@ -11,12 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $a_venir = $_POST['a_venir'] ?? 0;
     $etat = $_POST['etat'];
     $fournisseur_id = $_POST['fournisseur_id'];
-    $emplacement = $_POST['emplacement'] ?? null;
+    $emplacement = $_POST['emplacement_id'] ?? null;
 
     $stmt = $pdo->prepare("INSERT INTO lots 
-        (reference, type, quantite_total, disponibilite, reserve, a_venir, etat, fournisseur_id, emplacement)
+        (reference, type, quantite_total, disponibilite, reserve, a_venir, etat, fournisseur_id, emplacement_id)
         VALUES 
-        (:reference, :type, :quantite_total, :disponibilite, :reserve, :a_venir, :etat, :fournisseur_id, :emplacement)"
+        (:reference, :type, :quantite_total, :disponibilite, :reserve, :a_venir, :etat, :fournisseur_id, :emplacement_id)"
     );
 
     $stmt->execute([
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'a_venir' => $a_venir,
         'etat' => $etat,
         'fournisseur_id' => $fournisseur_id,
-        'emplacement' => $emplacement
+        'emplacement_id' => $emplacement
     ]);
 
     $_SESSION['flash_message'] = "Lot ajouté avec succès.";

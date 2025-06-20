@@ -3,11 +3,11 @@ session_start();
 require_once('../../includes/config.php');
 
 // Vérifier si l'utilisateur est connecté
-if (!isset($_SESSION['loggedIn']) || $_SESSION['loggedIn'] !== true) {
+/*if (!isset($_SESSION['loggedIn']) || $_SESSION['loggedIn'] !== true) {
     // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     header('Location: ../login.php');
     exit();
-}
+}*/
 
 // Fetch all lots
 $stmt = $pdo->query("SELECT * FROM lots");
