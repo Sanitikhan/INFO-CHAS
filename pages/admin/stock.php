@@ -20,6 +20,9 @@ try {
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/stock.css">
+    <link rel="stylesheet" href="../../public/modal2.css">
+    <link rel="stylesheet" href="../../public/livraisons.css">
+    <link rel="stylesheet" href="../../public/notifications.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -249,6 +252,7 @@ try {
                     <th>Quantité</th>
                     <th>Disponibilité</th>
                     <th>Etat</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
 
@@ -273,27 +277,26 @@ try {
                         <td>
                             <span class="etat-square <?= htmlspecialchars($lot['etat']) ?>"></span>
                         </td>
-                    </tr>
-                    <tr class="details-row" style="display:none; background:#f9f9f9;">
-                        <td colspan="8">
-                            <table style="width:100%; background:#f9f9f9;">
-                                <thead>
-                                    <tr>
-                                        <th>Fournisseur</th>
-                                        <th>Réservé</th>
-                                        <th>À venir</th>
-                                        <th>Emplacement</th>
-                                    </tr>
-                                </thead>    
-                                <tbody>
-                                    <tr>
-                                        <td><?= htmlspecialchars($lot['fournisseur_id']) ?></td>
-                                        <td><?= htmlspecialchars($lot['reserve']) ?></td>
-                                        <td><?= htmlspecialchars($lot['a_venir']) ?></td>
-                                        <td><?= isset($lot['emplacement']) ? htmlspecialchars($lot['emplacement']) : '-' ?></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <td>
+                            <!-- Voir button -->
+                            <button class="btn btn-voir" data-id="<?= htmlspecialchars($lot['id']) ?>">Voir</button>
+                            <!-- Modifier button (only for admin or gestionnaire de stock) -->
+                            <?php if (
+                                (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
+                                (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
+                            ): ?>
+                                <button class="btn btn-modifier" data-id="<?= htmlspecialchars($lot['id']) ?>"
+                                    data-reference="<?= htmlspecialchars($lot['reference']) ?>"
+                                    data-type="<?= htmlspecialchars($lot['type']) ?>"
+                                    data-quantite_total="<?= htmlspecialchars($lot['quantite_total']) ?>"
+                                    data-disponibilite="<?= htmlspecialchars($lot['disponibilite']) ?>"
+                                    data-reserve="<?= htmlspecialchars($lot['reserve']) ?>"
+                                    data-a_venir="<?= htmlspecialchars($lot['a_venir']) ?>"
+                                    data-etat="<?= htmlspecialchars($lot['etat']) ?>"
+                                    data-fournisseur_id="<?= htmlspecialchars($lot['fournisseur_id']) ?>"
+                                    data-emplacement="<?= isset($lot['emplacement']) ? htmlspecialchars($lot['emplacement']) : '' ?>"
+                                >Modifier</button>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -351,6 +354,17 @@ try {
             </div>
         </div>
 
+        <!-- Modal Voir -->
+        <div id="voir-lot-modal" class="modal" style="display:none;">
+            <div class="modal-content" style="max-width:400px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
+                <button onclick="document.getElementById('voir-lot-modal').style.display='none'" class="close" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</button>
+                <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Détails du lot</h2>
+                <table id="voir-lot-details" style="width:100%; background:#f9f9f9; border-radius:8px; overflow:hidden;">
+                    <!-- Details will be filled by JS -->
+                </table>
+            </div>
+        </div>
+
     </section>
 
     <script>
@@ -367,27 +381,7 @@ try {
     const formSection = document.getElementById('add-lot-form-section');
     formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
     });
-
-    document.querySelectorAll('#lots-table .main-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-            // Fill the modal with the lot's data
-            document.getElementById('edit-lot-id').value = row.dataset.id;
-            document.getElementById('edit-lot-reference').value = row.dataset.reference;
-            document.getElementById('edit-lot-type').value = row.dataset.type;
-            document.getElementById('edit-lot-quantite').value = row.dataset.quantite_total;
-            document.getElementById('edit-lot-disponibilite').value = row.dataset.disponibilite;
-            document.getElementById('edit-lot-reserve').value = row.dataset.reserve;
-            document.getElementById('edit-lot-a_venir').value = row.dataset.a_venir;
-            document.getElementById('edit-lot-etat').value = row.dataset.etat;
-            document.getElementById('edit-lot-fournisseur_id').value = row.dataset.fournisseur_id;
-            document.getElementById('edit-lot-emplacement').value = row.dataset.emplacement;
-
-            document.getElementById('edit-lot-modal').style.display = 'flex';
-        });
-    });
-    </script>
-
-    <script>
+    
     document.addEventListener('DOMContentLoaded', function() {
         const sortSelect = document.getElementById('sort-select');
         const table = document.getElementById('lots-table');
@@ -446,6 +440,46 @@ try {
             });
         });
     });
+
+    // Voir button logic
+    document.querySelectorAll('.btn-voir').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const row = btn.closest('tr');
+            const details = [
+                ['Référence', row.children[0].textContent],
+                ['Type', row.children[1].textContent],
+                ['Quantité', row.children[2].textContent],
+                ['Disponibilité', row.children[3].textContent],
+                ['Etat', row.children[4].textContent],
+            ];
+            // If you want to show more details, add them here using data- attributes
+            let html = '<tbody>';
+            details.forEach(([label, value]) => {
+                html += `<tr><th>${label}</th><td>${value}</td></tr>`;
+            });
+            html += '</tbody>';
+            document.getElementById('voir-lot-details').innerHTML = html;
+            document.getElementById('voir-lot-modal').style.display = 'flex';
+        });
+    });
+
+    // Modifier button logic (reuse your existing code)
+    document.querySelectorAll('.btn-modifier').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('edit-lot-id').value = btn.dataset.id;
+            document.getElementById('edit-lot-reference').value = btn.dataset.reference;
+            document.getElementById('edit-lot-type').value = btn.dataset.type;
+            document.getElementById('edit-lot-quantite').value = btn.dataset.quantite_total;
+            document.getElementById('edit-lot-disponibilite').value = btn.dataset.disponibilite;
+            document.getElementById('edit-lot-reserve').value = btn.dataset.reserve;
+            document.getElementById('edit-lot-a_venir').value = btn.dataset.a_venir;
+            document.getElementById('edit-lot-etat').value = btn.dataset.etat;
+            document.getElementById('edit-lot-fournisseur_id').value = btn.dataset.fournisseur_id;
+            document.getElementById('edit-lot-emplacement').value = btn.dataset.emplacement;
+            document.getElementById('edit-lot-modal').style.display = 'flex';
+        });
+    });
+
     </script>
 
     <script src="../../actions/search.js"></script>
