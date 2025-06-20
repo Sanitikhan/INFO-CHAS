@@ -30,6 +30,7 @@ foreach ($stmtF->fetchAll(PDO::FETCH_ASSOC) as $f) {
     <link rel="stylesheet" href="../../public/modal2.css">
     <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="stylesheet" href="../../public/notifications.css">
+    <link rel="stylesheet" href="../../public/flashmessage.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -373,6 +374,16 @@ foreach ($stmtF->fetchAll(PDO::FETCH_ASSOC) as $f) {
             </div>
         </div>
 
+        <?php if (isset($_SESSION['flash_message'])): ?>
+        <div class="flash-message
+            <?= isset($_SESSION['flash_type']) && $_SESSION['flash_type'] === 'success' ? 'flash-success' : '' ?>
+            <?= isset($_SESSION['flash_type']) && $_SESSION['flash_type'] === 'error' ? 'flash-error' : '' ?>"
+            id="flash-message">
+            <?= htmlspecialchars($_SESSION['flash_message']) ?>
+        </div>
+        <?php unset($_SESSION['flash_message'], $_SESSION['flash_type']); ?>
+        <?php endif; ?>
+
     </section>
 
     <script>
@@ -499,6 +510,15 @@ foreach ($stmtF->fetchAll(PDO::FETCH_ASSOC) as $f) {
         });
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const flash = document.getElementById('flash-message');
+        if (flash) {
+            setTimeout(() => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 500);
+            }, 4000);
+        }
+    });
     </script>
 
     <script src="../../actions/script.js"></script>
