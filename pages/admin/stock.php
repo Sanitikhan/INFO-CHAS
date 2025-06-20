@@ -443,16 +443,27 @@ try {
 
     // Voir button
     document.querySelectorAll('.btn-voir').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
             const row = btn.closest('tr');
+            const etat = row.dataset.etat;
+            const etatLabel = etat.charAt(0).toUpperCase() + etat.slice(1);
+
             const details = [
-                ['Référence', row.children[0].textContent],
-                ['Type', row.children[1].textContent],
-                ['Quantité', row.children[2].textContent],
-                ['Disponibilité', row.children[3].textContent],
-                ['Etat', row.children[4].textContent],
+                ['Référence', row.dataset.reference],
+                ['Type', row.dataset.type],
+                ['Quantité totale', row.dataset.quantite_total],
+                ['Disponibilité', row.dataset.disponibilite],
+                ['Réservé', row.dataset.reserve],
+                ['À venir', row.dataset.a_venir],
+                [
+                    'État',
+                    `<span class="etat-square ${etat}"></span> ${etatLabel}`
+                ],
+                ['Fournisseur ID', row.dataset.fournisseur_id],
+                ['Emplacement', row.dataset.emplacement || '—']
             ];
-            // If you want to show more details, add them here using data- attributes
+
             let html = '<tbody>';
             details.forEach(([label, value]) => {
                 html += `<tr><th>${label}</th><td>${value}</td></tr>`;
