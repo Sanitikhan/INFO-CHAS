@@ -684,12 +684,19 @@ if (isset($_GET['details'])) {
     document.querySelectorAll('.btn-voir').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
+            const row = btn.closest('tr');
+            const statut = row.dataset.statut;
+            const statutLabel = btn.dataset.statut.charAt(0).toUpperCase() + btn.dataset.statut.slice(1);
+
             const details = [
                 ['Numéro', btn.dataset.numero],
                 ['Fournisseur', btn.dataset.fournisseur],
                 ['Date prévue', btn.dataset.date_prevue],
                 ['Date livraison', btn.dataset.date_livraison],
-                ['Statut', btn.dataset.statut.charAt(0).toUpperCase() + btn.dataset.statut.slice(1)],
+                [
+                    'Statut',
+                    `<span class="statut-badge ${statut}"></span> ${statutLabel}`
+                ],
                 ['Livreur', btn.dataset.livreur],
                 ['Notes', btn.dataset.notes]
             ];
