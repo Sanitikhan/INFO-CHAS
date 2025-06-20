@@ -268,7 +268,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                     <div style="text-align:center;">
                         <button class="btn" id="open-cart-modal">Voir mon panier</button>
                     </div>
-                    <button class="btn btn-add" id="add-lot-btn">Ajouter un lot</button>
                 <?php endif; ?>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
