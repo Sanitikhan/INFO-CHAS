@@ -12,12 +12,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($user) {
         if (password_verify($password, $user['password'])) {
+            // Authentification réussie
+            $_SESSION['loggedin'] = true;
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['username'] = $user['username'];
             header('Location: admin/dashboard.php');
             exit();
         } else {
+            // Mot de passe incorrect
             $_SESSION['flash_message'] = "Mot de passe incorrect.";
             $_SESSION['flash_type'] = "error";
             header('Location: login.php');
