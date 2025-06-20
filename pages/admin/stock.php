@@ -9,6 +9,13 @@ try {
     echo "Erreur : " . $e->getMessage();
     $lots = [];
 }
+
+// Fetch all fournisseurs for mapping
+$fournisseursMap = [];
+$stmtF = $pdo->query("SELECT id, nom FROM fournisseurs");
+foreach ($stmtF->fetchAll(PDO::FETCH_ASSOC) as $f) {
+    $fournisseursMap[$f['id']] = $f['nom'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -268,6 +275,7 @@ try {
                         data-a_venir="<?= htmlspecialchars($lot['a_venir']) ?>"
                         data-etat="<?= htmlspecialchars($lot['etat']) ?>"
                         data-fournisseur_id="<?= htmlspecialchars($lot['fournisseur_id']) ?>"
+                        data-fournisseur_nom="<?= isset($fournisseursMap[$lot['fournisseur_id']]) ? htmlspecialchars($fournisseursMap[$lot['fournisseur_id']]) : '—' ?>"
                         data-emplacement="<?= isset($lot['emplacement']) ? htmlspecialchars($lot['emplacement']) : '' ?>"
                     >
                         <td><?= htmlspecialchars($lot['reference']) ?></td>
@@ -460,7 +468,7 @@ try {
                     'État',
                     `<span class="etat-square ${etat}"></span> ${etatLabel}`
                 ],
-                ['Fournisseur ID', row.dataset.fournisseur_id],
+                ['Fournisseur', row.dataset.fournisseur_nom],
                 ['Emplacement', row.dataset.emplacement || '—']
             ];
 
