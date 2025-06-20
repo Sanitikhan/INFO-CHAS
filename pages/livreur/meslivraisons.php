@@ -2,6 +2,13 @@
 session_start();
 require_once '../../includes/config.php';
 
+// Vérifier si l'utilisateur est connecté
+if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] == true) {
+    // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+    header('Location: ../login.php');
+    exit();
+}
+
 
 // Fetch only the livraisons for this livreur
 $stmt = $pdo->prepare("

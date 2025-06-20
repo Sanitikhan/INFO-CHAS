@@ -2,6 +2,13 @@
 session_start();
 require_once '../../includes/config.php';
 
+// Vérifier si l'utilisateur est connecté
+if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] == true) {
+    // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+    header('Location: ../login.php');
+    exit();
+}
+
 $user_id = $_SESSION['user_id'];
 $stmt = $pdo->prepare("SELECT email FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
