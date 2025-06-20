@@ -129,6 +129,7 @@ if (isset($_GET['details'])) {
     <title>Livraisons</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
+    <link rel="stylesheet" href="../../public/modal2.css">
     <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="stylesheet" href="../../public/notifications.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
@@ -407,7 +408,17 @@ if (isset($_GET['details'])) {
                             <td class="actions">
                                 
                                 <?php if ($_SESSION['role'] === 'admin'): ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                                    <button class="btn btn-voir"
+                                        data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                        data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                        data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                        data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                        data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                        data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                        data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                        style="padding: 5px 10px;">
+                                        Voir
+                                    </button>
                                     <a href="#" 
                                     class="btn btn-edit" 
                                     style="padding: 5px 10px;"
@@ -421,10 +432,30 @@ if (isset($_GET['details'])) {
                                     >Modifier</a>
                                     <button class="btn btn-delete" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">Supprimer</button>
                                 <?php elseif ($_SESSION['role'] === 'livreur'): ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                                    <button class="btn btn-voir"
+                                        data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                        data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                        data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                        data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                        data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                        data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                        data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                        style="padding: 5px 10px;">
+                                        Voir
+                                    </button>
                                     <button class="btn" style="padding: 5px 10px;">Confirmer Livraison</button>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de livraison'): ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                                    <button class="btn btn-voir"
+                                        data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                        data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                        data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                        data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                        data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                        data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                        data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                        style="padding: 5px 10px;">
+                                        Voir
+                                    </button>
                                     <button class="btn btn-attribuer" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">Attribuer</button>
                                     <?php if ($livraison['statut'] !== 'livrée'): ?>
                                         <button class="btn btn-confirmer-livraison" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">
@@ -432,10 +463,30 @@ if (isset($_GET['details'])) {
                                         </button>
                                 <?php endif; ?>
                                 <?php elseif ($_SESSION['role'] === 'gestionnaire de stock'): ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                                    <button class="btn btn-voir"
+                                            data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                            data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                            data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                            data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                            data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                            data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                            data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                            style="padding: 5px 10px;">
+                                            Voir
+                                        </button>
                                     <button class="btn" style="padding: 5px 10px;">Mettre à jour Stock</button>
                                 <?php else: ?>
-                                    <a href="?details=<?= $livraison['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                                    <button class="btn btn-voir"
+                                        data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                        data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                        data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                        data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                        data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                        data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                        data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                        style="padding: 5px 10px;">
+                                        Voir
+                                    </button>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -444,12 +495,13 @@ if (isset($_GET['details'])) {
         </table>
 
         <!-- Modal détails -->
-        <div id="modal-details" class="modal" style="display: <?= !empty($detailsHtml) ? 'block' : 'none' ?>;">
-            <div class="modal-content">
-                <span class="close" onclick="fermerModal()">&times;</span>
-                <div id="details-content">
-                    <?= $detailsHtml ?>
-                </div>
+        <div id="modal-details" class="modal" style="display:none;">
+            <div class="modal-content" style="max-width:420px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
+                <button onclick="fermerModal()" class="close" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</button>
+                <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Détails de la livraison</h2>
+                <table id="details-content" style="width:100%; background:#f9f9f9; border-radius:8px; overflow:hidden;">
+                    <!-- Details will be filled by JS -->
+                </table>
             </div>
         </div>
 
@@ -628,15 +680,31 @@ if (isset($_GET['details'])) {
     });
     });
 
-    // Modal close function
+    // Voir button logic for livraisons
+    document.querySelectorAll('.btn-voir').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const details = [
+                ['Numéro', btn.dataset.numero],
+                ['Fournisseur', btn.dataset.fournisseur],
+                ['Date prévue', btn.dataset.date_prevue],
+                ['Date livraison', btn.dataset.date_livraison],
+                ['Statut', btn.dataset.statut.charAt(0).toUpperCase() + btn.dataset.statut.slice(1)],
+                ['Livreur', btn.dataset.livreur],
+                ['Notes', btn.dataset.notes]
+            ];
+            let html = '<tbody>';
+            details.forEach(([label, value]) => {
+                html += `<tr><th>${label}</th><td>${value}</td></tr>`;
+            });
+            html += '</tbody>';
+            document.getElementById('details-content').innerHTML = html;
+            document.getElementById('modal-details').style.display = 'flex';
+        });
+    });
+
     function fermerModal() {
         document.getElementById('modal-details').style.display = 'none';
-        // Remove ?details=... from URL without reloading
-        if (window.history.replaceState) {
-            const url = new URL(window.location);
-            url.searchParams.delete('details');
-            window.history.replaceState({}, document.title, url.pathname + url.search);
-        }
     }
 
     // Modal edit

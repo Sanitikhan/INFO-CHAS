@@ -47,28 +47,6 @@ if (isset($_GET['details'])) {
                 <?= ucfirst(str_replace('_', ' ', $commande['etat'])) ?>
             </span>
         </p>
-        <h3>Lots commandés</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Référence lot</th>
-                    <th>Type</th>
-                    <th>Quantité</th>
-                    <th>État</th>
-                    <th>Lieu stock</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($lots as $lot): ?>
-                <tr>
-                    <td><?= htmlspecialchars($lot['reference']) ?></td>
-                    <td><?= htmlspecialchars($lot['type']) ?></td>
-                    <td><?= htmlspecialchars($lot['quantite']) ?></td>
-                    <td><?= htmlspecialchars($lot['etat']) ?></td>
-                    <td><?= htmlspecialchars($lot['lieu_stock']) ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
         </table>
         <?php
     } else {
@@ -89,6 +67,7 @@ if (isset($_GET['details'])) {
     <link rel="stylesheet" href="../../public/stock.css">
     <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="stylesheet" href="../../public/flashmessage.css">
+    <link rel="stylesheet" href="../../public/modal2.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -351,7 +330,16 @@ if (isset($_GET['details'])) {
                                 </span>
                             </td>
                         <td>
-                            <a href="?details=<?= $commande['id'] ?>" class="btn btn-view" style="padding: 5px 10px;">Voir</a>
+                            <button class="btn btn-voir"
+                                data-reference="<?= htmlspecialchars($commande['reference']) ?>"
+                                data-preparateur="<?= htmlspecialchars($commande['preparateur']) ?>"
+                                data-livreur="<?= htmlspecialchars($commande['livreur']) ?>"
+                                data-date_commande="<?= htmlspecialchars($commande['date_commande']) ?>"
+                                data-date_livraison="<?= htmlspecialchars($commande['date_livraison']) ?>"
+                                data-etat="<?= htmlspecialchars($commande['etat']) ?>"
+                                style="padding: 5px 10px;">
+                                Voir
+                            </button>
                             <button class="btn btn-edit"
                                 style="padding: 5px 10px;"
                                 data-id="<?= $commande['id'] ?>"
@@ -369,12 +357,14 @@ if (isset($_GET['details'])) {
             </tbody>
         </table>
 
-        <div id="modal-details" class="modal" style="display: <?= !empty($detailsHtml) ? 'block' : 'none' ?>;">
-            <div class="modal-content">
-                <span class="close" onclick="fermerModal()">&times;</span>
-                <div id="details-content">
-                    <?= $detailsHtml ?>
-                </div>
+        <!-- Modal Voir -->
+        <div id="voir-lot-modal" class="modal" style="display:none;">
+            <div class="modal-content" style="max-width:420px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
+                <button onclick="document.getElementById('voir-lot-modal').style.display='none'" class="close" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</button>
+                <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Détails du lot</h2>
+                <table id="voir-lot-details" style="width:100%; background:#f9f9f9; border-radius:8px; overflow:hidden;">
+                    <!-- Details will be filled by JS -->
+                </table>
             </div>
         </div>
 
@@ -523,15 +513,27 @@ if (isset($_GET['details'])) {
         });
     });
 
-    function fermerModal() {
-        document.getElementById('modal-details').style.display = 'none';
-        // Remove ?details=... from URL without reloading
-        if (window.history.replaceState) {
-            const url = new URL(window.location);
-            url.searchParams.delete('details');
-            window.history.replaceState({}, document.title, url.pathname + url.search);
-        }
-    }
+    // Voir button
+    document.querySelectorAll('.btn-voir').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const details = [
+                ['Référence', btn.dataset.reference],
+                ['Préparateur', btn.dataset.preparateur],
+                ['Livreur', btn.dataset.livreur],
+                ['Date commande', btn.dataset.date_commande],
+                ['Date livraison', btn.dataset.date_livraison],
+                ['État', btn.dataset.etat.charAt(0).toUpperCase() + btn.dataset.etat.slice(1)]
+            ];
+            let html = '<tbody>';
+            details.forEach(([label, value]) => {
+                html += `<tr><th>${label}</th><td>${value}</td></tr>`;
+            });
+            html += '</tbody>';
+            document.getElementById('voir-lot-details').innerHTML = html;
+            document.getElementById('voir-lot-modal').style.display = 'flex';
+        });
+    });
 
 document.querySelectorAll('.btn-edit').forEach(btn => {
     btn.addEventListener('click', function(e) {

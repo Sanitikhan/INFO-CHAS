@@ -1,5 +1,5 @@
 /* Modal overlay */
-#voir-lot-modal.modal {
+#voir-lot-modal.modal, #modal-details.modal {
     display: none;
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
@@ -10,7 +10,7 @@
 }
 
 /* Modal content card */
-#voir-lot-modal .modal-content {
+#voir-lot-modal .modal-content #details-content .modal-content {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.18);
@@ -26,7 +26,7 @@
     to { transform: translateY(0); opacity: 1; }
 }
 
-#voir-lot-modal .close {
+#voir-lot-modal .close #details-content {
     position: absolute;
     top: 10px; right: 10px;
     font-size: 1.5em;
@@ -36,27 +36,27 @@
     cursor: pointer;
     transition: color 0.2s;
 }
-#voir-lot-modal .close:hover {
+#voir-lot-modal .close:hover #details-content .close:hover {
     color: #f44336;
 }
 
-#voir-lot-details {
+#voir-lot-details, #details-content {
     width: 100%;
     background: #f9f9f9;
     border-radius: 8px;
     overflow: hidden;
     border-collapse: collapse;
 }
-#voir-lot-details th, #voir-lot-details td {
+#voir-lot-details th, #voir-lot-details td, #details-content th, #details-content td {
     padding: 8px 12px;
     border-bottom: 1px solid #eee;
     text-align: left;
 }
-#voir-lot-details th {
+#voir-lot-details th, #details-content th {
     background: #f1f1f1;
     font-weight: 600;
     width: 40%;
 }
-#voir-lot-details tr:last-child td, #voir-lot-details tr:last-child th {
+#voir-lot-details tr:last-child td, #voir-lot-details tr:last-child th, #details-content tr:last-child td, #details-content tr:last-child th {
     border-bottom: none;
 }

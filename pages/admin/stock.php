@@ -441,7 +441,7 @@ try {
         });
     });
 
-    // Voir button logic
+    // Voir button
     document.querySelectorAll('.btn-voir').forEach(btn => {
         btn.addEventListener('click', function() {
             const row = btn.closest('tr');
@@ -482,7 +482,6 @@ try {
 
     </script>
 
-    <script src="../../actions/search.js"></script>
     <script src="../../actions/script.js"></script>
 </body>
 </html>
