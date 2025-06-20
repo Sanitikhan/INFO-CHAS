@@ -37,6 +37,7 @@ if (isset($_SESSION['user_id'])) {
     <title>Messagerie</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/mesmessages.css">
+    <link rel="stylesheet" href="../../public/messages.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />

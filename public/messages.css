@@ -1,0 +1,18 @@
+* {
+    --primary-color: #222831;
+    --secondary-color: #393E46;
+    --thrid-color: #948979;
+    --fourth-color: #DFD0B8;
+}
+
+.received-messages ul {
+    list-style-type: none;
+    padding: 0;
+}
+.received-messages li {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+}
