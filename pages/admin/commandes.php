@@ -607,8 +607,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
     </script>
-
-    <script src="../../actions/search.js"></script>
     <script src="../../actions/script.js"></script>
 </body>
 </html>
