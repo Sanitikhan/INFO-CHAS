@@ -60,6 +60,7 @@
     height: 20px;
     border-radius: 4px;
     margin: 0 auto;
+    vertical-align: middle;
 }
 .etat-square.vert {
     background: #4caf50;

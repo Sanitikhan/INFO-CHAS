@@ -1,0 +1,125 @@
+* {
+    --primary-color: #222831;
+    --secondary-color: #393E46;
+    --thrid-color: #948979;
+    --fourth-color: #DFD0B8;
+}
+
+.modal-edit {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.3);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.form-section {
+    width: 100%;
+    background-color: var(--secondary-color);
+    padding: 2em;
+    border-radius: 12px;
+    gap: 5em;
+    transition: all 0.3s ease;
+}
+
+form select {
+    padding: 0.3em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+form select option {
+    background: #fff;
+    color: #333;
+}
+
+form input {
+    padding: 0.3em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(241, 95, 97, 0.3);
+}
+
+form button {
+    padding: 0.8em;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+form button:hover {
+    background-color: #939ad1;
+}
+
+/* Modal content card (applies to all modals) */
+.modal-edit .modal-content {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    padding: 2em 2em 1.5em 2em;
+    position: relative;
+    max-width: 420px;
+    width: 100%;
+}
+
+.modal .modal-content {
+    animation: modalIn 0.2s;
+}
+
+.form-section {
+    animation: modalIn 0.2s;
+    padding: 0.5em;
+}
+
+@keyframes modalIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-edit .close {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 1.5em;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.modal-edit .close:hover {
+    color: #f44336;
+}
+
+#voir-lot-details, #details-content {
+    width: 100%;
+    background: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+    border-collapse: collapse;
+}
+#voir-lot-details th, #voir-lot-details td, #details-content th, #details-content td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+#voir-lot-details th, #details-content th {
+    background: #f1f1f1;
+    font-weight: 600;
+    width: 40%;
+}
+#voir-lot-details tr:last-child td, #voir-lot-details tr:last-child th,
+#details-content tr:last-child td, #details-content tr:last-child th {
+    border-bottom: none;
+}

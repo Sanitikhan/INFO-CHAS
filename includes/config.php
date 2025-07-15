@@ -1,8 +1,8 @@
 <?php
-$host = "192.168.1.30";
+$host = "localhost"; // changer en 192.168.1.30
 $dbname = "stock_management";
-$username = "root"; // Remplace par ton utilisateur MySQL si différent
-$password = ""; // Mets ton mot de passe MySQL si nécessaire
+$username = "root"; // infochasuser
+$password = ""; // 123456
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);

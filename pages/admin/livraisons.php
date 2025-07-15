@@ -17,13 +17,10 @@ if (isset($_SESSION['user_id'])) {
 }
 
 // Récupérer les livraisons avec jointures
-$sql = "SELECT l.*, f.nom as fournisseur_nom, u.username as createur_username,
-        COUNT(ld.id) as nb_lots,
-        SUM(CASE WHEN ld.quantite_recue > 0 THEN 1 ELSE 0 END) as lots_recus
+$sql = "SELECT l.*, f.nom as fournisseur_nom, u.username as createur_username
         FROM livraisons l
         LEFT JOIN fournisseurs f ON l.fournisseur_id = f.id
         LEFT JOIN users u ON l.created_by = u.id
-        LEFT JOIN livraisons_details ld ON l.id = ld.livraison_id
         GROUP BY l.id
         ORDER BY l.date_prevue DESC";
 
@@ -72,16 +69,6 @@ if (isset($_GET['details'])) {
     $stmt->execute([$livraison_id]);
     $livraison = $stmt->fetch();
 
-    // Fetch livraison details
-    /*$stmt = $pdo->prepare("
-        SELECT ld.*, lots.reference, lots.type
-        FROM livraisons_details ld
-        LEFT JOIN lots ON ld.lot_id = lots.id
-        WHERE ld.livraison_id = ?
-    ");
-    $stmt->execute([$livraison_id]);
-    $details = $stmt->fetchAll();*/
-
     ob_start();
     if ($livraison) {
         ?>
@@ -97,35 +84,21 @@ if (isset($_GET['details'])) {
         <p><strong>Notes:</strong> <?= htmlspecialchars($livraison['notes'] ?? '-') ?></p>
         <p><strong>Créé par:</strong> <?= htmlspecialchars($livraison['createur_username']) ?></p>
         <p><strong>Date de création:</strong> <?= htmlspecialchars(date('d/m/Y H:i', strtotime($livraison['created_at']))) ?></p>
-        <!--<h3>Détails des lots</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Référence lot</th>
-                    <th>Type</th>
-                    <th>Quantité attendue</th>
-                    <th>Quantité reçue</th>
-                    <th>Commentaire</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($details as $d): ?>
-                <tr>
-                    <td><?= htmlspecialchars($d['reference']) ?></td>
-                    <td><?= htmlspecialchars($d['type']) ?></td>
-                    <td><?= htmlspecialchars($d['quantite_attendue']) ?></td>
-                    <td><?= htmlspecialchars($d['quantite_recue']) ?></td>
-                    <td><?= htmlspecialchars($d['commentaire']) ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>-->
         <?php
     } else {
         echo "<p>Aucune information trouvée pour cette livraison.</p>";
     }
     $detailsHtml = ob_get_clean();
 }
+
+$articles = $pdo->query("
+    SELECT a.*, 
+        GROUP_CONCAT(l.reference SEPARATOR ', ') AS lots
+    FROM articles a
+    LEFT JOIN article_lot al ON a.id = al.article_id
+    LEFT JOIN lots l ON al.lot_id = l.id
+    GROUP BY a.id
+")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -136,6 +109,7 @@ if (isset($_GET['details'])) {
     <title>Livraisons</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
+    <link rel="stylesheet" href="../../public/stock.css">
     <link rel="stylesheet" href="../../public/modal2.css">
     <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="stylesheet" href="../../public/notifications.css">
@@ -321,7 +295,7 @@ if (isset($_GET['details'])) {
     <section class="main-content">
         
         <header class="header">
-            <h1>LIVRAISONS</h1>
+            <h1>COMMANDES</h1>
         </header>
         
         <section class="btn-section">
@@ -370,6 +344,124 @@ if (isset($_GET['details'])) {
                 <button type="submit">Ajouter la livraison</button>
             </form>
         </div>
+
+        <table id="livraisons-table" border="1" cellpadding="6" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Référence</th>
+                    <th>Catégorie</th>
+                    <th>Couleur</th>
+                    <th>Taille</th>
+                    <th>Quantité en stock</th>
+                    <th>Lots liés</th>
+                    <th>Etat</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+                <tbody>
+                    <?php foreach ($articles as $article): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($article['nom_article']) ?></td>
+                        <td><?= htmlspecialchars($article['reference']) ?></td>
+                        <td><?= htmlspecialchars($article['categorie']) ?></td>
+                        <td><?= htmlspecialchars($article['couleur']) ?></td>
+                        <td><?= htmlspecialchars($article['taille']) ?></td>
+                        <td><?= $article['quantite_stock'] ?></td>
+                        <td><?= htmlspecialchars($article['lots']) ?></td>
+                        <td>
+                            <span class="etat-square <?= htmlspecialchars($article['etat']) ?>"></span>
+                        </td>
+                        <td class="actions">
+                                
+                                <?php if ($_SESSION['role'] === 'admin'): ?>
+                                    <button class="btn btn-voir"
+                                        data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                        data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                        data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                        data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                        data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                        data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                        data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                        style="padding: 5px 10px;">
+                                        Voir
+                                    </button>
+                                    <a href="#" 
+                                    class="btn btn-edit" 
+                                    style="padding: 5px 10px;"
+                                    data-id="<?= $livraison['id'] ?>"
+                                    data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                    data-fournisseur="<?= $livraison['fournisseur_id'] ?>"
+                                    data-date="<?= $livraison['date_prevue'] ?>"
+                                    data-statut="<?= $livraison['statut'] ?>"
+                                    data-livreur="<?= $livraison['livreur_id'] ?>"
+                                    data-notes="<?= htmlspecialchars($livraison['notes'] ?? '') ?>"
+                                    >Modifier</a>
+                                    <button class="btn btn-delete" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">Supprimer</button>
+                                <?php elseif ($_SESSION['role'] === 'livreur'): ?>
+                                    <button class="btn btn-voir"
+                                        data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                        data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                        data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                        data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                        data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                        data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                        data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                        style="padding: 5px 10px;">
+                                        Voir
+                                    </button>
+                                    <button class="btn" style="padding: 5px 10px;">Confirmer Livraison</button>
+                                <?php elseif ($_SESSION['role'] === 'gestionnaire de livraison'): ?>
+                                    <button class="btn btn-voir"
+                                        data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                        data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                        data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                        data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                        data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                        data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                        data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                        style="padding: 5px 10px;">
+                                        Voir
+                                    </button>
+                                    <button class="btn btn-attribuer" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">Attribuer</button>
+                                    <?php if ($livraison['statut'] !== 'livrée'): ?>
+                                        <button class="btn btn-confirmer-livraison" style="padding: 5px 10px;" data-id="<?= $livraison['id'] ?>">
+                                            Confirmer Livraison
+                                        </button>
+                                <?php endif; ?>
+                                <?php elseif ($_SESSION['role'] === 'gestionnaire de stock'): ?>
+                                    <button class="btn btn-voir"
+                                            data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                            data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                            data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                            data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                            data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                            data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                            data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                            style="padding: 5px 10px;">
+                                            Voir
+                                        </button>
+                                    <button class="btn" style="padding: 5px 10px;">Mettre à jour Stock</button>
+                                <?php else: ?>
+                                    <button class="btn btn-voir"
+                                        data-numero="<?= htmlspecialchars($livraison['numero_livraison']) ?>"
+                                        data-fournisseur="<?= htmlspecialchars($livraison['fournisseur_nom']) ?>"
+                                        data-date_prevue="<?= date('d/m/Y', strtotime($livraison['date_prevue'])) ?>"
+                                        data-date_livraison="<?= $livraison['date_livraison'] ? date('d/m/Y H:i', strtotime($livraison['date_livraison'])) : '-' ?>"
+                                        data-statut="<?= htmlspecialchars($livraison['statut']) ?>"
+                                        data-livreur="<?= htmlspecialchars($livraison['livreur_nom'] ?? '-') ?>"
+                                        data-notes="<?= htmlspecialchars($livraison['notes'] ?? '-') ?>"
+                                        style="padding: 5px 10px;">
+                                        Voir
+                                    </button>
+                                <?php endif; ?>
+                            </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+        </table>
+
 
         <!-- Affichage des livraisons existantes -->
         <table id="livraisons-table" border="1" cellpadding="6" cellspacing="0">
