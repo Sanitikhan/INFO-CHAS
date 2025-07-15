@@ -222,6 +222,7 @@ $total_alertes = $total_lots_alertes + $total_livraisons_alertes;
         <header class="header">
             <h1>TABLEAU DE BORD</h1>
         </header>
+        <p>Bienvenue sur votre application de gestion de stock <strong><?php echo $_SESSION['username']; ?></strong> ! </p>
         <p>Vous êtes connecté en tant que <strong><?php echo $_SESSION['role']; ?></strong>.</p>
 
         <div class="dashboard-grid">
