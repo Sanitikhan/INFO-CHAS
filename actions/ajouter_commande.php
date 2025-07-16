@@ -10,7 +10,7 @@ $lots = $_POST['lots'] ?? [];
 $quantites = $_POST['quantite'] ?? [];
 
 // Valider les données (exemple rapide)
-if (empty($_POST['date_commande']) || empty($_POST['date_prevue_envoie']) || empty($_POST['etat_preparation']) || !isset($_POST['quantite']) || !isset($_POST['lots'])) {
+if (empty($_POST['date_commande']) || empty($_POST['date_prevue_envoi']) || empty($_POST['etat_preparation']) || !isset($_POST['quantite']) || !isset($_POST['lots'])) {
     die("Tous les champs doivent être remplis");
 }
 

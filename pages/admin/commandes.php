@@ -16,6 +16,7 @@ require_once '../../includes/config.php';
             c.id AS commande_id,
             c.date_prevue_envoi,
             c.etat_preparation,
+            cl.quantite AS quantite_lot_commande,
             l.id AS lot_id,
             GROUP_CONCAT(
                 CONCAT(
@@ -34,8 +35,34 @@ require_once '../../includes/config.php';
         WHERE c.etat_preparation != 'prêt'
         GROUP BY c.id, l.id
         ORDER BY c.date_prevue_envoi ASC
-        ";
+    ";
     $lotsAPreparer = $pdo->query($sqlApreparer)->fetchAll(PDO::FETCH_ASSOC);
+
+
+    foreach ($lotsAPreparer as &$lot) {
+    $articlesRaw = explode('<br>', $lot['articles']);
+    $articlesParTaille = [];
+
+    foreach ($articlesRaw as $articleStr) {
+        if (preg_match('/ - (.+?) - (.+?) - (.+?) x(\d+)/', $articleStr, $matches)) {
+            $couleur = $matches[2];
+            $taille = $matches[3];
+            $quantite = $matches[4];
+
+            if (!isset($articlesParTaille[$taille])) {
+                $articlesParTaille[$taille] = [];
+            }
+            $articlesParTaille[$taille][] = "$couleur x$quantite";
+        }
+    }
+
+    $articlesAffichage = [];
+    foreach ($articlesParTaille as $taille => $couleurs) {
+        $articlesAffichage[] = "$taille (" . implode(', ', $couleurs) . ")";
+    }
+
+    $lot['articles'] = implode('<br>', $articlesAffichage);
+}
 
 
     // Lots prêts
@@ -369,6 +396,7 @@ function statutBadgeClass($etat) {
                 <tr>
                     <th>Commande n°</th>
                     <th>Lot n°</th>
+                    <th>Quantité de lot</th>
                     <th>Articles du lot</th>
                     <th>Date prévue d'envoi</th>
                     <th>État</th>
@@ -391,6 +419,7 @@ function statutBadgeClass($etat) {
                     <tr>
                         <td>#<?= $lot['commande_id'] ?></td>
                         <td><?= $lot['lot_id'] ?></td>
+                        <td><?= $lot['quantite_lot_commande'] ?></td>
                         <td><?= $lot['articles'] ?></td>
                         <td><?= date('d/m/Y', strtotime($lot['date_prevue_envoi'])) ?></td>
                         <td><span class="statut-badge <?= statutBadgeClass($commande['etat_preparation']) ?>">
