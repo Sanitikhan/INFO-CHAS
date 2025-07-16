@@ -105,6 +105,16 @@ require_once '../../includes/config.php';
     $stmt->execute();
     $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+function statutBadgeClass($etat) {
+    switch (strtolower($etat)) {
+        case 'à préparer': return 'statut-attendue';
+        case 'en cours': return 'statut-en_cours';
+        case 'prêt': return 'statut-livree';
+        case 'problème': return 'statut-probleme';
+        default: return 'statut-attendue';
+    }
+}
+?>
 ?>
 
 
@@ -118,6 +128,7 @@ require_once '../../includes/config.php';
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/stock.css">
+    <link rel="stylesheet" href="../../public/badges.css">
     <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="stylesheet" href="../../public/flashmessage.css">
     <link rel="stylesheet" href="../../public/modal2.css">
@@ -382,7 +393,9 @@ require_once '../../includes/config.php';
                         <td><?= $lot['lot_id'] ?></td>
                         <td><?= $lot['articles'] ?></td>
                         <td><?= date('d/m/Y', strtotime($lot['date_prevue_envoi'])) ?></td>
-                        <td><?= $lot['etat_preparation'] ?></td>
+                        <td><span class="statut-badge <?= statutBadgeClass($commande['etat_preparation']) ?>">
+                            <?= htmlspecialchars($commande['etat_preparation']) ?>
+                        </span></td>
                         <td>
                             <?php if ($commandeAssociee): ?>
                                 <button class="btn btn-voir"

@@ -1,0 +1,33 @@
+/* Badges de statut */
+.statut-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+}
+
+/* Statuts */
+.statut-a-preparer {
+    border: 1px solid #000;
+    background-color: #ffeaa7;
+    color: #d63031;
+}
+
+.statut-en-cours {
+    background-color: #74b9ff;
+    color: white;
+}
+
+.statut-pret {
+    background-color: #00b894;
+    color: white;
+}
+
+.statut-probleme {
+    background-color: #e17055;
+    color: white;
+}
