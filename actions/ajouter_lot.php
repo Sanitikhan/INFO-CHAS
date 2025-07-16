@@ -2,38 +2,29 @@
 session_start();
 require_once '../includes/config.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $reference = $_POST['reference'];
-    $type = $_POST['type'];
-    $quantite_total = $_POST['quantite_total'];
-    $disponibilite = $_POST['disponibilite'];
-    $reserve = $_POST['reserve'] ?? 0;
-    $a_venir = $_POST['a_venir'] ?? 0;
-    $etat = $_POST['etat'];
-    $fournisseur_id = $_POST['fournisseur_id'];
-    $emplacement = $_POST['emplacement_id'] ?? null;
-
-    $stmt = $pdo->prepare("INSERT INTO lots 
-        (reference, type, quantite_total, disponibilite, reserve, a_venir, etat, fournisseur_id, emplacement_id)
-        VALUES 
-        (:reference, :type, :quantite_total, :disponibilite, :reserve, :a_venir, :etat, :fournisseur_id, :emplacement_id)"
-    );
-
+if (
+    isset($_POST['nom'], $_POST['categorie'], $_POST['quantite_stock'], $_POST['etat'], $_POST['fournisseur_id'], $_POST['articles'])
+) {
+    // Insert lot
+    $stmt = $pdo->prepare("INSERT INTO lots (categorie, quantite_stock, etat, fournisseur_id, emplacement) VALUES (?, ?, ?, ?, ?)");
     $stmt->execute([
-        'reference' => $reference,
-        'type' => $type,
-        'quantite_total' => $quantite_total,
-        'disponibilite' => $disponibilite,
-        'reserve' => $reserve,
-        'a_venir' => $a_venir,
-        'etat' => $etat,
-        'fournisseur_id' => $fournisseur_id,
-        'emplacement_id' => $emplacement
+        $_POST['categorie'],
+        $_POST['quantite_stock'],
+        $_POST['etat'],
+        $_POST['fournisseur_id'],
+        $_POST['emplacement'] ?? null
     ]);
+    $lot_id = $pdo->lastInsertId();
 
-    $_SESSION['flash_message'] = "Lot ajouté avec succès.";
+    // Link articles to lot
+    foreach ($_POST['articles'] as $article_id) {
+        $stmt2 = $pdo->prepare("INSERT INTO article_lot (article_id, lot_id) VALUES (?, ?)");
+        $stmt2->execute([$article_id, $lot_id]);
+    }
+
+    $_SESSION['flash_message'] = "Lot créé avec succès.";
     $_SESSION['flash_type'] = "success";
+    header('Location: ../pages/admin/lots.php');
+    exit();
 }
-header('Location: ../pages/admin/stock.php');
-exit();
 ?>

@@ -22,6 +22,8 @@
     border-radius: 12px;
     gap: 5em;
     transition: all 0.3s ease;
+    animation: modalIn 0.2s;
+    margin: 0.5em 0;
 }
 
 form select {
@@ -76,11 +78,6 @@ form button:hover {
 
 .modal .modal-content {
     animation: modalIn 0.2s;
-}
-
-.form-section {
-    animation: modalIn 0.2s;
-    padding: 0.5em;
 }
 
 @keyframes modalIn {

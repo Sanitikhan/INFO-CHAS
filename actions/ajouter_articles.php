@@ -3,7 +3,7 @@ require_once '../includes/config.php';
 session_start();
 
 if (
-    isset($_POST['nom_article'], $_POST['reference'], $_POST['categorie'], $_POST['couleur'], $_POST['taille'], $_POST['quantite_stock'], $_POST['etat'])
+    isset($_POST['nom_article'], $_POST['reference'], $_POST['categorie'], $_POST['quantite_stock'], $_POST['etat'])
 ) {
     try {
         $stmt = $pdo->prepare("
@@ -11,19 +11,15 @@ if (
                 nom_article,
                 reference,
                 categorie,
-                couleur,
-                taille,
                 quantite_stock,
                 etat
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?)
         ");
 
         if ($stmt->execute([
             $_POST['nom_article'],
             $_POST['reference'],
             $_POST['categorie'],
-            $_POST['couleur'],
-            $_POST['taille'],
             $_POST['quantite_stock'] ?? null,
             $_POST['etat']
         ])) {

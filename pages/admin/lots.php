@@ -18,12 +18,79 @@ if (isset($_SESSION['user_id'])) {
 
 $articles = $pdo->query("
     SELECT a.*, 
-        GROUP_CONCAT(DISTINCT CONCAT('Lot n°', l.id) SEPARATOR ', ') AS lots
+        GROUP_CONCAT(CONCAT('Lot n°', l.id) SEPARATOR ', ') AS lots
     FROM articles a
     LEFT JOIN article_lot al ON a.id = al.article_id
     LEFT JOIN lots l ON al.lot_id = l.id
     GROUP BY a.id
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch lots with their linked articles
+$lots = $pdo->query("
+    SELECT l.*, 
+        GROUP_CONCAT(DISTINCT a.nom_article SEPARATOR ', ') AS articles
+    FROM lots l
+    LEFT JOIN article_lot al ON l.id = al.lot_id
+    LEFT JOIN articles a ON al.article_id = a.id
+    GROUP BY l.id
+")->fetchAll(PDO::FETCH_ASSOC);
+
+if (!isset($_SESSION['lot_basket'])) {
+    $_SESSION['lot_basket'] = [];
+}
+
+// Add article to basket (only one reference allowed)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_basket'])) {
+    $article_id = intval($_POST['article_id']);
+    $_SESSION['lot_basket'] = [$article_id]; // Only one article in basket
+    header('Location: lots.php');
+    exit();
+}
+
+// Remove article from basket
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_from_basket'])) {
+    $_SESSION['lot_basket'] = [];
+    header('Location: lots.php');
+    exit();
+}
+
+// Create lot from basket
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
+    $categorie = $_POST['categorie'];
+    $etat = $_POST['etat'];
+    $fournisseur_id = $_POST['fournisseur_id'];
+    $emplacement = $_POST['emplacement'] ?? null;
+    $article_id = $_SESSION['lot_basket'][0];
+    $quantities = $_POST['quantities']; // [color][size] => quantity
+
+    // Calculate total quantity
+    $quantite_stock = 0;
+    foreach ($quantities as $color => $sizes) {
+        foreach ($sizes as $size => $qty) {
+            $quantite_stock += intval($qty);
+        }
+    }
+
+    // Insert lot
+    $stmt = $pdo->prepare("INSERT INTO lots (categorie, quantite_stock, etat, fournisseur_id, emplacement) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$categorie, $quantite_stock, $etat, $fournisseur_id, $emplacement]);
+    $lot_id = $pdo->lastInsertId();
+
+    // Link article/color/size/quantity to lot (create a new table if needed)
+    foreach ($quantities as $color => $sizes) {
+        foreach ($sizes as $size => $qty) {
+            if (intval($qty) > 0) {
+                $stmt2 = $pdo->prepare("INSERT INTO article_lot (article_id, lot_id, couleur, taille, quantite) VALUES (?, ?, ?, ?, ?)");
+                $stmt2->execute([$article_id, $lot_id, $color, $size, intval($qty)]);
+            }
+        }
+    }
+
+    $_SESSION['lot_basket'] = [];
+    $_SESSION['flash_message'] = "Lot créé avec succès !";
+    header('Location: lots.php');
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -96,10 +163,10 @@ $articles = $pdo->query("
                                 <a class="nav-link dropdown-title">Stock</a>
                             </li>
                             <li class="nav-item">
-                                <a href="lots.php" class="nav-link dropdown-link">Lots</a>
+                                <a href="lots.php" class="nav-link dropdown-link active">Lots</a>
                             </li>
                             <li class="nav-item">
-                                <a href="articles.php" class="nav-link dropdown-link active">Articles</a>
+                                <a href="articles.php" class="nav-link dropdown-link">Articles</a>
                             </li>
                         </ul>
                     </li>
@@ -195,13 +262,14 @@ $articles = $pdo->query("
     <section class="main-content">
         
         <header class="header">
-            <h1>ARTICLES</h1>
+            <h1>LOTS</h1>
         </header>
         
         <section class="btn-section">
             <input type="text" id="search-article-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn btn-add" id="add-articles-btn">Ajouter un article</button>
+                <button class="btn" id="open-basket-modal">Voir mon panier</button>
+                <button class="btn btn-add" id="add-articles-btn">Ajouter un lot</button>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
@@ -209,6 +277,8 @@ $articles = $pdo->query("
                         <option value="reference">Référence</option>
                         <option value="categorie">Catégorie</option>
                         <option value="etat">État</option>
+                        <option value="couleur">Couleur</option>
+                        <option value="taille">Taille</option>
                         <option value="quantite_stock">Quantité en stock</option>
                     </select>
                 </div>
@@ -217,134 +287,198 @@ $articles = $pdo->query("
 
         <div class="form-section" id="add-articles-form-section" style="display:none;">
             <form action="../../actions/ajouter_articles.php" method="POST">
-                <input name="nom_article" placeholder="Nom de l'article" required>
-                <input name="reference" placeholder="Référence" required>
                 <select name="categorie" required>
                     <option value="Top">Top</option>
                     <option value="Bas">Bas</option>
                     <option value="Dessus">Dessus</option>
                     <option value="Ensemble">Ensemble</option>
                 </select>
-                <input name="quantite_stock" placeholder="Quantité en stock" required>
+                <input name="quantite_stock" type="number" placeholder="Quantité en stock" required>
                 <select name="etat" required>
                     <option value="vert">Vert</option>
                     <option value="orange">Orange</option>
                     <option value="rouge">Rouge</option>
                 </select>
-                <button type="submit">Ajouter un article</button>
+                <select name="fournisseur_id" required>
+                    <?php
+                    $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
+                    foreach ($fournisseurs as $f) {
+                        echo '<option value="'.$f['id'].'">'.htmlspecialchars($f['nom']).'</option>';
+                    }
+                    ?>
+                </select>
+                <input name="emplacement" placeholder="Emplacement">
+                <label>Articles du lot :</label>
+                <select name="articles[]" multiple required style="min-width:200px;">
+                    <?php
+                    $articlesList = $pdo->query("SELECT id, nom_article FROM articles")->fetchAll(PDO::FETCH_ASSOC);
+                    foreach ($articlesList as $a) {
+                        echo '<option value="'.$a['id'].'">'.htmlspecialchars($a['nom_article']).'</option>';
+                    }
+                    ?>
+                </select>
+                <button type="submit">Ajouter un lot</button>
             </form>
         </div>
 
+        <!-- Basket Modal -->
+        <div id="basket-modal" class="modal" style="display:none;">
+            <div class="modal-content" style="max-width:420px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
+                <span class="close" id="close-basket-modal" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</span>
+                <h2>Mon panier d'articles</h2>
+                <?php if (!empty($_SESSION['lot_basket'])): ?>
+                    <?php
+                    $article_id = $_SESSION['lot_basket'][0];
+                    $stmt = $pdo->prepare("SELECT * FROM articles WHERE id = ?");
+                    $stmt->execute([$article_id]);
+                    $article = $stmt->fetch();
+
+                    // Define available colors and sizes (or fetch from DB if dynamic)
+                    $colors = ['Rouge','Bleu','Jaune','Vert','Orange','Violet','Marron','Beige','Gris','Noir','Blanc','Rose'];
+                    $sizes = ['XS','S','M','L','XL','30','32','34','36','38','40','42','44','46','48'];
+                    ?>
+                    <h2><?= htmlspecialchars($article['nom_article']) ?> (<?= htmlspecialchars($article['reference']) ?>)</h2>
+                    <form method="post">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Couleur</th>
+                                    <?php foreach ($sizes as $size): ?>
+                                        <th><?= $size ?></th>
+                                    <?php endforeach; ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($colors as $color): ?>
+                                <tr>
+                                    <td><?= $color ?></td>
+                                    <?php foreach ($sizes as $size): ?>
+                                        <td>
+                                            <input type="number" min="0" name="quantities[<?= $color ?>][<?= $size ?>]" style="width:40px;">
+                                        </td>
+                                    <?php endforeach; ?>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <!-- Lot info fields -->
+                        <select name="categorie" required>
+                            <option value="Top">Top</option>
+                            <option value="Bas">Bas</option>
+                            <option value="Dessus">Dessus</option>
+                            <option value="Ensemble">Ensemble</option>
+                        </select>
+                        <select name="etat" required>
+                            <option value="vert">Vert</option>
+                            <option value="orange">Orange</option>
+                            <option value="rouge">Rouge</option>
+                        </select>
+                        <select name="fournisseur_id" required>
+                            <?php
+                            $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
+                            foreach ($fournisseurs as $f) {
+                                echo '<option value="'.$f['id'].'">'.htmlspecialchars($f['nom']).'</option>';
+                            }
+                            ?>
+                        </select>
+                        <input name="emplacement" placeholder="Emplacement">
+                        <button type="submit" name="create_lot" class="btn">Créer le lot</button>
+                    </form>
+                <?php else: ?>
+                    <p>Votre panier est vide.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Article List for Basket -->
+        <h2>Articles disponibles</h2>
         <table id="articles-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
-                    <th>Article</th>
+                    <th>Nom</th>
                     <th>Référence</th>
                     <th>Catégorie</th>
-                    <th>Quantité en stock</th>
-                    <th>Lots liés</th>
-                    <th>Etat</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($articles as $article): ?>
-                    <tr data-etat="<?= htmlspecialchars($article['etat']) ?>">
+                <tr>
                     <td><?= htmlspecialchars($article['nom_article']) ?></td>
                     <td><?= htmlspecialchars($article['reference']) ?></td>
                     <td><?= htmlspecialchars($article['categorie']) ?></td>
-                    <td><?= $article['quantite_stock'] ?></td>
-                    <td><?= htmlspecialchars($article['lots']) ?></td>
                     <td>
-                        <span class="etat-square <?= htmlspecialchars($article['etat']) ?>"></span>
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="article_id" value="<?= $article['id'] ?>">
+                            <button type="submit" name="add_to_basket" class="btn"
+                                <?php
+                                $basket_reference = null;
+                                if (!empty($_SESSION['lot_basket'])) {
+                                    $stmt = $pdo->prepare("SELECT reference FROM articles WHERE id = ?");
+                                    $stmt->execute([$_SESSION['lot_basket'][0]]);
+                                    $basket_reference = $stmt->fetchColumn();
+                                }
+                                $disable = false;
+                                if (in_array($article['id'], $_SESSION['lot_basket'])) $disable = true;
+                                if ($basket_reference && $article['reference'] !== $basket_reference) $disable = true;
+                                echo $disable ? 'disabled' : '';
+                                ?>>
+                                <?= in_array($article['id'], $_SESSION['lot_basket']) ? 'Ajouté' : 'Ajouter au panier' ?>
+                            </button>
+                        </form>
                     </td>
-                    <td class="actions">
-                            
-                            <?php if ($_SESSION['role'] === 'admin'): ?>
-                                <button class="btn btn-voir"
-                                    data-nom_article="<?= htmlspecialchars($article['nom_article']) ?>"
-                                    data-reference="<?= htmlspecialchars($article['reference']) ?>"
-                                    data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
-                                    data-quantite_stock="<?= $article['quantite_stock'] ?>"
-                                    data-lots="<?= htmlspecialchars($article['lots']) ?>"
-                                    data-etat="<?= htmlspecialchars($article['etat']) ?>"
-                                    data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
-                                    style="padding: 5px 10px;">
-                                    Voir
-                                </button>
-                                <a href="#"
-                                    class="btn btn-edit"
-                                    style="padding: 5px 10px;"
-                                    data-id="<?= $article['id'] ?>"
-                                    data-nom_article="<?= htmlspecialchars($article['nom_article']) ?>"
-                                    data-reference="<?= htmlspecialchars($article['reference']) ?>"
-                                    data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
-                                    data-quantite_stock="<?= $article['quantite_stock'] ?>"
-                                    data-lots="<?= htmlspecialchars($article['lots']) ?>"
-                                    data-etat="<?= htmlspecialchars($article['etat']) ?>"
-                                >Modifier</a>
-                                <button class="btn btn-delete" style="padding: 5px 10px;" data-id="<?= $article['id'] ?>">Supprimer</button>
-                            <?php elseif ($_SESSION['role'] === 'livreur'): ?>
-                                <button class="btn btn-voir"
-                                    data-nom_article="<?= htmlspecialchars($article['nom_article']) ?>"
-                                    data-reference="<?= htmlspecialchars($article['reference']) ?>"
-                                    data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
-                                    data-quantite_stock="<?= $article['quantite_stock'] ?>"
-                                    data-lots="<?= htmlspecialchars($article['lots']) ?>"
-                                    data-etat="<?= htmlspecialchars($article['etat']) ?>"
-                                    data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
-                                    style="padding: 5px 10px;">
-                                    Voir
-                                </button>
-                                <button class="btn" style="padding: 5px 10px;">Confirmer article</button>
-                            <?php elseif ($_SESSION['role'] === 'gestionnaire de article'): ?>
-                                <button class="btn btn-voir"
-                                    data-nom_article="<?= htmlspecialchars($article['nom_article']) ?>"
-                                    data-reference="<?= htmlspecialchars($article['reference']) ?>"
-                                    data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
-                                    data-quantite_stock="<?= $article['quantite_stock'] ?>"
-                                    data-lots="<?= htmlspecialchars($article['lots']) ?>"
-                                    data-etat="<?= htmlspecialchars($article['etat']) ?>"
-                                    data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
-                                    style="padding: 5px 10px;">
-                                    Voir
-                                </button>
-                                <button class="btn btn-attribuer" style="padding: 5px 10px;" data-id="<?= $article['id'] ?>">Attribuer</button>
-                                <?php if ($article['statut'] !== 'livrée'): ?>
-                                    <button class="btn btn-confirmer-article" style="padding: 5px 10px;" data-id="<?= $article['id'] ?>">
-                                        Confirmer article
-                                    </button>
-                            <?php endif; ?>
-                            <?php elseif ($_SESSION['role'] === 'gestionnaire de stock'): ?>
-                                <button class="btn btn-voir"
-                                    data-nom_article="<?= htmlspecialchars($article['nom_article']) ?>"
-                                    data-reference="<?= htmlspecialchars($article['reference']) ?>"
-                                    data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
-                                    data-quantite_stock="<?= $article['quantite_stock'] ?>"
-                                    data-lots="<?= htmlspecialchars($article['lots']) ?>"
-                                    data-etat="<?= htmlspecialchars($article['etat']) ?>"
-                                    data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
-                                    style="padding: 5px 10px;">
-                                    Voir
-                                </button>
-                                <button class="btn" style="padding: 5px 10px;">Mettre à jour Stock</button>
-                            <?php else: ?>
-                                <button class="btn btn-voir"
-                                    data-nom_article="<?= htmlspecialchars($article['nom_article']) ?>"
-                                    data-reference="<?= htmlspecialchars($article['reference']) ?>"
-                                    data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
-                                    data-quantite_stock="<?= $article['quantite_stock'] ?>"
-                                    data-lots="<?= htmlspecialchars($article['lots']) ?>"
-                                    data-etat="<?= htmlspecialchars($article['etat']) ?>"
-                                    data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
-                                    style="padding: 5px 10px;">
-                                    Voir
-                                </button>
-                            <?php endif; ?>
-                        </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
+        </table>
+
+        <table id="lots-table" border="1" cellpadding="6" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Lot</th>
+                    <th>Catégorie</th>
+                    <th>Quantité en stock</th>
+                    <th>Etat</th>
+                    <th>Fournisseur</th>
+                    <th>Emplacement</th>
+                    <th>Articles du lot</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+                <tbody>
+                    <?php foreach ($lots as $lot): ?>
+                    <tr data-etat="<?= htmlspecialchars($lot['etat']) ?>">
+                        <td>Lot n°<?= $lot['id'] ?></td>
+                        <td><?= htmlspecialchars($lot['categorie']) ?></td>
+                        <td><?= $lot['quantite_stock'] ?></td>
+                        <td>
+                            <span class="etat-square <?= htmlspecialchars($lot['etat']) ?>"></span>
+                            <?= ucfirst($lot['etat']) ?>
+                        </td>
+                        <td>
+                            <?php
+                            // Fetch fournisseur name
+                            $fournisseurNom = '';
+                            if ($lot['fournisseur_id']) {
+                                $stmtF = $pdo->prepare("SELECT nom FROM fournisseurs WHERE id = ?");
+                                $stmtF->execute([$lot['fournisseur_id']]);
+                                $fournisseurNom = $stmtF->fetchColumn();
+                            }
+                            echo htmlspecialchars($fournisseurNom);
+                            ?>
+                        </td>
+                        <td><?= htmlspecialchars($lot['emplacement']) ?></td>
+                        <td><?= htmlspecialchars($lot['articles']) ?></td>
+                        <td class="actions">
+                            <!-- Add your action buttons here, e.g. Voir, Modifier, Supprimer -->
+                            <button class="btn btn-voir" style="padding: 5px 10px;">Voir</button>
+                            <a href="#" class="btn btn-edit" style="padding: 5px 10px;">Modifier</a>
+                            <button class="btn btn-delete" style="padding: 5px 10px;">Supprimer</button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
         </table>
 
         <!-- Modal détails -->
@@ -382,6 +516,43 @@ $articles = $pdo->query("
                         </select>
                     </div>
                     <div style="margin-bottom: 10px">
+                        <label for="edit-couleur">Couleur</label>
+                        <select name="couleur" id="edit-couleur" required>
+                            <option value="Rouge">Rouge</option>
+                            <option value="Bleu">Bleu</option>
+                            <option value="Jaune">Jaune</option>
+                            <option value="Vert">Vert</option>
+                            <option value="Orange">Orange</option>
+                            <option value="Violet">Violet</option>
+                            <option value="Marron">Marron</option>
+                            <option value="Beige">Beige</option>
+                            <option value="Gris">Gris</option>
+                            <option value="Noir">Noir</option>
+                            <option value="Blanc">Blanc</option>
+                            <option value="Rose">Rose</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="edit-taille">Taille</label>
+                        <select name="taille" id="edit-taille" required>
+                            <option value="XS">XS</option>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="30">30</option>
+                            <option value="32">32</option>
+                            <option value="34">34</option>
+                            <option value="36">36</option>
+                            <option value="38">38</option>
+                            <option value="40">40</option>
+                            <option value="42">42</option>
+                            <option value="44">44</option>
+                            <option value="46">46</option>
+                            <option value="48">48</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 10px">
                         <label for="edit-quantite_stock">En stock</label>
                         <input name="quantite_stock" id="edit-quantite_stock" required>
                     </div>
@@ -412,10 +583,23 @@ $articles = $pdo->query("
     </section>
 
     <script>
+
+        document.getElementById('open-basket-modal').onclick = function() {
+            document.getElementById('basket-modal').style.display = 'block';
+        };
+        document.getElementById('close-basket-modal').onclick = function() {
+            document.getElementById('basket-modal').style.display = 'none';
+        };
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('basket-modal')) {
+                document.getElementById('basket-modal').style.display = 'none';
+            }
+        };
+
         document.getElementById('add-articles-btn').addEventListener('click', function() {
             const formSection = document.getElementById('add-articles-form-section');
             formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-    });
+        });
 
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sort-select').addEventListener('change', function() {
@@ -509,6 +693,8 @@ $articles = $pdo->query("
                 ['Nom', btn.dataset.nom_article],
                 ['Référence', btn.dataset.reference],
                 ['Catégorie', btn.dataset.categorie],
+                ['Couleur', btn.dataset.couleur],
+                ['Taille', btn.dataset.taille],
                 ['Quantité en stock', btn.dataset.quantite_stock],
                 ['Lots liés', btn.dataset.lots],
                 [
@@ -542,6 +728,8 @@ $articles = $pdo->query("
             document.getElementById('edit-nom_article').value = this.dataset.nom_article;
             document.getElementById('edit-reference').value = this.dataset.reference;
             document.getElementById('edit-categorie').value = this.dataset.categorie;
+            document.getElementById('edit-couleur').value = this.dataset.couleur;
+            document.getElementById('edit-taille').value = this.dataset.taille;
             document.getElementById('edit-quantite_stock').value = this.dataset.quantite_stock;
             document.getElementById('edit-etat').value = this.dataset.etat;
         });
@@ -563,7 +751,7 @@ $articles = $pdo->query("
         const confirmBtn = document.getElementById('btn-confirm-supprimer');
         if (confirmBtn) {
             confirmBtn.addEventListener('click', function() {
-                if (!articleToDelete) return;
+                if (!erticleToDelete) return;
                 fetch('../../actions/supprimer_article.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -588,64 +776,6 @@ $articles = $pdo->query("
         document.getElementById('modal-edit').style.display = 'none';
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-    const referenceInput = document.getElementById('edit-reference') || document.querySelector('input[name="reference"]');
-    const categorieSelect = document.getElementById('edit-categorie') || document.querySelector('select[name="categorie"]');
-
-    if (referenceInput && categorieSelect) {
-        referenceInput.addEventListener('input', function() {
-            const val = referenceInput.value.trim().toLowerCase();
-            if (val.startsWith('top')) {
-                categorieSelect.value = 'Top';
-            } else if (val.startsWith('bas')) {
-                categorieSelect.value = 'Bas';
-            } else if (val.startsWith('dss')) {
-                categorieSelect.value = 'Dessus';
-            } else if (val.startsWith('ens')) {
-                categorieSelect.value = 'Ensemble';
-            }
-        });
-    }
-});
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // For add form
-        const quantiteInput = document.querySelector('input[name="quantite_stock"]');
-        const etatSelect = document.querySelector('select[name="etat"]');
-        if (quantiteInput && etatSelect) {
-            quantiteInput.addEventListener('input', function() {
-                const qty = parseInt(quantiteInput.value, 10);
-                if (qty < 50) {
-                    etatSelect.value = 'rouge';
-                } else if (qty >= 51 && qty < 150) {
-                    etatSelect.value = 'orange';
-                } else if (qty >= 151) {
-                    etatSelect.value = 'vert';
-                } else {
-                    etatSelect.value = '';
-                }
-            });
-        }
-
-        // For edit modal
-        const editQuantiteInput = document.getElementById('edit-quantite_stock');
-        const editEtatSelect = document.getElementById('edit-etat');
-        if (editQuantiteInput && editEtatSelect) {
-            editQuantiteInput.addEventListener('input', function() {
-                const qty = parseInt(editQuantiteInput.value, 10);
-                if (qty < 51) {
-                    editEtatSelect.value = 'rouge';
-                } else if (qty >= 51 && qty < 151) {
-                    editEtatSelect.value = 'orange';
-                } else if (qty >= 151) {
-                    editEtatSelect.value = 'vert';
-                } else {
-                    editEtatSelect.value = '';
-                }
-            });
-        }
-        
-    });
     </script>
     <script src="../../actions/script.js"></script>
 </body>
