@@ -9,59 +9,105 @@ require_once '../../includes/config.php';
     exit();
 }*/
 
-try {
-    $stmt = $pdo->query("SELECT * FROM commandes");
-    $commandes = $stmt->fetchAll();
-} catch (PDOException $e) {
-    echo "Erreur : " . $e->getMessage();
-    $commandes = [];
-}
 
-// Fetch all users with role 'livreur'
-$stmt = $pdo->prepare("SELECT id, username FROM users WHERE role = 'livreur'");
-$stmt->execute();
-$livreurs = $stmt->fetchAll();
+    // Lots à préparer
+    $sqlApreparer = "
+        SELECT 
+            c.id AS commande_id,
+            c.date_prevue_envoi,
+            c.etat_preparation,
+            l.id AS lot_id,
+            GROUP_CONCAT(
+                CONCAT(
+                    a.nom_article, ' - ', 
+                    a.reference, ' - ',
+                    al.couleur, ' - ',
+                    al.taille, ' x', al.quantite
+                )
+                SEPARATOR '<br>'
+            ) AS articles
+        FROM commandes c
+        JOIN commande_lot cl ON c.id = cl.commande_id
+        JOIN lots l ON cl.lot_id = l.id
+        LEFT JOIN article_lot al ON l.id = al.lot_id
+        LEFT JOIN articles a ON al.article_id = a.id
+        WHERE c.etat_preparation != 'prêt'
+        GROUP BY c.id, l.id
+        ORDER BY c.date_prevue_envoi ASC
+        ";
+    $lotsAPreparer = $pdo->query($sqlApreparer)->fetchAll(PDO::FETCH_ASSOC);
 
-$detailsHtml = '';
-if (isset($_GET['details'])) {
-    $commande_id = intval($_GET['details']);
 
-    // Fetch commande info
-    $stmt = $pdo->prepare("SELECT * FROM commandes WHERE id = ?");
-    $stmt->execute([$commande_id]);
-    $commande = $stmt->fetch();
+    // Lots prêts
+    $sqlPrets = "
+        SELECT 
+            c.id AS commande_id,
+            c.date_prevue_envoi,
+            c.etat_preparation,
+            l.id AS lot_id,
+            GROUP_CONCAT(
+                CONCAT(
+                    a.nom_article, ' - ', 
+                    a.reference, ' - ',
+                    al.couleur, ' - ',
+                    al.taille, ' x', al.quantite
+                )
+                SEPARATOR '<br>'
+            ) AS articles
+        FROM commandes c
+        JOIN commande_lot cl ON c.id = cl.commande_id
+        JOIN lots l ON cl.lot_id = l.id
+        LEFT JOIN article_lot al ON l.id = al.lot_id
+        LEFT JOIN articles a ON al.article_id = a.id
+        WHERE c.etat_preparation = 'prêt'
+        GROUP BY c.id, l.id
+        ORDER BY c.date_prevue_envoi ASC
+        ";
 
-    // Fetch lots for this commande
-    $stmt = $pdo->prepare("
-        SELECT cl.*, l.reference, l.type
-        FROM commande_lots cl
+    $lotsPrets = $pdo->query($sqlPrets)->fetchAll(PDO::FETCH_ASSOC);
+
+    // Récupérer les lots
+    $lots = $pdo->query("
+        SELECT l.id, 
+            GROUP_CONCAT(a.nom_article, ' (', al.couleur, '-', al.taille, ') x', al.quantite SEPARATOR ', ') AS contenu
+        FROM lots l
+        LEFT JOIN article_lot al ON l.id = al.lot_id
+        LEFT JOIN articles a ON al.article_id = a.id
+        GROUP BY l.id
+    ")->fetchAll(PDO::FETCH_ASSOC);
+
+    // Récupérer toutes les commandes
+    $sql = "
+        SELECT 
+            c.*, 
+            GROUP_CONCAT(
+                CONCAT(
+                    a.nom_article, ' - ', 
+                    a.reference, ' - ',
+                    al.couleur, ' - ',
+                    al.taille, ' x', al.quantite
+                ) SEPARATOR '<br>'
+            ) AS articles
+        FROM commandes c
+        LEFT JOIN commande_lot cl ON c.id = cl.commande_id
         LEFT JOIN lots l ON cl.lot_id = l.id
-        WHERE cl.commande_id = ?
-    ");
-    $stmt->execute([$commande_id]);
-    $lots = $stmt->fetchAll();
+        LEFT JOIN article_lot al ON l.id = al.lot_id
+        LEFT JOIN articles a ON al.article_id = a.id
+        GROUP BY c.id
+        ORDER BY c.date_commande DESC
+    ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    ob_start();
-    if ($commande) {
-        ?>
-        <h2>Commande #<?= htmlspecialchars($commande['reference']) ?></h2>
-        <p><strong>Préparateur :</strong> <?= htmlspecialchars($commande['preparateur']) ?></p>
-        <p><strong>Livreur :</strong> <?= htmlspecialchars($commande['livreur']) ?></p>
-        <p><strong>Date commande :</strong> <?= htmlspecialchars($commande['date_commande']) ?></p>
-        <p><strong>Date livraison :</strong> <?= htmlspecialchars($commande['date_livraison']) ?></p>
-        <p><strong>État :</strong>
-            <span class="statut-badge statut-<?= htmlspecialchars($commande['etat']) ?>">
-                <?= ucfirst(str_replace('_', ' ', $commande['etat'])) ?>
-            </span>
-        </p>
-        </table>
-        <?php
-    } else {
-        echo "<p>Aucune information trouvée pour cette commande.</p>";
-    }
-    $detailsHtml = ob_get_clean();
-}
+    $sql = "SELECT * FROM commandes ORDER BY date_commande DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -75,6 +121,7 @@ if (isset($_GET['details'])) {
     <link rel="stylesheet" href="../../public/livraisons.css">
     <link rel="stylesheet" href="../../public/flashmessage.css">
     <link rel="stylesheet" href="../../public/modal2.css">
+    <link rel="stylesheet" href="../../public/modaledit.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -260,88 +307,142 @@ if (isset($_GET['details'])) {
 
         <div class="form-section" id="add-commande-form-section" style="display:none; color: #fff;">
             <form action="../../actions/ajouter_commande.php" method="POST">
-                <input type="text" name="reference" placeholder="Référence" required>
-                <input type="text" name="preparateur" placeholder="Préparateur">
-                <select name="livreur" required>
-                    <option value="">Sélectionner un livreur</option>
-                    <?php foreach ($livreurs as $livreur): ?>
-                        <option value="<?= htmlspecialchars($livreur['username']) ?>">
-                            <?= htmlspecialchars($livreur['username']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
                 <label for="date_commande">Date de commande :</label>
-                <input type="date" name="date_commande" placeholder="Date commande">
-                <label for="date_livraison">Date de livraison :</label>
-                <input type="date" name="date_livraison" placeholder="Date livraison">
-                <select name="etat" required>
+                <input type="date" id="date_commande" name="date_commande" required>
+
+                <label for="date_prevue_envoi">Date prévue d'envoi :</label>
+                <input type="date" id="date_prevue_envoi" name="date_prevue_envoi" required>
+
+                <label for="etat_preparation">État de préparation :</label>
+                <select id="etat_preparation" name="etat_preparation" required>
                     <option value="">Sélectionner un état</option>
-                    <option value="en-attente">En attente</option>
+                    <option value="à préparer">À préparer</option>
                     <option value="en cours">En cours</option>
-                    <option value="livree">Livrée</option>
-                    <option value="probleme">Problème</option>
+                    <option value="prêt">Prêt</option>
                 </select>
+
+                <h3>Lots à inclure :</h3>
+                <?php
+                // Récupérer les lots prêts (ou tous selon ta logique)
+                $lots = $pdo->query("
+                    SELECT l.id, 
+                        GROUP_CONCAT(CONCAT(a.nom_article, ' (', al.couleur, '-', al.taille, ') x', al.quantite) SEPARATOR ', ') AS contenu
+                    FROM lots l
+                    LEFT JOIN article_lot al ON l.id = al.lot_id
+                    LEFT JOIN articles a ON al.article_id = a.id
+                    GROUP BY l.id
+                ")->fetchAll(PDO::FETCH_ASSOC);
+
+                 foreach ($lots as $lot): ?>
+                    <div style="margin-bottom: 8px;">
+                        <input type="checkbox" name="lots[<?= $lot['id'] ?>]" id="lot<?= $lot['id'] ?>" value="1">
+                        <label for="lot<?= $lot['id'] ?>" style="cursor:pointer; font-weight:bold;">
+                            Lot #<?= $lot['id'] ?>
+                        </label>
+                        <button type="button" onclick="toggleDetails(<?= $lot['id'] ?>)" style="margin-left:10px;">+ détail</button>
+                        <input type="number" name="quantite[<?= $lot['id'] ?>]" min="1" placeholder="Quantité" style="width:80px; margin-left:10px;">
+                        
+                        <div id="details-<?= $lot['id'] ?>" style="display:none; margin-left:20px; margin-top:5px; font-size:0.9em; color:#ccc;">
+                            <?= htmlspecialchars($lot['contenu']) ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
                 <button type="submit">Ajouter la commande</button>
             </form>
         </div>
 
-        <!-- Affichage des commandes existants -->
-        <table id="commandes-table" border="1" cellpadding="5">
+        <h2>Lots à préparer</h2>
+        <table border="1">
             <thead>
                 <tr>
-                    <th>Référence</th>
-                    <th>Préparateur</th>
-                    <th>Livreur</th>
-                    <th>Date commande</th>
-                    <th>Date livraison</th>
+                    <th>Commande n°</th>
+                    <th>Lot n°</th>
+                    <th>Articles du lot</th>
+                    <th>Date prévue d'envoi</th>
                     <th>État</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($commandes as $commande): ?>
+                <?php foreach ($lotsAPreparer as $lot): ?>
+                <?php
+                    // Retrouver la commande liée à ce lot
+                    $commandeId = $lot['commande_id'];
+                    $commandeAssociee = null;
+                    foreach ($commandes as $commande) {
+                        if ($commande['id'] == $commandeId) {
+                            $commandeAssociee = $commande;
+                            break;
+                        }
+                    }
+                ?>
                     <tr>
-                        <td><?= htmlspecialchars($commande['reference']) ?></td>
-                        <td><?= htmlspecialchars($commande['preparateur']) ?></td>
-                        <td><?= htmlspecialchars($commande['livreur']) ?></td>
-                        <td><?= htmlspecialchars($commande['date_commande']) ?></td>
-                        <td><?= htmlspecialchars($commande['date_livraison']) ?></td>
+                        <td>#<?= $lot['commande_id'] ?></td>
+                        <td><?= $lot['lot_id'] ?></td>
+                        <td><?= $lot['articles'] ?></td>
+                        <td><?= date('d/m/Y', strtotime($lot['date_prevue_envoi'])) ?></td>
+                        <td><?= $lot['etat_preparation'] ?></td>
                         <td>
-                                <span class="statut-badge statut-<?= $commande['etat'] ?>">
-                                    <?= ucfirst(str_replace('_', ' ', $commande['etat'])) ?>
-                                </span>
-                            </td>
-                        <td>
-                            <button class="btn btn-voir"
-                                data-reference="<?= htmlspecialchars($commande['reference']) ?>"
-                                data-preparateur="<?= htmlspecialchars($commande['preparateur']) ?>"
-                                data-livreur="<?= htmlspecialchars($commande['livreur']) ?>"
-                                data-date_commande="<?= htmlspecialchars($commande['date_commande']) ?>"
-                                data-date_livraison="<?= htmlspecialchars($commande['date_livraison']) ?>"
-                                data-etat="<?= htmlspecialchars($commande['etat']) ?>"
-                                style="padding: 5px 10px;">
-                                Voir
-                            </button>
+                            <?php if ($commandeAssociee): ?>
+                                <button class="btn btn-voir"
+                                    data-id="<?= $commandeAssociee['id'] ?>" 
+                                    data-date_commande="<?= htmlspecialchars($commandeAssociee['date_commande']) ?>"
+                                    data-date_prevue_envoi="<?= htmlspecialchars($commandeAssociee['date_prevue_envoi']) ?>"
+                                    data-etat_preparation="<?= htmlspecialchars($commandeAssociee['etat_preparation']) ?>"
+                                    data-articles="<?= htmlspecialchars($lot['articles']) ?>"
+                                    style="padding: 5px 10px;">
+                                    Voir
+                                </button>
+                            <?php endif; ?>
                             <button class="btn btn-edit"
                                 style="padding: 5px 10px;"
-                                data-id="<?= $commande['id'] ?>"
-                                data-reference="<?= htmlspecialchars($commande['reference']) ?>"
-                                data-preparateur="<?= htmlspecialchars($commande['preparateur']) ?>"
-                                data-livreur="<?= htmlspecialchars($commande['livreur']) ?>"
-                                data-date_commande="<?= htmlspecialchars($commande['date_commande']) ?>"
-                                data-date_livraison="<?= htmlspecialchars($commande['date_livraison']) ?>"
-                                data-etat="<?= htmlspecialchars($commande['etat']) ?>"
-                            >Modifier</button>
-                            <button class="btn btn-delete" style="padding: 5px 10px;" data-id="<?= $commande['id'] ?>">Supprimer</button>
+                                data-id="<?= $commandeAssociee['id'] ?>" 
+                                data-date_commande="<?= htmlspecialchars($commandeAssociee['date_commande']) ?>"
+                                data-date_prevue_envoi="<?= htmlspecialchars($commandeAssociee['date_prevue_envoi']) ?>"
+                                data-etat_preparation="<?= htmlspecialchars($commandeAssociee['etat_preparation']) ?>"
+                            >
+                                Modifier
+                            </button>
+                            <form method="post" action="../../actions/marquer_pret.php" style="background: none; border: none; padding: 0;">
+                                <input type="hidden" name="commande_id" value="<?= $lot['commande_id'] ?>">
+                                <button type="submit">Marquer comme prêt</button>
+                            </form>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
 
+        <h2>Lots prêts à expédier</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Commande n°</th>
+                    <th>Lot n°</th>
+                    <th>Articles du lot</th>
+                    <th>Date prévue d'envoi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($lotsPrets as $lot): ?>
+                    <tr>
+                        <td>#<?= $lot['commande_id'] ?></td>
+                        <td><?= $lot['lot_id'] ?></td>
+                        <td><?= $lot['articles'] ?></td>
+                        <td><?= date('d/m/Y', strtotime($lot['date_prevue_envoi'])) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+
+
+
+
         <!-- Modal Voir -->
         <div id="voir-lot-modal" class="modal" style="display:none;">
-            <div class="modal-content" style="max-width:420px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
+            <div class="modal-content" style="background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
                 <button onclick="document.getElementById('voir-lot-modal').style.display='none'" class="close" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</button>
                 <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Détails du lot</h2>
                 <table id="voir-lot-details" style="width:100%; background:#f9f9f9; border-radius:8px; overflow:hidden;">
@@ -351,46 +452,28 @@ if (isset($_GET['details'])) {
         </div>
 
         <!-- Modal Modifier Commande -->
-        <div id="modal-edit-commande" class="modal" style="display:none;">
-            <div class="modal-content">
-                <span class="close" onclick="fermerEditCommandeModal()">&times;</span>
-                <h2>Modifier la commande</h2>
+        <div id="modal-edit" class="modal" style="display:none;">
+            <div class="modal-content" style="max-width:420px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
+                <span class="close" onclick="fermerEditCommandeModal()" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</span>
+                <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Modifier la commande</h2>
                 <form id="edit-commande-form" method="POST" action="../../actions/modifier_commande.php" style="color: #fff;">
-                    <input type="hidden" name="id" id="edit-commande-id">
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-commande-reference">Référence</label>
-                        <input name="reference" id="edit-commande-reference" required>
+                    <input type="hidden" name="id" id="edit-id">
+
+                    <div style="margin-bottom: 10px">
+                        <label>Date de commande :</label>
+                        <input type="date" name="date_commande" id="edit-date_commande" required>
+                    <div style="margin-bottom: 10px">
+                        <label>Date prévue d'envoi :</label>
+                        <input type="date" name="date_prevue_envoi" id="edit-date_prevue_envoi" required>
+
                     </div>
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-commande-preparateur">Préparateur</label>
-                        <input name="preparateur" id="edit-commande-preparateur">
-                    </div>
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-commande-livreur">Livreur</label>
-                        <select name="livreur" id="edit-commande-livreur" required>
-                            <option value="">Sélectionner un livreur</option>
-                            <?php foreach ($livreurs as $livreur): ?>
-                                <option value="<?= htmlspecialchars($livreur['username']) ?>">
-                                    <?= htmlspecialchars($livreur['username']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-commande-date-commande">Date commande</label>
-                        <input type="date" name="date_commande" id="edit-commande-date-commande">
-                    </div>
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-commande-date-livraison">Date livraison</label>
-                        <input type="date" name="date_livraison" id="edit-commande-date-livraison">
-                    </div>
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-commande-etat">État</label>
-                        <select name="etat" id="edit-commande-etat" required>
-                            <option value="en-attente">En attente</option>
+                    <div style="margin-bottom: 10px">
+                        <label>État préparation :</label>
+                        <select name="etat_preparation" id="edit-etat_preparation" required>
+                            <option value="">Sélectionner un état</option>
+                            <option value="à préparer">À préparer</option>
                             <option value="en cours">En cours</option>
-                            <option value="livree">Livrée</option>
-                            <option value="probleme">Problème</option>
+                            <option value="prêt">Prêt</option>
                         </select>
                     </div>
                     <button type="submit">Enregistrer</button>
@@ -430,16 +513,9 @@ if (isset($_GET['details'])) {
     document.querySelectorAll('#commandes-table .main-row').forEach(function(row) {
         row.addEventListener('click', function() {
             // Fill the modal with the commande's data
-            document.getElementById('edit-commande-id').value = row.dataset.id;
-            document.getElementById('edit-commande-reference').value = row.dataset.reference;
-            document.getElementById('edit-commande-type').value = row.dataset.type;
-            document.getElementById('edit-commande-quantite').value = row.dataset.quantite_total;
-            document.getElementById('edit-commande-disponibilite').value = row.dataset.disponibilite;
-            document.getElementById('edit-commande-reserve').value = row.dataset.reserve;
-            document.getElementById('edit-commande-a_venir').value = row.dataset.a_venir;
-            document.getElementById('edit-commande-etat').value = row.dataset.etat;
-            document.getElementById('edit-commande-fournisseur_id').value = row.dataset.fournisseur_id;
-            document.getElementById('edit-commande-emplacement').value = row.dataset.emplacement;
+            document.getElementById('edit-date_commande').value = row.date_commande;
+            document.getElementById('edit-date_prevue_envoi').value = row.date_prevue_envoi;
+            document.getElementById('edit-etat_preparation').value = row.dataset.etat_preparation;
 
             document.getElementById('edit-commande-modal').style.display = 'flex';
         });
@@ -499,13 +575,13 @@ if (isset($_GET['details'])) {
     document.querySelectorAll('.btn-voir').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
+            const row = btn.closest('tr');
+            
             const details = [
-                ['Référence', btn.dataset.reference],
-                ['Préparateur', btn.dataset.preparateur],
-                ['Livreur', btn.dataset.livreur],
-                ['Date commande', btn.dataset.date_commande],
-                ['Date livraison', btn.dataset.date_livraison],
-                ['État', btn.dataset.etat.charAt(0).toUpperCase() + btn.dataset.etat.slice(1)]
+                ['Date de la commande', btn.dataset.date_commande],
+                ["Date prévue à l'envoi", btn.dataset.date_prevue_envoi],
+                ['Etat', btn.dataset.etat_preparation],
+                ['Articles du lot', btn.dataset.articles || '—']
             ];
             let html = '<tbody>';
             details.forEach(([label, value]) => {
@@ -517,22 +593,20 @@ if (isset($_GET['details'])) {
         });
     });
 
-document.querySelectorAll('.btn-edit').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.getElementById('modal-edit-commande').style.display = 'block';
-        document.getElementById('edit-commande-id').value = this.dataset.id;
-        document.getElementById('edit-commande-reference').value = this.dataset.reference;
-        document.getElementById('edit-commande-preparateur').value = this.dataset.preparateur;
-        document.getElementById('edit-commande-livreur').value = this.dataset.livreur;
-        document.getElementById('edit-commande-date-commande').value = this.dataset.date_commande;
-        document.getElementById('edit-commande-date-livraison').value = this.dataset.date_livraison;
-        document.getElementById('edit-commande-etat').value = this.dataset.etat;
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-edit').forEach(button => {
+        button.addEventListener('click', function () {
+            document.getElementById('modal-edit').style.display = 'block';
+            document.getElementById('edit-id').value = this.dataset.id;
+            document.getElementById('edit-date_commande').value = this.dataset.date_commande;
+            document.getElementById('edit-date_prevue_envoi').value = this.dataset.date_prevue_envoi;
+            document.getElementById('edit-etat_preparation').value = this.dataset.etat_preparation;
+        });
     });
 });
 
 function fermerEditCommandeModal() {
-    document.getElementById('modal-edit-commande').style.display = 'none';
+    document.getElementById('modal-edit').style.display = 'none';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -588,6 +662,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 4000); // 4 seconds before fade out
     }
 });
+
     </script>
     <script src="../../actions/script.js"></script>
 </body>

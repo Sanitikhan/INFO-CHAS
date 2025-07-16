@@ -37,6 +37,21 @@ $lots = $pdo->query("
     GROUP BY l.id
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+$pdo = new PDO('mysql:host=localhost;dbname=stock_management;charset=utf8', 'root', '');
+
+$sql = "
+SELECT la.id AS livraison_article_id, a.nom_article, la.quantite, 
+       e.nom AS emplacement, f.nom AS fournisseur, l.date_reception
+FROM livraison_articles la
+JOIN articles a ON la.article_id = a.id
+LEFT JOIN emplacements e ON a.emplacement_id = e.id
+JOIN livraisons l ON la.livraison_id = l.id
+JOIN fournisseurs f ON l.fournisseur_id = f.id
+WHERE la.est_range = 0
+";
+
+$articlesARanger = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
 if (!isset($_SESSION['lot_basket'])) {
     $_SESSION['lot_basket'] = [];
 }
@@ -99,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lots</title>
+    <title>Rangement</title>
     <link rel="stylesheet" href="../../public/style.css">
     <!--<link rel="stylesheet" href="../../public/form.css">-->
     <link rel="stylesheet" href="../../public/stock.css">
@@ -263,13 +278,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
     <section class="main-content">
         
         <header class="header">
-            <h1>LOTS</h1>
+            <h1>RANGEMENT</h1>
         </header>
         
         <section class="btn-section">
             <input type="text" id="search-article-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn" id="open-basket-modal">Voir mon panier</button>
                 <button class="btn btn-add" id="add-articles-btn">Ajouter un lot</button>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
@@ -322,194 +336,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             </form>
         </div>
 
-        <!-- Basket Modal -->
-        <div id="basket-modal" class="modal" style="display:none;">
-            <div class="modal-content" style="max-width:420px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
-                <span class="close" id="close-basket-modal" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</span>
-                <h2>Mon panier d'articles</h2>
-                <?php if (!empty($_SESSION['lot_basket'])): ?>
-                    <?php
-                    $article_id = $_SESSION['lot_basket'][0];
-                    $stmt = $pdo->prepare("SELECT * FROM articles WHERE id = ?");
-                    $stmt->execute([$article_id]);
-                    $article = $stmt->fetch();
-
-                    // Define available colors and sizes (or fetch from DB if dynamic)
-                    $colors = ['Rouge','Bleu','Jaune','Vert','Orange','Violet','Marron','Beige','Gris','Noir','Blanc','Rose'];
-                    $sizes = ['XS','S','M','L','XL','30','32','34','36','38','40','42','44','46','48'];
-                    ?>
-                    <h2><?= htmlspecialchars($article['nom_article']) ?> (<?= htmlspecialchars($article['reference']) ?>)</h2>
-                    <form method="post">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Couleur</th>
-                                    <?php foreach ($sizes as $size): ?>
-                                        <th><?= $size ?></th>
-                                    <?php endforeach; ?>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($colors as $color): ?>
-                                <tr>
-                                    <td><?= $color ?></td>
-                                    <?php foreach ($sizes as $size): ?>
-                                        <td>
-                                            <input type="number" min="0" name="quantities[<?= $color ?>][<?= $size ?>]" style="width:40px;">
-                                        </td>
-                                    <?php endforeach; ?>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                        <!-- Lot info fields -->
-                        <select name="categorie" required>
-                            <option value="Top">Top</option>
-                            <option value="Bas">Bas</option>
-                            <option value="Dessus">Dessus</option>
-                            <option value="Ensemble">Ensemble</option>
-                        </select>
-                        <select name="etat" required>
-                            <option value="vert">Vert</option>
-                            <option value="orange">Orange</option>
-                            <option value="rouge">Rouge</option>
-                        </select>
-                        <select name="fournisseur_id" required>
-                            <?php
-                            $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
-                            foreach ($fournisseurs as $f) {
-                                echo '<option value="'.$f['id'].'">'.htmlspecialchars($f['nom']).'</option>';
-                            }
-                            ?>
-                        </select>
-                        <button type="submit" name="create_lot" class="btn">Créer le lot</button>
-                    </form>
-                <?php else: ?>
-                    <p>Votre panier est vide.</p>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- Article List for Basket -->
-        <h2>Articles disponibles</h2>
-        <table id="articles-table" border="1" cellpadding="6" cellspacing="0">
+        <h2>Articles à ranger</h2>
+        <table border="1">
             <thead>
                 <tr>
-                    <th>Nom</th>
-                    <th>Référence</th>
-                    <th>Catégorie</th>
+                    <th>Article</th>
+                    <th>Quantité</th>
+                    <th>Emplacement</th>
+                    <th>Fournisseur</th>
+                    <th>Date de réception</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($articles as $article): ?>
-                <tr>
-                    <td><?= htmlspecialchars($article['nom_article']) ?></td>
-                    <td><?= htmlspecialchars($article['reference']) ?></td>
-                    <td><?= htmlspecialchars($article['categorie']) ?></td>
-                    <td>
-                        <form method="post" style="display:inline;">
-                            <input type="hidden" name="article_id" value="<?= $article['id'] ?>">
-                            <button type="submit" name="add_to_basket" class="btn"
-                                <?php
-                                $basket_reference = null;
-                                if (!empty($_SESSION['lot_basket'])) {
-                                    $stmt = $pdo->prepare("SELECT reference FROM articles WHERE id = ?");
-                                    $stmt->execute([$_SESSION['lot_basket'][0]]);
-                                    $basket_reference = $stmt->fetchColumn();
-                                }
-                                $disable = false;
-                                if (in_array($article['id'], $_SESSION['lot_basket'])) $disable = true;
-                                if ($basket_reference && $article['reference'] !== $basket_reference) $disable = true;
-                                echo $disable ? 'disabled' : '';
-                                ?>>
-                                <?= in_array($article['id'], $_SESSION['lot_basket']) ? 'Ajouté' : 'Ajouter au panier' ?>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <table id="lots-table" border="1" cellpadding="6" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Lot</th>
-                    <th>Catégorie</th>
-                    <th>Quantité en stock</th>
-                    <th>Etat</th>
-                    <th>Fournisseur</th>
-                    <th>Articles du lot</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-
-                <tbody>
-                    <?php foreach ($lots as $lot): ?>
-                        <?php
-                        $lotId = $lot['id'];
-
-                        // On va chercher les articles liés à CE lot
-                        $stmt = $pdo->prepare("
-                            SELECT 
-                                a.nom_article, 
-                                al.couleur, 
-                                al.taille, 
-                                al.quantite
-                            FROM article_lot al
-                            JOIN articles a ON al.article_id = a.id
-                            WHERE al.lot_id = ?
-                        ");
-                        $stmt->execute([$lotId]);
-                        $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                        $dataArticles = htmlspecialchars(json_encode($articles), ENT_QUOTES);
-                        ?>
-                    <tr data-etat="<?= htmlspecialchars($lot['etat']) ?>">
-                        <td>Lot n°<?= $lot['id'] ?></td>
-                        <td><?= htmlspecialchars($lot['categorie']) ?></td>
-                        <td><?= $lot['quantite_stock'] ?></td>
+                <?php foreach ($articlesARanger as $article): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($article['nom_article']) ?></td>
+                        <td><?= $article['quantite'] ?></td>
+                        <td><?= htmlspecialchars($article['emplacement'] ?? 'Non défini') ?></td>
+                        <td><?= htmlspecialchars($article['fournisseur']) ?></td>
+                        <td><?= date('d/m/Y', strtotime($article['date_reception'])) ?></td>
                         <td>
-                            <span class="etat-square <?= htmlspecialchars($lot['etat']) ?>"></span>
-                            <?= ucfirst($lot['etat']) ?>
-                        </td>
-                        <td>
-                            <?php
-                            // Fetch fournisseur name
-                            $fournisseurNom = '';
-                            if ($lot['fournisseur_id']) {
-                                $stmtF = $pdo->prepare("SELECT nom FROM fournisseurs WHERE id = ?");
-                                $stmtF->execute([$lot['fournisseur_id']]);
-                                $fournisseurNom = $stmtF->fetchColumn();
-                            }
-                            echo htmlspecialchars($fournisseurNom);
-                            ?>
-                        </td>
-                        <td><?= htmlspecialchars($lot['articles']) ?></td>
-                        <td class="actions">
-                            <!-- Add your action buttons here, e.g. Voir, Modifier, Supprimer -->
-                            <button class="btn btn-voir"
-                                data-etat="<?= htmlspecialchars($lot['etat']) ?>"
-                                data-id="<?= htmlspecialchars($lot['id']) ?>"
-                                data-fournisseur_nom="<?= htmlspecialchars($lot['fournisseur_nom']) ?>"
-                                data-categorie="<?= htmlspecialchars($lot['categorie']) ?>"
-                                data-quantite_stock="<?= $lot['quantite_stock'] ?>"
-                                data-articles='<?= $dataArticles ?>'
-                                data-created_at="<?= htmlspecialchars($article['created_at'] ?? '-') ?>"
-                            >Voir</button>
-                            <button
-                                class="btn btn-edit"
-                                data-categorie="<?= htmlspecialchars($lot['categorie']) ?>"
-                                data-quantite_stock="<?= $lot['quantite_stock'] ?>"
-                                data-etat="<?= $lot['etat'] ?>"
-                                data-fournisseur_nom="<?= htmlspecialchars($lot['fournisseur_nom']) ?>"
-                            >Modifier</button>
-                            <button class="btn btn-delete" style="padding: 5px 10px;">Supprimer</button>
+                            <form method="post" action="ranger_article.php">
+                                <input type="hidden" name="livraison_article_id" value="<?= $article['livraison_article_id'] ?>">
+                                <button type="submit">Marquer comme rangé</button>
+                            </form>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
-                </tbody>
+                <?php endforeach; ?>
+            </tbody>
         </table>
 
         <!-- Modal détails -->

@@ -3,19 +3,21 @@ session_start();
 require_once '../includes/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['id'];
-    $reference = $_POST['reference'];
-    $preparateur = $_POST['preparateur'];
-    $livreur = $_POST['livreur'];
-    $date_commande = $_POST['date_commande'];
-    $date_livraison = $_POST['date_livraison'];
-    $etat = $_POST['etat'];
+    $id = $_POST['id'] ?? null;
+    $dateCommande = $_POST['date_commande'] ?? null;
+    $datePrevue = $_POST['date_prevue_envoi'] ?? null;
+    $etat = $_POST['etat_preparation'] ?? null;
 
-    $stmt = $pdo->prepare("UPDATE commandes SET reference=?, preparateur=?, livreur=?, date_commande=?, date_livraison=?, etat=? WHERE id=?");
-    $stmt->execute([$reference, $preparateur, $livreur, $date_commande, $date_livraison, $etat, $id]);
+    if (empty($_POST['date_commande']) || empty($_POST['date_prevue_envoi']) || empty($_POST['etat_preparation'])) {
+    die('Tous les champs doivent être remplis.');
+}
 
-    $_SESSION['flash_message'] = "Commande modifiée avec succès.";
-    header('Location: ../pages/admin/commandes.php');
-    exit();
+    $sql = "UPDATE commandes SET date_commande = ?, date_prevue_envoi = ?, etat_preparation = ? WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$dateCommande, $datePrevue, $etat, $id]);
+
+    // Redirection ou message de succès
+    header("Location: ../pages/admin/commandes.php?success=1");
+    exit;
 }
 ?>
