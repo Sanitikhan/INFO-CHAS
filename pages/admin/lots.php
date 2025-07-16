@@ -28,10 +28,12 @@ $articles = $pdo->query("
 // Fetch lots with their linked articles
 $lots = $pdo->query("
     SELECT l.*, 
+        f.nom AS fournisseur_nom,
         GROUP_CONCAT(DISTINCT a.nom_article SEPARATOR ', ') AS articles
     FROM lots l
     LEFT JOIN article_lot al ON l.id = al.lot_id
     LEFT JOIN articles a ON al.article_id = a.id
+    LEFT JOIN fournisseurs f ON l.fournisseur_id = f.id
     GROUP BY l.id
 ")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -448,6 +450,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
 
                 <tbody>
                     <?php foreach ($lots as $lot): ?>
+                        <?php
+                        $lotId = $lot['id'];
+
+                        // On va chercher les articles liés à CE lot
+                        $stmt = $pdo->prepare("
+                            SELECT 
+                                a.nom_article, 
+                                al.couleur, 
+                                al.taille, 
+                                al.quantite
+                            FROM article_lot al
+                            JOIN articles a ON al.article_id = a.id
+                            WHERE al.lot_id = ?
+                        ");
+                        $stmt->execute([$lotId]);
+                        $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                        $dataArticles = htmlspecialchars(json_encode($articles), ENT_QUOTES);
+                        ?>
                     <tr data-etat="<?= htmlspecialchars($lot['etat']) ?>">
                         <td>Lot n°<?= $lot['id'] ?></td>
                         <td><?= htmlspecialchars($lot['categorie']) ?></td>
@@ -472,8 +493,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                         <td><?= htmlspecialchars($lot['articles']) ?></td>
                         <td class="actions">
                             <!-- Add your action buttons here, e.g. Voir, Modifier, Supprimer -->
-                            <button class="btn btn-voir" style="padding: 5px 10px;">Voir</button>
-                            <a href="#" class="btn btn-edit" style="padding: 5px 10px;">Modifier</a>
+                            <button class="btn btn-voir"
+                                data-etat="<?= htmlspecialchars($lot['etat']) ?>"
+                                data-id="<?= htmlspecialchars($lot['id']) ?>"
+                                data-fournisseur_nom="<?= htmlspecialchars($lot['fournisseur_nom']) ?>"
+                                data-categorie="<?= htmlspecialchars($lot['categorie']) ?>"
+                                data-quantite_stock="<?= $lot['quantite_stock'] ?>"
+                                data-emplacement="<?= htmlspecialchars($lot['emplacement']) ?>"
+                                data-articles='<?= $dataArticles ?>'
+                                data-created_at="<?= htmlspecialchars($article['created_at'] ?? '-') ?>"
+                            >Voir</button>
+                            <button
+                                class="btn btn-edit"
+                                data-categorie="<?= htmlspecialchars($lot['categorie']) ?>"
+                                data-quantite_stock="<?= $lot['quantite_stock'] ?>"
+                                data-etat="<?= $lot['etat'] ?>"
+                                data-fournisseur_nom="<?= htmlspecialchars($lot['fournisseur_nom']) ?>"
+                                data-emplacement="<?= htmlspecialchars($lot['emplacement']) ?>"
+                            >Modifier</button>
                             <button class="btn btn-delete" style="padding: 5px 10px;">Supprimer</button>
                         </td>
                     </tr>
@@ -485,7 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         <div id="modal-details" class="modal" style="display:none;">
             <div class="modal-content" style="max-width:420px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
                 <button onclick="fermerModal()" class="close" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</button>
-                <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Détails de l'article</h2>
+                <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Détails du lot</h2>
                 <table id="details-content" style="width:100%; background:#f9f9f9; border-radius:8px; overflow:hidden;">
                     <!-- Details will be filled by JS -->
                 </table>
@@ -495,17 +532,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         <div id="modal-edit" class="modal" style="display:none;">
             <div class="modal-content" style="max-width:420px; background:#fff; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:2em; position:relative;">
                 <span class="close" onclick="fermerEditModal()" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;">&times;</span>
-                <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Modifier l'article</h2>
-                <form id="edit-article-form" method="POST" action="../../actions/modifier_article.php">
+                <h2 style="margin-top:0;margin-bottom:1em;font-size:1.3em;">Modifier le lot</h2>
+                <form id="edit-lot-form" method="POST" action="../../actions/modifier_lot.php">
                     <input type="hidden" name="id" id="edit-id">
-                    <div style="margin-bottom: 10px">
-                        <label for="edit-nom_article">Nom de l'article</label>
-                        <input name="nom_article" id="edit-nom_article" required>
-                    </div>
-                    <div style="margin-bottom: 10px">
-                        <label for="edit-reference">Référence</label>
-                        <input name="reference" id="edit-reference" required>
-                    </div>
                     <div style="margin-bottom: 10px">
                         <label for="edit-categorie">Catégorie</label>
                         <select name="categorie" id="edit-categorie" required>
@@ -513,43 +542,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                             <option value="Bas">Bas</option>
                             <option value="Dessus">Dessus</option>
                             <option value="Ensemble">Ensemble</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 10px">
-                        <label for="edit-couleur">Couleur</label>
-                        <select name="couleur" id="edit-couleur" required>
-                            <option value="Rouge">Rouge</option>
-                            <option value="Bleu">Bleu</option>
-                            <option value="Jaune">Jaune</option>
-                            <option value="Vert">Vert</option>
-                            <option value="Orange">Orange</option>
-                            <option value="Violet">Violet</option>
-                            <option value="Marron">Marron</option>
-                            <option value="Beige">Beige</option>
-                            <option value="Gris">Gris</option>
-                            <option value="Noir">Noir</option>
-                            <option value="Blanc">Blanc</option>
-                            <option value="Rose">Rose</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 10px">
-                        <label for="edit-taille">Taille</label>
-                        <select name="taille" id="edit-taille" required>
-                            <option value="XS">XS</option>
-                            <option value="S">S</option>
-                            <option value="M">M</option>
-                            <option value="L">L</option>
-                            <option value="XL">XL</option>
-                            <option value="30">30</option>
-                            <option value="32">32</option>
-                            <option value="34">34</option>
-                            <option value="36">36</option>
-                            <option value="38">38</option>
-                            <option value="40">40</option>
-                            <option value="42">42</option>
-                            <option value="44">44</option>
-                            <option value="46">46</option>
-                            <option value="48">48</option>
                         </select>
                     </div>
                     <div style="margin-bottom: 10px">
@@ -563,6 +555,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                             <option value="orange">Orange</option>
                             <option value="rouge">Rouge</option>
                         </select>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="edit-fournisseur_id">Fournisseur</label>
+                        <select name="fournisseur_id" id="edit-fournisseur_id" required>
+                            <?php
+                            $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
+                            foreach ($fournisseurs as $f) {
+                                echo '<option value="'.$f['id'].'">'.htmlspecialchars($f['nom']).'</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="edit-emplacement">Emplacement</label>
+                        <input name="emplacement" id="edit-emplacement" placeholder="Emplacement">
                     </div>
                     
                     <button type="submit">Enregistrer</button>
@@ -688,22 +695,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             const row = btn.closest('tr');
             const etat = row.dataset.etat;
             const etatLabel = btn.dataset.etat.charAt(0).toUpperCase() + btn.dataset.etat.slice(1);
+            const articles = JSON.parse(btn.dataset.articles);
+
+            // Regroupement : Article > Couleur > Taille x Quantité
+            const grouped = {};
+
+            articles.forEach(({ nom_article, couleur, taille, quantite }) => {
+                if (!grouped[nom_article]) grouped[nom_article] = {};
+                if (!grouped[nom_article][couleur]) grouped[nom_article][couleur] = [];
+                grouped[nom_article][couleur].push(`${taille} x${quantite}`);
+            });
+
+            // 🔧 Génération HTML structuré
+            let articlesHtml = '<ul>';
+            Object.entries(grouped).forEach(([article, couleurs]) => {
+                articlesHtml += `<li><strong>${article}</strong><ul>`;
+                Object.entries(couleurs).forEach(([couleur, tailles]) => {
+                    articlesHtml += `<li><em>${couleur}</em><ul>`;
+                    tailles.forEach(info => {
+                        articlesHtml += `<li>${info}</li>`;
+                    });
+                    articlesHtml += '</ul></li>';
+                });
+                articlesHtml += '</ul></li>';
+            });
+            articlesHtml += '</ul>';
 
             const details = [
-                ['Nom', btn.dataset.nom_article],
-                ['Référence', btn.dataset.reference],
+                ['Lot n°', btn.dataset.id],
                 ['Catégorie', btn.dataset.categorie],
-                ['Couleur', btn.dataset.couleur],
-                ['Taille', btn.dataset.taille],
                 ['Quantité en stock', btn.dataset.quantite_stock],
-                ['Lots liés', btn.dataset.lots],
+                ['Fournisseur', btn.dataset.fournisseur_nom],
+                ['Emplacement', btn.dataset.emplacement],
+                ['Articles du lot', articlesHtml],
                 [
                     'État',
                     `<span class="etat-square ${etat}"></span> ${etatLabel}`
                 ],
-                ['Date de création', btn.dataset.date_creation],
-
-                
+                ['Date de création', btn.dataset.created_at],
             ];
             let html = '<tbody>';
             details.forEach(([label, value]) => {
@@ -719,19 +748,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         document.getElementById('modal-details').style.display = 'none';
     }
 
-    // Modal edit for articles
+    // Modal edit for lots
     document.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             document.getElementById('modal-edit').style.display = 'block';
-            document.getElementById('edit-id').value = this.dataset.id;
-            document.getElementById('edit-nom_article').value = this.dataset.nom_article;
-            document.getElementById('edit-reference').value = this.dataset.reference;
             document.getElementById('edit-categorie').value = this.dataset.categorie;
-            document.getElementById('edit-couleur').value = this.dataset.couleur;
-            document.getElementById('edit-taille').value = this.dataset.taille;
             document.getElementById('edit-quantite_stock').value = this.dataset.quantite_stock;
             document.getElementById('edit-etat').value = this.dataset.etat;
+            document.getElementById('edit-fournisseur_nom').value = this.dataset.fournisseur_nom;
+            document.getElementById('edit-emplacement').value = this.dataset.emplacement;
         });
     });
 
