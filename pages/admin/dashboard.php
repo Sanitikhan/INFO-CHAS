@@ -17,27 +17,13 @@ $lots_rouge = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'rouge'")->fet
 $lots_vert = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'vert'")->fetchColumn();
 $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->fetchColumn();
 
-$stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'en_attente'");
-$livraisons_attente = $stmt->fetchColumn();
-$stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'livree'");
-$livraisons_livree = $stmt->fetchColumn();
-
 // Example: Log when a user adds a new lot
 $reference = $_POST['reference'] ?? null;
 $type = $_POST['type'] ?? null;
 
-$activities = $stmt->fetchAll();
-
 // Count lots in etat 'rouge' or 'orange'
 $stmt = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat IN ('rouge', 'orange')");
 $total_lots_alertes = $stmt->fetchColumn();
-
-// Count livraisons with statut 'probleme'
-$stmt = $pdo->query("SELECT COUNT(*) FROM livraisons WHERE statut = 'probleme'");
-$total_livraisons_alertes = $stmt->fetchColumn();
-
-// Total alertes
-$total_alertes = $total_lots_alertes + $total_livraisons_alertes;
 ?>
 
 <!DOCTYPE html>
@@ -223,14 +209,14 @@ $total_alertes = $total_lots_alertes + $total_livraisons_alertes;
                             <span class="material-symbols-rounded">local_shipping</span>
                             <div>
                                 <div class="perf-label">Livraisons en attente</div>
-                                <div class="perf-value"><?= $livraisons_attente ?></div>
+                                <div class="perf-value"><p>x</p></div>
                             </div>
                         </div>
                         <div class="perf-item">
                             <span class="material-symbols-rounded">package</span>
                             <div>
                                 <div class="perf-label">Livraisons Livrée</div>
-                                <div class="perf-value"><?= $livraisons_livree ?></div>
+                                <div class="perf-value"><p>x</p></div>
                             </div>
                         </div>
                     </div>
@@ -272,7 +258,7 @@ $total_alertes = $total_lots_alertes + $total_livraisons_alertes;
                 <h3>Alertes</h3>
                 <div class="alert-summary" style="display: flex; gap: 20px; margin-bottom: 20px;">
                     <div style="background: #f44336; color: #fff; padding: 10px 20px; border-radius: 5px;">
-                    <strong>Total alertes :</strong> <?= $total_alertes ?>
+                    <strong>Total alertes :</strong> 
                     </div>
                     <a href="alertes.php" class="btn" style="text-decoration: none;">Voir les alertes</a>
                 </div>
