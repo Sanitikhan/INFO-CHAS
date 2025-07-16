@@ -151,7 +151,7 @@ function statutBadgeClass($etat) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock</title>
+    <title>Commandes</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/stock.css">
@@ -538,104 +538,63 @@ function statutBadgeClass($etat) {
     </section>
 
     <script>
-    document.querySelectorAll('#commandes-table .main-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-            const detailsRow = row.nextElementSibling;
-            if (detailsRow && detailsRow.classList.contains('details-row')) {
-                detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
-            }
-        });
-    });
 
-    document.getElementById('add-commande-btn').addEventListener('click', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+    // Bouton "Ajouter commande"
+    document.getElementById('add-commande-btn')?.addEventListener('click', function() {
         const formSection = document.getElementById('add-commande-form-section');
         formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
     });
 
-    document.querySelectorAll('#commandes-table .main-row').forEach(function(row) {
-        row.addEventListener('click', function() {
-            // Fill the modal with the commande's data
-            document.getElementById('edit-date_commande').value = row.date_commande;
-            document.getElementById('edit-date_prevue_envoi').value = row.date_prevue_envoi;
-            document.getElementById('edit-etat_preparation').value = row.dataset.etat_preparation;
+    // Tri commandes
+    const sortSelect = document.getElementById('sort-select');
+    const table = document.getElementById('commandes-table');
+    const tbody = table?.querySelector('tbody');
 
-            document.getElementById('edit-commande-modal').style.display = 'flex';
-        });
-    });
+    sortSelect?.addEventListener('change', function() {
+        const sortType = this.value;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // SORT COMMANDES TABLE
-        const sortSelect = document.getElementById('sort-select');
-        const table = document.getElementById('commandes-table');
-        const tbody = table.querySelector('tbody');
-
-        sortSelect.addEventListener('change', function() {
-            const sortType = this.value;
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-
-            rows.sort((a, b) => {
-                let valA, valB;
-                switch (sortType) {
-                    case 'reference':
-                        valA = a.children[1].textContent.trim().toLowerCase();
-                        valB = b.children[1].textContent.trim().toLowerCase();
-                        return valA.localeCompare(valB, undefined, {numeric: true});
-                    case 'date_commande':
-                        valA = a.children[4].textContent.trim();
-                        valB = b.children[4].textContent.trim();
-                        return valA.localeCompare(valB);
-                    case 'date_livraison':
-                        valA = a.children[5].textContent.trim();
-                        valB = b.children[5].textContent.trim();
-                        return valA.localeCompare(valB);
-                    case 'preparateur':
-                        valA = a.children[2].textContent.trim().toLowerCase();
-                        valB = b.children[2].textContent.trim().toLowerCase();
-                        return valA.localeCompare(valB);
-                    case 'etat':
-                        valA = a.children[6].textContent.trim().toLowerCase();
-                        valB = b.children[6].textContent.trim().toLowerCase();
-                        return valA.localeCompare(valB);
-                    default:
-                        return 0;
-                }
-            });
-
-            // Remove all rows
-            while (tbody.firstChild) {
-                tbody.removeChild(tbody.firstChild);
+        rows.sort((a, b) => {
+            let valA, valB;
+            switch (sortType) {
+                case 'reference': valA = a.children[1].textContent.trim().toLowerCase(); valB = b.children[1].textContent.trim().toLowerCase(); return valA.localeCompare(valB, undefined, {numeric: true});
+                case 'date_commande': valA = a.children[4].textContent.trim(); valB = b.children[4].textContent.trim(); return valA.localeCompare(valB);
+                case 'date_livraison': valA = a.children[5].textContent.trim(); valB = b.children[5].textContent.trim(); return valA.localeCompare(valB);
+                case 'preparateur': valA = a.children[2].textContent.trim().toLowerCase(); valB = b.children[2].textContent.trim().toLowerCase(); return valA.localeCompare(valB);
+                case 'etat': valA = a.children[6].textContent.trim().toLowerCase(); valB = b.children[6].textContent.trim().toLowerCase(); return valA.localeCompare(valB);
+                default: return 0;
             }
-
-            // Re-add sorted rows
-            rows.forEach(row => {
-                tbody.appendChild(row);
-            });
         });
+
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
     });
 
-    // Voir button
+    // Voir commande
     document.querySelectorAll('.btn-voir').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const row = btn.closest('tr');
-            
+
             const details = [
                 ['Date de la commande', btn.dataset.date_commande],
                 ["Date prévue à l'envoi", btn.dataset.date_prevue_envoi],
                 ['Etat', btn.dataset.etat_preparation],
                 ['Articles du lot', btn.dataset.articles || '—']
             ];
+
             let html = '<tbody>';
             details.forEach(([label, value]) => {
                 html += `<tr><th>${label}</th><td>${value}</td></tr>`;
             });
             html += '</tbody>';
+
             document.getElementById('voir-lot-details').innerHTML = html;
             document.getElementById('voir-lot-modal').style.display = 'flex';
         });
     });
 
-document.addEventListener('DOMContentLoaded', function () {
+    // Modifier commande
     document.querySelectorAll('.btn-edit').forEach(button => {
         button.addEventListener('click', function () {
             document.getElementById('modal-edit').style.display = 'block';
@@ -645,65 +604,60 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('edit-etat_preparation').value = this.dataset.etat_preparation;
         });
     });
+
+    // Recherche commande
+    const searchInput = document.getElementById('search-commande-input');
+    const rows = table?.querySelectorAll('tbody tr');
+    searchInput?.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        rows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            row.style.display = rowText.includes(filter) ? '' : 'none';
+        });
+    });
+
+    // Suppression commande
+    let commandeToDelete = null;
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            commandeToDelete = this.dataset.id;
+            document.getElementById('modal-supprimer-commande').style.display = 'block';
+        });
+    });
+
+    document.getElementById('btn-confirm-supprimer-commande')?.addEventListener('click', function() {
+        if (!commandeToDelete) return;
+        fetch('../../actions/supprimer_commande.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'id=' + encodeURIComponent(commandeToDelete)
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Erreur lors de la suppression.');
+            }
+        });
+    });
+
+    // Flash message
+    const flash = document.getElementById('flash-message');
+    if (flash) {
+        setTimeout(() => {
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 500);
+        }, 4000);
+    }
 });
 
 function fermerEditCommandeModal() {
     document.getElementById('modal-edit').style.display = 'none';
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-commande-input');
-    const table = document.getElementById('commandes-table');
-    const rows = table.querySelectorAll('tbody tr');
-
-    searchInput.addEventListener('input', function() {
-        const filter = this.value.toLowerCase();
-        rows.forEach(row => {
-            // Combine all cell text in the row
-            const rowText = row.textContent.toLowerCase();
-            row.style.display = rowText.includes(filter) ? '' : 'none';
-        });
-    });
-});
-
-let commandeToDelete = null;
-
-document.querySelectorAll('.btn-delete').forEach(btn => {
-    btn.addEventListener('click', function() {
-        commandeToDelete = this.dataset.id;
-        document.getElementById('modal-supprimer-commande').style.display = 'block';
-    });
-});
-
-document.getElementById('btn-confirm-supprimer-commande').addEventListener('click', function() {
-    if (!commandeToDelete) return;
-    fetch('../../actions/supprimer_commande.php', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'id=' + encodeURIComponent(commandeToDelete)
-    })
-    .then(response => {
-        if (response.ok) {
-            window.location.reload();
-        } else {
-            alert('Erreur lors de la suppression.');
-        }
-    });
-});
-
 function fermerSupprimerCommandeModal() {
     document.getElementById('modal-supprimer-commande').style.display = 'none';
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    const flash = document.getElementById('flash-message');
-    if (flash) {
-        setTimeout(() => {
-            flash.style.opacity = '0';
-            setTimeout(() => flash.remove(), 500);
-        }, 4000); // 4 seconds before fade out
-    }
-});
 
     </script>
     <script src="../../actions/script.js"></script>
