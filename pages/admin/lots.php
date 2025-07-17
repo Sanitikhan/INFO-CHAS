@@ -404,7 +404,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                     <td>
                         <form method="post" style="display:inline;">
                             <input type="hidden" name="article_id" value="<?= $article['id'] ?>">
-                            <button type="submit" name="add_to_basket" class="btn"
+                            <button type="submit" name="add_to_basket" class="btn" style="padding: 5px 10px; font-weight: 100;"
                                 <?php
                                 $basket_reference = null;
                                 if (!empty($_SESSION['lot_basket'])) {
@@ -484,6 +484,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                         <td class="actions">
                             <!-- Add your action buttons here, e.g. Voir, Modifier, Supprimer -->
                             <button class="btn btn-voir"
+                            style="padding: 5px 10px;"
                                 data-etat="<?= htmlspecialchars($lot['etat']) ?>"
                                 data-id="<?= htmlspecialchars($lot['id']) ?>"
                                 data-fournisseur_nom="<?= htmlspecialchars($lot['fournisseur_nom']) ?>"
@@ -494,6 +495,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                             >Voir</button>
                             <button
                                 class="btn btn-edit"
+                                style="padding: 5px 10px;"
                                 data-categorie="<?= htmlspecialchars($lot['categorie']) ?>"
                                 data-quantite_stock="<?= $lot['quantite_stock'] ?>"
                                 data-etat="<?= $lot['etat'] ?>"

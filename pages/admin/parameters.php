@@ -275,7 +275,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <section class="section-content">
             <div class="container">
                 <h2>Liste des utilisateurs</h2>
-                <table border="1" cellpadding="3" style="width:100%;">
+                <table border="1"  cellpadding="6" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Nom d'utilisateur</th>

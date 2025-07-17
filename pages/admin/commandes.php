@@ -417,7 +417,7 @@ if(isset($_POST['id_lot'])) {
         </div>
 
         <h2>Lots à préparer</h2>
-        <table border="1">
+        <table border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
                     <th>Commande n°</th>
@@ -483,7 +483,7 @@ if(isset($_POST['id_lot'])) {
         </table>
 
         <h2>Lots prêts à expédier</h2>
-        <table border="1">
+        <table border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
                     <th>Commande n°</th>
