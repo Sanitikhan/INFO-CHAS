@@ -195,7 +195,7 @@ $articles = $pdo->query("
         <section class="btn-section">
             <input type="text" id="search-article-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn btn-add" id="add-articles-btn">Ajouter un article</button>
+                <button class="btn btn-add" id="openAddArticles">Ajouter un article</button>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
@@ -209,25 +209,44 @@ $articles = $pdo->query("
             </div>
         </section>
 
-        <div class="form-section" id="add-articles-form-section" style="display:none;">
-            <form action="../../actions/ajouter_articles.php" method="POST">
+<!-- Modal -->
+<div id="modal-articles" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+    <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%;">
+        <button id="closeArticles" style="float:right;">X</button>
+        <form action="../../actions/ajouter_articles.php" method="POST">
+            <div style="margin-bottom: 10px">
+                <label for="nom_article">Nom de l'article</label>
                 <input name="nom_article" placeholder="Nom de l'article" required>
+            </div>
+            <div style="margin-bottom: 10px">
+                <label for="reference">Référence</label>
                 <input name="reference" placeholder="Référence" required>
+            </div>
+            <div style="margin-bottom: 10px">
+                <label for="categorie">Catégorie</label>
                 <select name="categorie" required>
                     <option value="Top">Top</option>
                     <option value="Bas">Bas</option>
                     <option value="Dessus">Dessus</option>
                     <option value="Ensemble">Ensemble</option>
                 </select>
+            </div>
+            <div style="margin-bottom: 10px">
+                <label for="quantite_stock">Quantité en stock</label>
                 <input name="quantite_stock" placeholder="Quantité en stock" required>
+            </div>
+            <div style="margin-bottom: 10px">
+                <label for="etat">État</label>
                 <select name="etat" required>
                     <option value="vert">Vert</option>
                     <option value="orange">Orange</option>
                     <option value="rouge">Rouge</option>
                 </select>
-                <button type="submit">Ajouter un article</button>
-            </form>
-        </div>
+            </div>
+            <button type="submit">Ajouter l'article</button>
+        </form>
+    </div>
+</div>
 
         <table id="articles-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
@@ -406,10 +425,23 @@ $articles = $pdo->query("
     </section>
 
     <script>
-        document.getElementById('add-articles-btn').addEventListener('click', function() {
-            const formSection = document.getElementById('add-articles-form-section');
-            formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-    });
+        const openBtnArticles = document.getElementById('openAddArticles');
+            const modalArticles = document.getElementById('modal-articles');
+            const closeBtnArticles = document.getElementById('closeArticles');
+
+            openBtnArticles.addEventListener('click', () => {
+                modalArticles.style.display = 'flex';
+            });
+
+            closeBtnArticles.addEventListener('click', () => {
+                modalArticles.style.display = 'none';
+            });
+
+            window.addEventListener('click', e => {
+                if (e.target === modalArticles) {
+                    modalArticles.style.display = 'none';
+                }
+            });
 
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sort-select').addEventListener('change', function() {

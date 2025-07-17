@@ -285,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         <section class="btn-section">
             <input type="text" id="search-article-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn btn-add" id="add-livraison-btn">Ajouter une livraison</button>
+                <button class="btn btn-add" id="openAddLivraison">Ajouter une livraison</button>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
@@ -301,49 +301,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             </div>
         </section>
 
-        <div class="form-section" id="add-livraison-form-section" style="display:none;">
-            <form action="../../actions/ajouter_livraison.php" method="POST">
-                <label for="numero_livraison">Numéro de livraison</label>
-                <input type="text" name="numero_livraison" id="numero_livraison" required placeholder="Numéro de livraison">
+        <!-- Modal -->
+        <div id="modal-livraison" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+            <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%;">
+                
+                <button id="closeLivraison" style="float:right;">X</button>
 
-                <label for="date_livraison">Date de livraison</label>
-                <input type="date" name="date_livraison" id="date_livraison" required value="<?= date('Y-m-d') ?>">
+                <form action="../../actions/ajouter_livraison.php" method="POST">
+                <div style="margin-bottom: 10px">
+                    <label for="numero_livraison">Numéro de livraison</label>
+                    <input type="text" name="numero_livraison" id="numero_livraison" required placeholder="Numéro de livraison">
+                </div>
+                <div style="margin-bottom: 10px">
+                    <label for="date_livraison">Date de livraison</label>
+                    <input type="date" name="date_livraison" id="date_livraison" required value="<?= date('Y-m-d') ?>">
+                </div>
+                <div style="margin-bottom: 10px">
+                    <label for="fournisseur_id">Fournisseur</label>
+                    <select name="fournisseur_id" id="fournisseur_id" required>
+                        <option value="">Choisir un fournisseur</option>
+                        <?php
+                        $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
+                        foreach ($fournisseurs as $f) {
+                            echo '<option value="' . $f['id'] . '">' . htmlspecialchars($f['nom']) . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div style="margin-bottom: 10px">
+                    <label for="etat">État</label>
+                    <select name="etat" id="etat" required>
+                        <option value="">Choisir un état</option>
+                        <option value="en attente">En attente</option>
+                        <option value="en cours">En cours</option>
+                        <option value="livrée">Livrée</option>
+                        <option value="annulée">Annulée</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 10px">
+                    <label for="commentaire">Commentaire (optionnel)</label>
+                    <textarea name="commentaire" id="commentaire" rows="3" placeholder="Ajouter un commentaire..."></textarea>
+                </div>
+                <div style="margin-bottom: 10px">
+                    <label for="date_reception">Date de réception</label>
+                    <input type="date" name="date_reception" id="date_reception" required value="<?= date('Y-m-d') ?>">
+                </div>
+                    <button type="submit">Ajouter la livraison</button>
+                </form>
 
-                <label for="fournisseur_id">Fournisseur</label>
-                <select name="fournisseur_id" id="fournisseur_id" required>
-                    <option value="">Choisir un fournisseur</option>
-                    <?php
-                    $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
-                    foreach ($fournisseurs as $f) {
-                        echo '<option value="' . $f['id'] . '">' . htmlspecialchars($f['nom']) . '</option>';
-                    }
-                    ?>
-                </select>
+            </div>
+            </div>
 
-                <label for="etat">État</label>
-                <select name="etat" id="etat" required>
-                    <option value="">Choisir un état</option>
-                    <option value="en attente">En attente</option>
-                    <option value="en cours">En cours</option>
-                    <option value="livrée">Livrée</option>
-                    <option value="annulée">Annulée</option>
-                </select>
-
-                <label for="commentaire">Commentaire (optionnel)</label>
-                <textarea name="commentaire" id="commentaire" rows="3" placeholder="Ajouter un commentaire..."></textarea>
-
-                <label for="date_reception">Date de réception</label>
-                <input type="date" name="date_reception" id="date_reception" required value="<?= date('Y-m-d') ?>">
-
-                <button type="submit">Ajouter la livraison</button>
-            </form>
-        </div>
 
 
 
 
         <h2>Articles à ranger</h2>
-        <table border="1" cellpadding="6" cellspacing="0">
+        <table border="1" cellpadding="6" cellspacing="0" style="margin-bottom: 15px;">
             <thead>
                 <tr>
                     <th>Article</th>
@@ -475,10 +489,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
 
     <script>
 
-        document.getElementById('add-livraison-btn').addEventListener('click', function() {
-            const formSection = document.getElementById('add-livraison-form-section');
-            formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-        });
+    const openBtn = document.getElementById('openAddLivraison');
+    const modal = document.getElementById('modal-livraison');
+    const closeBtn = document.getElementById('closeLivraison');
+
+    openBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', e => {
+    if (e.target === modal) modal.style.display = 'none';
+    });
+
+    // Fermer si clic en dehors de la modal-content
+    window.addEventListener('click', e => {
+    const modal = document.getElementById('modal-livraison');
+    if (e.target === modal) {
+        modal.style.display = 'none';
+    }
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sort-select').addEventListener('change', function() {
@@ -578,7 +611,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                 grouped[nom_article][couleur].push(`${taille} x${quantite}`);
             });
 
-            // 🔧 Génération HTML structuré
+            // Génération HTML structuré
             let articlesHtml = '<ul>';
             Object.entries(grouped).forEach(([article, couleurs]) => {
                 articlesHtml += `<li><strong>${article}</strong><ul>`;

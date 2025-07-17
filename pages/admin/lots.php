@@ -263,8 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         <section class="btn-section">
             <input type="text" id="search-article-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn" id="open-basket-modal">Voir mon panier</button>
-                <button class="btn btn-add" id="add-articles-btn">Ajouter un lot</button>
+                <button class="btn" id="open-basket-modal">Créer le lot</button>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
@@ -279,42 +278,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                 </div>
             </div>
         </section>
-
-        <div class="form-section" id="add-articles-form-section" style="display:none;">
-            <form action="../../actions/ajouter_articles.php" method="POST">
-                <select name="categorie" required>
-                    <option value="Top">Top</option>
-                    <option value="Bas">Bas</option>
-                    <option value="Dessus">Dessus</option>
-                    <option value="Ensemble">Ensemble</option>
-                </select>
-                <input name="quantite_stock" type="number" placeholder="Quantité en stock" required>
-                <select name="etat" required>
-                    <option value="vert">Vert</option>
-                    <option value="orange">Orange</option>
-                    <option value="rouge">Rouge</option>
-                </select>
-                <select name="fournisseur_id" required>
-                    <?php
-                    $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
-                    foreach ($fournisseurs as $f) {
-                        echo '<option value="'.$f['id'].'">'.htmlspecialchars($f['nom']).'</option>';
-                    }
-                    ?>
-                </select>
-                <input name="emplacement" placeholder="Emplacement">
-                <label>Articles du lot :</label>
-                <select name="articles[]" multiple required style="min-width:200px;">
-                    <?php
-                    $articlesList = $pdo->query("SELECT id, nom_article FROM articles")->fetchAll(PDO::FETCH_ASSOC);
-                    foreach ($articlesList as $a) {
-                        echo '<option value="'.$a['id'].'">'.htmlspecialchars($a['nom_article']).'</option>';
-                    }
-                    ?>
-                </select>
-                <button type="submit">Ajouter un lot</button>
-            </form>
-        </div>
 
         <!-- Basket Modal -->
         <div id="basket-modal" class="modal" style="display:none;">
@@ -417,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                                 if ($basket_reference && $article['reference'] !== $basket_reference) $disable = true;
                                 echo $disable ? 'disabled' : '';
                                 ?>>
-                                <?= in_array($article['id'], $_SESSION['lot_basket']) ? 'Ajouté' : 'Ajouter au panier' ?>
+                                <?= in_array($article['id'], $_SESSION['lot_basket']) ? 'Sélectionné' : 'Sélectionner un article' ?>
                             </button>
                         </form>
                     </td>
@@ -588,11 +551,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                 document.getElementById('basket-modal').style.display = 'none';
             }
         };
-
-        document.getElementById('add-articles-btn').addEventListener('click', function() {
-            const formSection = document.getElementById('add-articles-form-section');
-            formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-        });
 
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('sort-select').addEventListener('change', function() {
