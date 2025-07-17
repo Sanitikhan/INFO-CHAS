@@ -198,64 +198,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <p><strong>Email :</strong> <?= $email ? htmlspecialchars($email) : '<em>Non défini</em>' ?></p>
                     <p><strong>Mot de passe :</strong> ********</p>
                 </div>
-                <button class="btn btn-edit" id="edit-infos-btn">Modifier</button>
+                <button class="btn btn-edit" id="openEditUtilisateur">Modifier</button>
             </div>
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-            <button id="show-user-form-btn" class="btn">Ajouter un nouvel utilisateur</button>
+            <button id="openAddUtilisateur" class="btn">Ajouter un nouvel utilisateur</button>
             <?php endif; ?>
             
-            <div class="container modal-content" id="user-form-section" style="display:none; position:relative; flex: 1;">
-                <h2>Ajouter un nouvel utilisateur</h2>
-                <?php if (isset($_SESSION['error'])) { echo "<p style='color:red'>" . $_SESSION['error'] . "</p>"; unset($_SESSION['error']); } ?>
-                <button type="button" id="close-user-form-btn" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:1.5em; cursor:pointer; color:#000;">&times;</button>
-                <form method="post">
-                    <div class="form-group">
-                        <label for="username">Nom d'utilisateur :</label>
-                        <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email :</label>
-                        <input type="email" name="email" placeholder="Email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="role">Rôle :</label>
-                        <select name="role" required>
-                            <option value="admin">Administrateur</option>
-                            <option value="commercial">Commercial</option>
-                            <option value="gestionnaire de stock">Gestionnaire de stock</option>
-                            <option value="magasinier">Magasinier</option>
-                            <option value="gestionnaire de livraison">Gestionnaire de livraison</option>
-                            <option value="livreur">Livreur</option>
-                            <option value="fournisseur">Fournisseur</option>
-                        </select>
-                    <div class="form-group">
-                        <label for="password">Mot de passe :</label>
-                        <input type="password" id="password" name="password" placeholder="Nouveau mot de passe">
-                    </div>
-                    <div class="form-group">
-                        <label for="confirm_password">Confirmer le mot de passe :</label>
-                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmer le mot de passe">
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn">Ajouter</button>
-                    </div>
-                </form>
-            </div>
-        </section>
+            <div id="modal-utilisateur" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+                <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%; background: #fff;">
 
-        <section class="section-content" id="edit-infos-form-section" style="display:none;">
-            <div class="form-section">
-                <div class="container">
-                    <h2>Modifier mes informations</h2>
-                    <form action="../actions/update_user.php" method="POST">
+                    <button id="closeUtilisateur" style="float:right;">X</button>
+
+                    <h2>Ajouter un nouvel utilisateur</h2>
+                    <?php if (isset($_SESSION['error'])) { echo "<p style='color:red'>" . $_SESSION['error'] . "</p>"; unset($_SESSION['error']); } ?>
+                    <button type="button" id="close-user-form-btn" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:1.5em; cursor:pointer; color:#000;">&times;</button>
+                    <form method="post">
                         <div class="form-group">
                             <label for="username">Nom d'utilisateur :</label>
-                            <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($_SESSION['username']); ?>" required>
+                            <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
                         </div>
                         <div class="form-group">
                             <label for="email">Email :</label>
-                            <input type="email" id="email" name="email" value="<?= $email ? htmlspecialchars($email) : '' ?>" required>
+                            <input type="email" name="email" placeholder="Email" required>
                         </div>
+                        <div class="form-group">
+                            <label for="role">Rôle :</label>
+                            <select name="role" required>
+                                <option value="admin">Administrateur</option>
+                                <option value="commercial">Commercial</option>
+                                <option value="gestionnaire de stock">Gestionnaire de stock</option>
+                                <option value="magasinier">Magasinier</option>
+                                <option value="gestionnaire de livraison">Gestionnaire de livraison</option>
+                                <option value="livreur">Livreur</option>
+                                <option value="fournisseur">Fournisseur</option>
+                            </select>
                         <div class="form-group">
                             <label for="password">Mot de passe :</label>
                             <input type="password" id="password" name="password" placeholder="Nouveau mot de passe">
@@ -265,12 +241,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmer le mot de passe">
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn">Mettre à jour</button>
+                            <button type="submit" class="btn">Ajouter</button>
                         </div>
                     </form>
                 </div>
             </div>
         </section>
+
+            <div id="modal-modifier" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+                <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%; background: #fff;">
+
+                    <button id="closeModifier" style="float:right;">X</button>
+                        <h2>Modifier mes informations</h2>
+                        <form action="../actions/update_user.php" method="POST" style="background: none; box-shadow: none; padding: 0;">
+                            <div class="form-group">
+                                <label for="username">Nom d'utilisateur :</label>
+                                <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($_SESSION['username']); ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email :</label>
+                                <input type="email" id="email" name="email" value="<?= $email ? htmlspecialchars($email) : '' ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Mot de passe :</label>
+                                <input type="password" id="password" name="password" placeholder="Nouveau mot de passe">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm_password">Confirmer le mot de passe :</label>
+                                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmer le mot de passe">
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn">Mettre à jour</button>
+                            </div>
+                        </form>
+                </div>
+            </div>
 
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <section class="section-content">
@@ -363,15 +368,52 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </script>
     <script src="../../actions/script.js"></script>
     <script>
-document.querySelectorAll('.user-row').forEach(function(row) {
-    row.addEventListener('click', function() {
-        document.getElementById('edit-user-id').value = row.dataset.id;
-        document.getElementById('edit-username').value = row.dataset.username;
-        document.getElementById('edit-email').value = row.dataset.email;
-        document.getElementById('edit-role').value = row.dataset.role;
-        document.getElementById('edit-user-modal').style.display = 'flex';
-    });
-});
+        document.querySelectorAll('.user-row').forEach(function(row) {
+            row.addEventListener('click', function() {
+                document.getElementById('edit-user-id').value = row.dataset.id;
+                document.getElementById('edit-username').value = row.dataset.username;
+                document.getElementById('edit-email').value = row.dataset.email;
+                document.getElementById('edit-role').value = row.dataset.role;
+                document.getElementById('edit-user-modal').style.display = 'flex';
+            });
+        });
+
+            const openBtn = document.getElementById('openAddUtilisateur');
+            const modal = document.getElementById('modal-utilisateur');
+            const closeBtn = document.getElementById('closeUtilisateur');
+            const openUserBtn = document.getElementById('openEditUtilisateur');
+            const modalModifier = document.getElementById('modal-modifier');
+            const closeModifierBtn = document.getElementById('closeModifier');
+
+            openBtn.addEventListener('click', () => {
+                modal.style.display = 'flex';
+            });
+            openUserBtn.addEventListener('click', () => {
+                modalModifier.style.display = 'flex';
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            closeModifierBtn.addEventListener('click', () => {
+                modalModifier.style.display = 'none';
+            });
+
+            window.addEventListener('click', e => {
+                if (e.target === modal) modal.style.display = 'none';
+            });
+            window.addEventListener('click', e => {
+                if (e.target === modalModifier) modalModifier.style.display = 'none';
+            });
+
+            // Fermer si clic en dehors de la modal-content
+            window.addEventListener('click', e => {
+            const modal = document.getElementById('modal-utilisateur');
+            const modalModifier = document.getElementById('modal-modifier');
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
 </script>
 </body>
 </html>
