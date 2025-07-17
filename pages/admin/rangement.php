@@ -140,7 +140,134 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         <span class="material-symbols-rounded">menu</span>
     </button>
 
+    <aside class="sidebar">
+        <!-- Sidebar Header -->
+        <hearder class="sidebar-header">
+            <a href="" class="header-logo">
+                <img src="../../img/logo_w.png" alt="FASHION CHIC">
+                <!-- Faire en sorte que l'image soit différente quand la sidebar est collapsed -->
+            </a>
+            <button class="sidebar-toggler">
+                <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+        </hearder>
 
+        <nav class="sidebar-nav">
+            <!-- Primary Top Nav -->
+            <ul class="nav-list primary-nav">
+                <li class="nav-item">
+                    <a href="dashboard.php" class="nav-link">
+                        <span class="material-symbols-rounded">dashboard</span>
+                        <span class="nav-label">Tableau de bord</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-title">Tableau de bord</a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- Dropdown -->
+                    <li class="nav-item dropdown-container">
+                        <a href="#" class="nav-link dropdown-toggle active">
+                            <span class="material-symbols-rounded">inventory_2</span>
+                            <span class="nav-label">Stock</span>
+                            <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
+                        </a>
+                        <!-- Dropdown menu -->
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a class="nav-link dropdown-title">Stock</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="lots.php" class="nav-link dropdown-link">Lots</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="articles.php" class="nav-link dropdown-link">Articles</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="rangement.php" class="nav-link dropdown-link active">Rangement</a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php if (
+                    (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
+                    (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
+                ): ?>
+                    <li class="nav-item">
+                        <a href="commandes.php" class="nav-link">
+                            <span class="material-symbols-rounded">shopping_cart</span>
+                            <span class="nav-label">Commandes</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-item">
+                                <a class="nav-link dropdown-title">Commandes</a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php endif; ?>
+                <!-- Dropdown -->
+                <li class="nav-item dropdown-container">
+                    <a href="#" class="nav-link dropdown-toggle">
+                        <span class="material-symbols-rounded">mail</span>
+                        <span class="nav-label">Messagerie</span>
+                        <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
+                    </a>
+                    <!-- Dropdown menu -->
+                    <ul class="dropdown-menu">
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-title">Messagerie</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="messages.php" class="nav-link dropdown-link">Mes messages</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="alertes.php" class="nav-link dropdown-link">Alertes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="fournisseurs.php" class="nav-link dropdown-link">Fournisseurs</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="calendrier.php" class="nav-link">
+                        <span class="material-symbols-rounded">calendar_today</span>
+                        <span class="nav-label">Calendrier</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-title">Calendrier</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- Secondary Bottom Nav -->
+            <ul class="nav-list secondary-nav">
+                <li class="nav-item">
+                    <a href="parameters.php" class="nav-link">
+                        <span class="material-symbols-rounded">settings</span>
+                        <span class="nav-label">Paramètres</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-title">Paramètres</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="../logout.php" class="nav-link">
+                        <span class="material-symbols-rounded">power_settings_new</span>
+                        <span class="nav-label">Déconnexion</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-title">Déconnexion</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </aside>
 
     <section class="main-content">
         
