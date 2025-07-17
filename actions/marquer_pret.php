@@ -15,14 +15,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commande_id'])) {
     $lots = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (!$lots) {
-        die("Aucun lot trouvé pour cette commande.");
+        $_SESSION['flash_message'] = "Aucun lot trouvé pour cette commande.";
+        $_SESSION['flash_type'] = "error";
+        header("Location: commandes.php");
+        exit();
     }
 
-    // 2. Démarrer une transaction pour assurer cohérence
     $pdo->beginTransaction();
 
     try {
-        // 3. Mettre à jour chaque lot
         foreach ($lots as $lot) {
             $lot_id = $lot['lot_id'];
             $quantite_commande = $lot['quantite_lot_commande'];
@@ -32,32 +33,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commande_id'])) {
                 throw new Exception("Stock insuffisant pour le lot $lot_id");
             }
 
-            // Mettre à jour la quantité stock
+            // Mise à jour du stock du lot
             $sqlUpdateStock = "UPDATE lots SET quantite_stock = quantite_stock - ? WHERE id = ?";
-            $stmtUpdateStock = $pdo->prepare($sqlUpdateStock);
-            $stmtUpdateStock->execute([$quantite_commande, $lot_id]);
+            $pdo->prepare($sqlUpdateStock)->execute([$quantite_commande, $lot_id]);
 
-            // Mettre à jour l'état du lot
+            // Mise à jour de l'état du lot
             $sqlUpdateEtatLot = "UPDATE lots SET etat = 'prêt' WHERE id = ?";
-            $stmtUpdateEtatLot = $pdo->prepare($sqlUpdateEtatLot);
-            $stmtUpdateEtatLot->execute([$lot_id]);
+            $pdo->prepare($sqlUpdateEtatLot)->execute([$lot_id]);
+
+            // Mise à jour des articles dans le lot
+            $sqlArticles = "SELECT article_id, quantite FROM article_lot WHERE lot_id = ?";
+            $stmtArticles = $pdo->prepare($sqlArticles);
+            $stmtArticles->execute([$lot_id]);
+            $articles = $stmtArticles->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($articles as $article) {
+                $article_id = $article['article_id'];
+                $quantite_par_lot = $article['quantite'];
+                $quantite_totale_a_retirer = $quantite_par_lot * $quantite_commande;
+
+                $sqlUpdateArticleStock = "UPDATE articles SET quantite_stock = quantite_stock - ? WHERE id = ?";
+                $pdo->prepare($sqlUpdateArticleStock)->execute([$quantite_totale_a_retirer, $article_id]);
+            }
         }
 
-        // 4. Mettre à jour l'état de la commande
+        // Mise à jour de l'état de la commande
         $sqlUpdateCommande = "UPDATE commandes SET etat_preparation = 'prêt' WHERE id = ?";
-        $stmtUpdateCommande = $pdo->prepare($sqlUpdateCommande);
-        $stmtUpdateCommande->execute([$commande_id]);
+        $pdo->prepare($sqlUpdateCommande)->execute([$commande_id]);
 
         $pdo->commit();
 
-        $_SESSION['flash_message'] = "Stock mis à jour.";
+        $_SESSION['flash_message'] = "Commande marquée comme prête et stock mis à jour.";
         $_SESSION['flash_type'] = "success";
 
     } catch (Exception $e) {
         $pdo->rollBack();
-        echo "Erreur : " . $e->getMessage();
+        $_SESSION['flash_message'] = "Erreur : " . $e->getMessage();
+        $_SESSION['flash_type'] = "error";
     }
 
+    header("Location: commandes.php");
+    exit();
+
 } else {
-    echo "ID de commande non fourni.";
+    $_SESSION['flash_message'] = "ID de commande non fourni.";
+    $_SESSION['flash_type'] = "error";
+    header("Location: commandes.php");
+    exit();
 }
