@@ -43,15 +43,14 @@ unset($livraison); // éviter référence persistante
 $stmt = $pdo->query("
     SELECT c.id, c.date_commande, c.date_prevue_envoi, c.etat_preparation
     FROM commandes c
-    WHERE c.date_prevue_envoi IS NOT NULL
+    WHERE date_prevue_envoi IS NOT NULL
 ");
 $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // 6. Récupérer les lots liés aux commandes (avec nom article)
 $stmt = $pdo->query("
-    SELECT commande_id, lot_id, quantite_lot_commande, articles, date_prevue_envoi, etat_lot
+    SELECT commande_id, lot_id, quantite_lot_commande, articles, etat_lot
     FROM commande_lot
-    WHERE date_prevue_envoi IS NOT NULL
 ");
 $commande_articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -71,14 +70,6 @@ foreach ($commande_articles as $lot) {
     $lot['articles'] = $articles;
     $lots_par_commande[$lot['commande_id']][] = $lot;
 }
-
-// Puis, récupérer les commandes
-$stmt = $pdo->query("
-    SELECT id, date_prevue_envoi, etat_preparation
-    FROM commandes
-    WHERE date_prevue_envoi IS NOT NULL
-");
-$commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Ajouter les lots (avec leurs articles) à chaque commande
 foreach ($commandes as &$commande) {
@@ -351,7 +342,6 @@ foreach ($commandes as $commande) {
         <?php foreach ($commandes as $commande): ?>
         "<?= $commande['id'] ?>": {
             id: "<?= $commande['id'] ?>",
-            date_prevue_envoi: "<?= $commande['date_prevue_envoi'] ?>",
             etat_preparation: "<?= addslashes($commande['etat_preparation']) ?>",
             lots: [
                 <?php 
@@ -362,7 +352,6 @@ foreach ($commandes as $commande) {
                         {
                             lot_id: "<?= $lot['lot_id'] ?>",
                             quantite_lot_commande: "<?= $lot['quantite_lot_commande'] ?>",
-                            date_prevue_envoi: "<?= $lot['date_prevue_envoi'] ?>",
                             etat_lot: "<?= addslashes($lot['etat_lot']) ?>",
                             articles: [
                                 <?php foreach ($articles as $article): ?>
@@ -433,7 +422,6 @@ foreach ($commandes as $commande) {
                     if (!commande) return alert('Détails de la commande introuvables.');
 
                     let html = `<h3>Commande #${commande.id}</h3>`;
-                    html += `<p><strong>Date prévue d'envoi :</strong> ${commande.date_prevue_envoi}</p>`;
                     html += `<p><strong>État de préparation :</strong> ${commande.etat_preparation}</p>`;
 
                     if (Array.isArray(commande.lots) && commande.lots.length > 0) {
@@ -442,7 +430,6 @@ foreach ($commandes as $commande) {
                             html += `<div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">`;
                             html += `<p><strong>Lot n°</strong> ${lot.lot_id}</p>`;
                             html += `<p><strong>Quantité commandée :</strong> ${lot.quantite_lot_commande}</p>`;
-                            html += `<p><strong>Date prévue d'envoi du lot :</strong> ${lot.date_prevue_envoi}</p>`;
                             html += `<p><strong>État du lot :</strong> ${lot.etat_lot}</p>`;
                             html += `</div>`;
                         });
