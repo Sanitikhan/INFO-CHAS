@@ -25,7 +25,6 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../public/style.css">
-    <link rel="stylesheet" href="../../public/modal.css">
     <link rel="stylesheet" href="../../public/form.css">
     <link rel="stylesheet" href="../../public/fournisseurs.css">
     <link rel="stylesheet" href="../../public/livraisons.css">
@@ -188,17 +187,29 @@ try {
         <section class="btn-section">
             <input type="text" id="search-fournisseur-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn btn-add" id="add-fournisseur-btn">Ajouter un fournisseur</button>
+                <button class="btn btn-add" id="openAddFournisseur">Ajouter un fournisseur</button>
             </div>
         </section>
 
-        <div class="form-section" id="add-fournisseur-form-section" style="display:none;">
-            <form class="form-fournisseur" method="POST" action="../../actions/ajouter_fournisseur.php">
-                <input type="text" name="nom" placeholder="Nom du fournisseur" required>
-                <input type="email" name="email" placeholder="Email" required>
-                <input type="text" name="telephone" placeholder="Téléphone" required>
-                <button type="submit">Ajouter le fournisseur</button>
-            </form>
+        <div id="modal-fournisseur" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+            <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%; background-color: #fff;">
+                <button id="closeFournisseur" style="float:right;">X</button>
+                    <form class="form-fournisseur" method="POST" action="../../actions/ajouter_fournisseur.php" style="background: none; box-shadow: none; padding: 0;">
+                        <div style="margin-bottom: 10px">
+                            <label for="nom">Nom du fournisseur</label>
+                            <input type="text" name="nom" placeholder="Nom du fournisseur" required>
+                        </div>
+                        <div style="margin-bottom: 10px">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" placeholder="Email" required>
+                        </div>
+                        <div style="margin-bottom: 10px">
+                            <label for="telephone">Téléphone</label>
+                            <input type="text" name="telephone" placeholder="Téléphone" required>
+                        </div>
+                        <button type="submit">Ajouter le fournisseur</button>
+                    </form>
+            </div>
         </div>
 
         <!-- Affichage des fournisseurs existants -->
@@ -265,10 +276,29 @@ try {
     });
 
     /* Display form */
-    document.getElementById('add-fournisseur-btn').addEventListener('click', function() {
-    const formSection = document.getElementById('add-fournisseur-form-section');
-    formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
-    });
+    const openBtn = document.getElementById('openAddFournisseur');
+        const modal = document.getElementById('modal-fournisseur');
+        const closeBtn = document.getElementById('closeFournisseur');
+
+        openBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', e => {
+            
+        });
+
+        // Fermer si clic en dehors de la modal-content
+        window.addEventListener('click', e => {
+        const modal = document.getElementById('modal-fournisseur');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
 
     document.addEventListener('DOMContentLoaded', function() {
     const sortSelect = document.getElementById('sort-select');

@@ -235,38 +235,40 @@ foreach ($stmt->fetchAll() as $user) {
                 <strong>Problèmes livraisons :</strong> <?= $count_probleme ?>
             </div>
             <div class="btn-section-right">
-                <button id="open-alert-modal" style="border:none; cursor:pointer; font-weight:800; background:#393E46; color: #fff; padding: 10px 20px; border-radius: 5px;">Envoyer une alerte</button>
+                <button class="btn btn-add" id="openAddAlerte" style="border:none; cursor:pointer; font-weight:800; background:#393E46; color: #fff; padding: 10px 20px; border-radius: 5px;">Envoyer une alerte</button>
             </div>
         </div>
 
-            <div id="alert-modal" class="modal" style="display:none;">
-                <div class="modal-content" style="max-width:400px;">
-                    <span class="close" onclick="closeAlertModal()" style="float:right;cursor:pointer;">&times;</span>
-                    <h2>Envoyer une alerte</h2>
-                    <form id="alert-form" method="POST" action="../../actions/envoyer_alerte.php">
-                        <div style="margin-bottom:1em;">
-                            <select name="role">
-                                <option value="">Sélectionner un rôle (optionnel)</option>
-                                <?php foreach ($roles as $role): ?>
-                                    <option value="<?= htmlspecialchars($role) ?>">
-                                        <?= ucfirst(htmlspecialchars($role)) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <select name="user_id">
-                                <option value="">Ou sélectionner un utilisateur</option>
-                                <?php foreach ($userList as $user): ?>
-                                    <option value="<?= $user['id'] ?>">
-                                        <?= htmlspecialchars($user['username']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <label for="alert-message">Message</label><br>
-                            <textarea id="alert-message" name="message" rows="4" required></textarea>
-                        </div>
-                        <button type="submit" class="btn">Envoyer</button>
-                    </form>
-                </div>
+            <div id="modal-alerte" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+                <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%; background-color: #fff;">
+                    <button id="closeAlerte" style="float:right;">X</button>
+                        <h2>Envoyer une alerte</h2>
+                        <form id="alert-form" method="POST" action="../../actions/envoyer_alerte.php">
+                            <div style="margin-bottom: 10px">
+                                <select name="role">
+                                    <option value="">Sélectionner un rôle (optionnel)</option>
+                                    <?php foreach ($roles as $role): ?>
+                                        <option value="<?= htmlspecialchars($role) ?>">
+                                            <?= ucfirst(htmlspecialchars($role)) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <select name="user_id">
+                                    <option value="">Ou sélectionner un utilisateur</option>
+                                    <?php foreach ($userList as $user): ?>
+                                        <option value="<?= $user['id'] ?>">
+                                            <?= htmlspecialchars($user['username']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <label for="alert-message">Message</label><br>
+                                <textarea id="alert-message" name="message" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn" style="padding: 0.8em; background-color: var(--primary-color); color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease;">Envoyer</button>
+                        </form>
+                    </div>
             </div>
 
         <div class="alertes-grid">
@@ -396,12 +398,30 @@ document.getElementById('show-probleme').onclick = function() {
         document.getElementById('list-probleme').style.display === 'none' ? 'block' : 'none';
 };
 
-document.getElementById('open-alert-modal').onclick = function() {
-    document.getElementById('alert-modal').style.display = 'flex';
-};
-function closeAlertModal() {
-    document.getElementById('alert-modal').style.display = 'none';
-}
+/* Display form */
+        const openBtn = document.getElementById('openAddAlerte');
+        const modal = document.getElementById('modal-alerte');
+        const closeBtn = document.getElementById('closeAlerte');
+
+        openBtn.addEventListener('click', () => {
+        modal.style.display = 'flex';
+        });
+
+        closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', e => {
+        if (e.target === modal) modal.style.display = 'none';
+        });
+
+        // Fermer si clic en dehors de la modal-content
+        window.addEventListener('click', e => {
+        const modal = document.getElementById('modal-alerte');
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+        });
 </script>
 </body>
 </html>

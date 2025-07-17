@@ -191,27 +191,28 @@ if (isset($_SESSION['user_id'])) {
 
         <section class="btn-section">
             <input type="text" id="search-message-input" placeholder="Rechercher..." class="btn-search" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-            <button class="btn btn-add" id="add-message-btn">Nouveau message</button>
+            <button class="btn btn-add" id="openAddMessage">Nouveau message</button>
         </section>
         
-        <div class="messages-container">
+        <div id="modal-message" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+            <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%; background-color: #fff;">
+                <button id="closeMessage" style="float:right;">X</button>
                 <!-- Send Message Form -->
-                <div class="form-section" id="add-message-form-section" style="display:none;">
-                    <form action="../../actions/messagerie.php" method="POST">
-                        <label for="receveur_id">Destinataire :</label>
-                        <select name="receveur_id" required>
-                            <?php foreach ($users as $user): ?>
-                                <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                    <option value="<?= $user['id'] ?>"><?= htmlspecialchars($user['username']) ?></option>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </select>
-                        <label for="objet">Sujet :</label>
-                        <input type="text" name="objet" required>
-                        <textarea name="corps" id="corps" rows="6" style="width:100%; resize:vertical; display:block; margin-bottom:1em;" required></textarea>
-                        <button type="submit" name="send_message">Envoyer</button>
-                    </form>
-                </div>
+                        <form action="../../actions/messagerie.php" method="POST" style="background: none; box-shadow: none; padding: 0;">
+                            <label for="receveur_id">Destinataire :</label>
+                            <select name="receveur_id" required>
+                                <?php foreach ($users as $user): ?>
+                                    <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                        <option value="<?= $user['id'] ?>"><?= htmlspecialchars($user['username']) ?></option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </select>
+                            <label for="objet">Sujet :</label>
+                            <input type="text" name="objet" required>
+                            <textarea name="corps" id="corps" rows="6" style="width:100%; resize:vertical; display:block; margin-bottom:1em;" required></textarea>
+                            <button type="submit" name="send_message">Envoyer</button>
+                        </form>
+            </div>
         </div>
         <div class="received-messages">
             <!-- Display messages -->
@@ -240,9 +241,28 @@ if (isset($_SESSION['user_id'])) {
         });
 
         /* Display form */
-        document.getElementById('add-message-btn').addEventListener('click', function() {
-        const formSection = document.getElementById('add-message-form-section');
-        formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
+        const openBtn = document.getElementById('openAddMessage');
+        const modal = document.getElementById('modal-message');
+        const closeBtn = document.getElementById('closeMessage');
+
+        openBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', e => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+
+        // Fermer si clic en dehors de la modal-content
+        window.addEventListener('click', e => {
+            const modal = document.getElementById('modal-message');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
         });
     </script>
     <script src="../../actions/script.js"></script>
