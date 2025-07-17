@@ -16,7 +16,7 @@ require_once '../../includes/config.php';
             c.id AS commande_id,
             c.date_prevue_envoi,
             c.etat_preparation,
-            cl.quantite AS quantite_lot_commande,
+            cl.quantite_lot_commande,
             l.id AS lot_id,
             GROUP_CONCAT(
                 CONCAT(
@@ -36,6 +36,7 @@ require_once '../../includes/config.php';
         GROUP BY c.id, l.id
         ORDER BY c.date_prevue_envoi ASC
     ";
+
     $lotsAPreparer = $pdo->query($sqlApreparer)->fetchAll(PDO::FETCH_ASSOC);
 
 
@@ -141,7 +142,12 @@ function statutBadgeClass($etat) {
         default: return 'statut-attendue';
     }
 }
-?>
+
+$lotsAPreparer = $pdo->query($sqlApreparer)->fetchAll(PDO::FETCH_ASSOC);
+if (empty($lotsAPreparer)) {
+    echo "<p>Aucun lot à préparer trouvé.</p>";
+}
+
 ?>
 
 
