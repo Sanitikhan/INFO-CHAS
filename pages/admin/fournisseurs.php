@@ -203,7 +203,7 @@ try {
 
         <!-- Affichage des fournisseurs existants -->
         <h2>Fournisseurs enregistrés</h2>
-        <table id="fournisseurs-table" border="1" cellpadding="5">
+        <table id="fournisseurs-table"border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
                     <th>Nom</th>
