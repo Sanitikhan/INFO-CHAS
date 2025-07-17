@@ -9,10 +9,10 @@ require_once('../../includes/config.php');
     exit();
 }*/
 
-$stmt = $pdo->query("SELECT id, numero_livraison, date_prevue FROM livraisons");
+$stmt = $pdo->query("SELECT id, numero_livraison, date_reception FROM livraisons");
 $livraisons = $stmt->fetchAll();
 
-$stmt = $pdo->query("SELECT id, reference, date_livraison FROM commandes WHERE date_livraison IS NOT NULL");
+$stmt = $pdo->query("SELECT id, date_prevue_envoi FROM commandes WHERE date_prevue_envoi IS NOT NULL");
 $commandes = $stmt->fetchAll();
 
 $stmt = $pdo->query("SELECT id, title, date FROM evenements");
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <?php foreach ($livraisons as $livraison): ?>
             {
                 title: "Livraison #<?= htmlspecialchars($livraison['numero_livraison']) ?>",
-                start: "<?= $livraison['date_prevue'] ?>"
+                start: "<?= $livraison['date_reception'] ?>"
             },
             <?php endforeach; ?>
             <?php foreach ($evenements as $evt): ?>
@@ -230,8 +230,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <?php endforeach; ?>
             <?php foreach ($commandes as $commande): ?>
             {
-                title: "Commande #<?= htmlspecialchars($commande['reference']) ?>",
-                start: "<?= $commande['date_livraison'] ?>"
+                title: "Commande #<?= htmlspecialchars($commande['id']) ?>",
+                start: "<?= $commande['date_prevue_envoi'] ?>"
             },
             <?php endforeach; ?>
         ]
