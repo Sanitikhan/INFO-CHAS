@@ -127,23 +127,14 @@ foreach ($stmt->fetchAll() as $user) {
                     (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
                     (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
                 ): ?>
-                    <!-- Dropdown -->
-                    <li class="nav-item dropdown-container">
-                        <a href="#" class="nav-link dropdown-toggle">
+                    <li class="nav-item">
+                        <a href="commandes.php" class="nav-link">
                             <span class="material-symbols-rounded">shopping_cart</span>
-                            <span class="nav-label">Réapprovisionnement</span>
-                            <span class="dropdown-icon material-symbols-rounded">keyboard_arrow_down</span>
+                            <span class="nav-label">Commandes</span>
                         </a>
-                        <!-- Dropdown menu -->
                         <ul class="dropdown-menu">
                             <li class="nav-item">
-                                <a class="nav-link dropdown-title">Réapprovisionnement</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="reapprovisionnement.php" class="nav-link dropdown-link">Réapprovisionnement</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="commandes.php" class="nav-link dropdown-link">Commandes</a>
+                                <a class="nav-link dropdown-title">Commandes</a>
                             </li>
                         </ul>
                     </li>
