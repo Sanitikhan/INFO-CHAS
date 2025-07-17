@@ -446,9 +446,9 @@ function statutBadgeClass($etat) {
                             >
                                 Modifier
                             </button>
-                            <form method="post" action="../../actions/marquer_pret.php" style="background: none; border: none; padding: 0;">
+                            <form method="post" action="../../actions/marquer_pret.php" style="background: none; border: none; padding: 0; box-shadow: none;">
                                 <input type="hidden" name="commande_id" value="<?= $lot['commande_id'] ?>">
-                                <button type="submit">Marquer comme prêt</button>
+                                <button class="btn" type="submit" style="padding: 5px 10px; font-weight: 200;">Marquer comme prêt</button>
                             </form>
                         </td>
                     </tr>
