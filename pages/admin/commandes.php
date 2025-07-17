@@ -17,7 +17,9 @@ require_once '../../includes/config.php';
         c.date_commande,
         c.date_prevue_envoi,
         c.etat_preparation,
-        cl.quantite_lot_commande,
+        cl.quantite_lot_commande AS quantite_commandee,
+        SUM(a.prix_unitaire * al.quantite) AS prix_unitaire_lot,
+        SUM(a.prix_unitaire * al.quantite) * cl.quantite_lot_commande AS prix_total_lot_commande,
         l.id AS lot_id,
         GROUP_CONCAT(CONCAT(a.nom_article, ' (', al.couleur, ') x', al.quantite) SEPARATOR ', ') AS articles
         FROM commandes c
@@ -26,7 +28,7 @@ require_once '../../includes/config.php';
         JOIN article_lot al ON al.lot_id = l.id
         JOIN articles a ON a.id = al.article_id
         WHERE c.etat_preparation IN ('à préparer', 'en préparation')
-        GROUP BY l.id
+        GROUP BY c.id, l.id, cl.quantite_lot_commande
         ORDER BY c.date_commande ASC
     ";
 
@@ -403,7 +405,7 @@ if(isset($_POST['id_lot'])) {
                                 Lot #<?= $lot['id'] ?>
                             </label>
                             <button type="button" onclick="toggleDetails(<?= $lot['id'] ?>)" style="margin-left:10px;">+ détail</button>
-                            <input type="number" name="quantite[<?= $lot['id'] ?>]" min="1" placeholder="Quantité" style="width:80px; margin-left:10px;">
+                            <input type="number" name="quantite_lot_commande[<?= $lot['id'] ?>]" min="1" placeholder="Quantité" style="width:80px; margin-left:10px;">
                             
                             <div id="details-<?= $lot['id'] ?>" style="display:none; margin-left:20px; margin-top:5px; font-size:0.9em; color:#ccc;">
                                 <?= htmlspecialchars($lot['contenu']) ?>
@@ -425,6 +427,7 @@ if(isset($_POST['id_lot'])) {
                     <th>Quantité de lot</th>
                     <th>Articles du lot</th>
                     <th>Date prévue d'envoi</th>
+                    <th>Prix de la commande</th>
                     <th>État</th>
                     <th>Action</th>
                 </tr>
@@ -445,9 +448,10 @@ if(isset($_POST['id_lot'])) {
                     <tr>
                         <td>#<?= $lot['commande_id'] ?></td>
                         <td><?= $lot['lot_id'] ?></td>
-                        <td><?= $lot['quantite_lot_commande'] ?></td>
+                        <td><?= $lot['quantite_commandee'] ?></td>
                         <td><?= $lot['articles'] ?></td>
                         <td><?= date('d/m/Y', strtotime($lot['date_prevue_envoi'])) ?></td>
+                        <td><?= isset($lot['prix_total_lot_commande']) ? number_format($lot['prix_total_lot_commande'], 2, ',', ' ') . ' €' : '—' ?></td>
                         <td><span class="statut-badge <?= statutBadgeClass($lot['etat_preparation']) ?>">
                             <?= htmlspecialchars($lot['etat_preparation']) ?>
                         </span></td>
@@ -457,6 +461,7 @@ if(isset($_POST['id_lot'])) {
                                     data-id="<?= $commandeAssociee['id'] ?>" 
                                     data-date_commande="<?= htmlspecialchars($commandeAssociee['date_commande']) ?>"
                                     data-date_prevue_envoi="<?= htmlspecialchars($commandeAssociee['date_prevue_envoi']) ?>"
+                                    data-prix_total_lot_commande="<?= htmlspecialchars($lot['prix_total_lot_commande']) ?>"
                                     data-etat_preparation="<?= htmlspecialchars($commandeAssociee['etat_preparation']) ?>"
                                     data-articles="<?= htmlspecialchars($lot['articles']) ?>"
                                     style="padding: 5px 10px;">
@@ -468,6 +473,7 @@ if(isset($_POST['id_lot'])) {
                                 data-id="<?= $commandeAssociee['id'] ?>" 
                                 data-date_commande="<?= htmlspecialchars($commandeAssociee['date_commande']) ?>"
                                 data-date_prevue_envoi="<?= htmlspecialchars($commandeAssociee['date_prevue_envoi']) ?>"
+                                data-prix_total_lot_commande="<?= htmlspecialchars($lot['prix_total_lot_commande']) ?>"
                                 data-etat_preparation="<?= htmlspecialchars($commandeAssociee['etat_preparation']) ?>"
                             >
                                 Modifier
@@ -503,9 +509,6 @@ if(isset($_POST['id_lot'])) {
                 <?php endforeach; ?>
             </tbody>
         </table>
-
-
-
 
 
         <!-- Modal Voir -->
@@ -624,6 +627,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const details = [
                 ['Date de la commande', btn.dataset.date_commande],
                 ["Date prévue à l'envoi", btn.dataset.date_prevue_envoi],
+                ['Prix de la commande', btn.dataset.prix_total_lot_commande || '—'],
                 ['Etat', btn.dataset.etat_preparation],
                 ['Articles du lot', btn.dataset.articles || '—']
             ];

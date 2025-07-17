@@ -29,13 +29,18 @@ $articles = $pdo->query("
 $lots = $pdo->query("
     SELECT l.*, 
         f.nom AS fournisseur_nom,
-        GROUP_CONCAT(DISTINCT a.nom_article SEPARATOR ', ') AS articles
+        GROUP_CONCAT(DISTINCT a.nom_article SEPARATOR ', ') AS articles,
+        SUM(a.prix_unitaire * al.quantite) AS prix_total
     FROM lots l
     LEFT JOIN article_lot al ON l.id = al.lot_id
     LEFT JOIN articles a ON al.article_id = a.id
     LEFT JOIN fournisseurs f ON l.fournisseur_id = f.id
     GROUP BY l.id
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($lots as $lot) {
+    echo "Lot n°" . $lot['id'] . " - Total : " . $lot['prix_total'] . " €<br>";
+}
 
 if (!isset($_SESSION['lot_basket'])) {
     $_SESSION['lot_basket'] = [];
@@ -349,12 +354,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
 
         <!-- Article List for Basket -->
         <h2>Articles disponibles</h2>
-        <table id="articles-table" border="1" cellpadding="6" cellspacing="0">
+        <table id="articles-table" border="1" cellpadding="6" cellspacing="0" style="margin-bottom: 10px;">
             <thead>
                 <tr>
                     <th>Nom</th>
                     <th>Référence</th>
                     <th>Catégorie</th>
+                    <th>Prix unitaire</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -364,6 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                     <td><?= htmlspecialchars($article['nom_article']) ?></td>
                     <td><?= htmlspecialchars($article['reference']) ?></td>
                     <td><?= htmlspecialchars($article['categorie']) ?></td>
+                    <td><?= htmlspecialchars($article['prix_unitaire']) ?> €</td>
                     <td>
                         <form method="post" style="display:inline;">
                             <input type="hidden" name="article_id" value="<?= $article['id'] ?>">
@@ -398,6 +405,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                     <th>Etat</th>
                     <th>Fournisseur</th>
                     <th>Articles du lot</th>
+                    <th>Prix total du lot</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -444,6 +452,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                             ?>
                         </td>
                         <td><?= htmlspecialchars($lot['articles']) ?></td>
+                        <td><?= number_format($lot['prix_total'], 2) ?> €</td>
                         <td class="actions">
                             <!-- Add your action buttons here, e.g. Voir, Modifier, Supprimer -->
                             <button class="btn btn-voir"
@@ -451,6 +460,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                                 data-etat="<?= htmlspecialchars($lot['etat']) ?>"
                                 data-id="<?= htmlspecialchars($lot['id']) ?>"
                                 data-fournisseur_nom="<?= htmlspecialchars($lot['fournisseur_nom']) ?>"
+                                data-prix_total="<?= htmlspecialchars($lot['prix_total']) ?>"
                                 data-categorie="<?= htmlspecialchars($lot['categorie']) ?>"
                                 data-quantite_stock="<?= $lot['quantite_stock'] ?>"
                                 data-articles='<?= $dataArticles ?>'
@@ -670,6 +680,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                 ['Catégorie', btn.dataset.categorie],
                 ['Quantité en stock', btn.dataset.quantite_stock],
                 ['Fournisseur', btn.dataset.fournisseur_nom],
+                ['Prix total du lot', btn.dataset.prix_total + ' €'],
                 ['Articles du lot', articlesHtml],
                 [
                     'État',

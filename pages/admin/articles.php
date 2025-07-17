@@ -236,6 +236,10 @@ $articles = $pdo->query("
                         <input name="quantite_stock" placeholder="Quantité en stock" required>
                     </div>
                     <div style="margin-bottom: 10px">
+                        <label for="prix_unitaire">Prix unitaire</label>
+                        <input name="prix_unitaire" type="number" placeholder="Prix unitaire €" step="0.01" required />
+                    </div>
+                    <div style="margin-bottom: 10px">
                         <label for="etat">État</label>
                         <select name="etat" required>
                             <option value="vert">Vert</option>
@@ -256,6 +260,7 @@ $articles = $pdo->query("
                     <th>Catégorie</th>
                     <th>Quantité en stock</th>
                     <th>Lots liés</th>
+                    <th>Prix unitaire</th>
                     <th>Etat</th>
                     <th>Actions</th>
                 </tr>
@@ -268,6 +273,7 @@ $articles = $pdo->query("
                     <td><?= htmlspecialchars($article['categorie']) ?></td>
                     <td><?= $article['quantite_stock'] ?></td>
                     <td><?= htmlspecialchars($article['lots']) ?></td>
+                    <td><?= htmlspecialchars($article['prix_unitaire']) ?> €</td>
                     <td>
                         <span class="etat-square <?= htmlspecialchars($article['etat']) ?>"></span>
                     </td>
@@ -280,6 +286,7 @@ $articles = $pdo->query("
                                     data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
                                     data-quantite_stock="<?= $article['quantite_stock'] ?>"
                                     data-lots="<?= htmlspecialchars($article['lots']) ?>"
+                                    data-prix_unitaire="<?= htmlspecialchars($article['prix_unitaire']) ?>"
                                     data-etat="<?= htmlspecialchars($article['etat']) ?>"
                                     data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
                                     style="padding: 5px 10px;">
@@ -294,6 +301,7 @@ $articles = $pdo->query("
                                     data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
                                     data-quantite_stock="<?= $article['quantite_stock'] ?>"
                                     data-lots="<?= htmlspecialchars($article['lots']) ?>"
+                                    data-prix_unitaire="<?= htmlspecialchars($article['prix_unitaire']) ?>"
                                     data-etat="<?= htmlspecialchars($article['etat']) ?>"
                                 >Modifier</a>
                                 <button class="btn btn-delete" style="padding: 5px 10px;" data-id="<?= $article['id'] ?>">Supprimer</button>
@@ -304,6 +312,7 @@ $articles = $pdo->query("
                                     data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
                                     data-quantite_stock="<?= $article['quantite_stock'] ?>"
                                     data-lots="<?= htmlspecialchars($article['lots']) ?>"
+                                    data-prix_unitaire="<?= htmlspecialchars($article['prix_unitaire']) ?>"
                                     data-etat="<?= htmlspecialchars($article['etat']) ?>"
                                     data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
                                     style="padding: 5px 10px;">
@@ -317,6 +326,7 @@ $articles = $pdo->query("
                                     data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
                                     data-quantite_stock="<?= $article['quantite_stock'] ?>"
                                     data-lots="<?= htmlspecialchars($article['lots']) ?>"
+                                    data-prix_unitaire="<?= htmlspecialchars($article['prix_unitaire']) ?>"
                                     data-etat="<?= htmlspecialchars($article['etat']) ?>"
                                     data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
                                     style="padding: 5px 10px;">
@@ -335,6 +345,7 @@ $articles = $pdo->query("
                                     data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
                                     data-quantite_stock="<?= $article['quantite_stock'] ?>"
                                     data-lots="<?= htmlspecialchars($article['lots']) ?>"
+                                    data-prix_unitaire="<?= htmlspecialchars($article['prix_unitaire']) ?>"
                                     data-etat="<?= htmlspecialchars($article['etat']) ?>"
                                     data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
                                     style="padding: 5px 10px;">
@@ -348,6 +359,7 @@ $articles = $pdo->query("
                                     data-categorie="<?= htmlspecialchars($article['categorie']) ?>"
                                     data-quantite_stock="<?= $article['quantite_stock'] ?>"
                                     data-lots="<?= htmlspecialchars($article['lots']) ?>"
+                                    data-prix_unitaire="<?= htmlspecialchars($article['prix_unitaire']) ?>"
                                     data-etat="<?= htmlspecialchars($article['etat']) ?>"
                                     data-date_creation="<?= htmlspecialchars($article['date_creation'] ?? '-') ?>"
                                     style="padding: 5px 10px;">
@@ -397,6 +409,10 @@ $articles = $pdo->query("
                     <div style="margin-bottom: 10px">
                         <label for="edit-quantite_stock">En stock</label>
                         <input name="quantite_stock" id="edit-quantite_stock" required>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="edit-prix_unitaire">Prix unitaire</label>
+                        <input name="prix_unitaire" id="edit-prix_unitaire" type="number" step="0.01" required />
                     </div>
                     <div style="margin-bottom: 10px">
                         <label for="edit-etat">État</label>
@@ -537,6 +553,7 @@ $articles = $pdo->query("
                 ['Catégorie', btn.dataset.categorie],
                 ['Quantité en stock', btn.dataset.quantite_stock],
                 ['Lots liés', btn.dataset.lots],
+                ['Prix unitaire', btn.dataset.prix_unitaire + ' €'],
                 [
                     'État',
                     `<span class="etat-square ${etat}"></span> ${etatLabel}`
@@ -569,6 +586,7 @@ $articles = $pdo->query("
             document.getElementById('edit-reference').value = this.dataset.reference;
             document.getElementById('edit-categorie').value = this.dataset.categorie;
             document.getElementById('edit-quantite_stock').value = this.dataset.quantite_stock;
+            document.getElementById('edit-prix_unitaire').value = this.dataset.prix_unitaire;
             document.getElementById('edit-etat').value = this.dataset.etat;
         });
     });

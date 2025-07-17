@@ -390,7 +390,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         <table id="livraisons-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Numéro de livraison</th>
                     <th>Date livraison</th>
                     <th>Fournisseur</th>
@@ -407,7 +406,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                 <?php else: ?>
                     <?php foreach ($livraisons as $livraison): ?>
                         <tr>
-                            <td><?= htmlspecialchars($livraison['id']) ?></td>
                             <td><?= htmlspecialchars($livraison['numero_livraison']) ?></td>
                             <td><?= htmlspecialchars(date('d/m/Y', strtotime($livraison['date_livraison']))) ?></td>
                             <td><?= htmlspecialchars($livraison['fournisseur'] ?? 'Non défini') ?></td>
