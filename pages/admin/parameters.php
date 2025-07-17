@@ -44,6 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Paramètres</title>
     <link rel="stylesheet" href="../../public/style.css">
     <link rel="stylesheet" href="../../public/parameters.css">
+    <link rel="stylesheet" href="../../public/modal2.css">
     <link rel="icon" href="../../img/logo_w.png" type="image/png">
     <!-- Linking Google Fonts for Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
@@ -203,7 +204,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <button id="show-user-form-btn" class="btn">Ajouter un nouvel utilisateur</button>
             <?php endif; ?>
             
-            <div class="container" id="user-form-section" style="display:none; position:relative; flex: 1;">
+            <div class="container modal-content" id="user-form-section" style="display:none; position:relative; flex: 1;">
                 <h2>Ajouter un nouvel utilisateur</h2>
                 <?php if (isset($_SESSION['error'])) { echo "<p style='color:red'>" . $_SESSION['error'] . "</p>"; unset($_SESSION['error']); } ?>
                 <button type="button" id="close-user-form-btn" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:1.5em; cursor:pointer; color:#000;">&times;</button>

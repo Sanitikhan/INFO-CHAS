@@ -224,29 +224,7 @@ $total_lots_alertes = $stmt->fetchColumn();
             </div>
             <div class="grid recents" id="recents">
                 <h3>Activités récentes</h3>
-                <ul>
-                    <?php
-                    // Fetch the 10 most recent activities
-                    $stmt = $pdo->query("
-                        SELECT a.*, u.username 
-                        FROM activity_log a
-                        LEFT JOIN users u ON a.user_id = u.id
-                        ORDER BY a.created_at DESC
-                        LIMIT 10
-                    ");
-                    $activities = $stmt->fetchAll();
-                    foreach ($activities as $activity): ?>
-                        <li>
-                            <?= htmlspecialchars($activity['action']) ?>
-                            <?= !empty($activity['details']) ? ' - ' . htmlspecialchars($activity['details']) : '' ?>
-                            ajouté par <strong><?= htmlspecialchars($activity['username']) ?></strong>
-                            <span style="color:#888; font-size:0.9em;">(<?= $activity['created_at'] ?>)</span>
-                        </li>
-                    <?php endforeach; ?>
-                    <?php if (empty($activities)): ?>
-                        <li>Aucune activité récente.</li>
-                    <?php endif; ?>
-                </ul>
+                
             </div>
             <div class="grid alertes" id="alertes">
                 <h3>Alertes</h3>
