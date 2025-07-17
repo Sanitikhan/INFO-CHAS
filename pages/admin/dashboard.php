@@ -17,6 +17,15 @@ $lots_rouge = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'rouge'")->fet
 $lots_vert = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'vert'")->fetchColumn();
 $lots_orange = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat = 'orange'")->fetchColumn();
 
+$articles_rouge = $pdo->query("SELECT COUNT(*) FROM articles WHERE etat = 'rouge'")->fetchColumn();
+$articles_vert = $pdo->query("SELECT COUNT(*) FROM articles WHERE etat = 'vert'")->fetchColumn();
+$articles_orange = $pdo->query("SELECT COUNT(*) FROM articles WHERE etat = 'orange'")->fetchColumn();
+
+// Total lots + articles par état
+$total_rouge = $lots_rouge + $articles_rouge;
+$total_vert = $lots_vert + $articles_vert;
+$total_orange = $lots_orange + $articles_orange;
+
 // Example: Log when a user adds a new lot
 $reference = $_POST['reference'] ?? null;
 $type = $_POST['type'] ?? null;
@@ -24,6 +33,10 @@ $type = $_POST['type'] ?? null;
 // Count lots in etat 'rouge' or 'orange'
 $stmt = $pdo->query("SELECT COUNT(*) FROM lots WHERE etat IN ('rouge', 'orange')");
 $total_lots_alertes = $stmt->fetchColumn();
+
+// Requête pour compter le total d'alertes
+$stmt = $pdo->query("SELECT COUNT(*) AS total_alertes FROM alertes");
+$total_alertes = $stmt->fetchColumn();
 ?>
 
 <!DOCTYPE html>
@@ -223,14 +236,11 @@ $total_lots_alertes = $stmt->fetchColumn();
                 </div>
             </div>
             <div class="grid recents" id="recents">
-                <h3>Activités récentes</h3>
-                
-            </div>
-            <div class="grid alertes" id="alertes">
                 <h3>Alertes</h3>
                 <div class="alert-summary" style="display: flex; gap: 20px; margin-bottom: 20px;">
                     <div style="background: #f44336; color: #fff; padding: 10px 20px; border-radius: 5px;">
                     <strong>Total alertes :</strong> 
+                        <?= $total_alertes ?>
                     </div>
                     <a href="alertes.php" class="btn" style="text-decoration: none;">Voir les alertes</a>
                 </div>
@@ -242,15 +252,16 @@ $total_lots_alertes = $stmt->fetchColumn();
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const ctx = document.getElementById('perfChart').getContext('2d');
-new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-        labels: ['Vert', 'Orange', 'Rouge'],
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+        labels: ['Stock OK', 'A surveiller', 'Critique'],
         datasets: [{
-            data: [<?= $lots_vert ?>, <?= $lots_orange ?>, <?= $lots_rouge ?>],
+            data: [<?= $total_vert ?>, <?= $total_orange ?>, <?= $total_rouge ?>],
             backgroundColor: ['#4caf50', '#ff9800', '#f44336'],
         }]
     },
+
     options: {
         plugins: {
             legend: { display: true, position: 'bottom' }
