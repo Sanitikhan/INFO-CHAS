@@ -52,6 +52,13 @@ WHERE la.est_range = 0
 
 $articlesARanger = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
+// Récupérer toutes les livraisons
+$stmt = $pdo->query("SELECT l.id, l.numero_livraison, l.date_livraison, f.nom AS fournisseur, l.etat, l.commentaire, l.date_reception
+                     FROM livraisons l
+                     LEFT JOIN fournisseurs f ON l.fournisseur_id = f.id
+                     ORDER BY l.date_livraison DESC");
+$livraisons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 if (!isset($_SESSION['lot_basket'])) {
     $_SESSION['lot_basket'] = [];
 }
@@ -278,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         <section class="btn-section">
             <input type="text" id="search-article-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
-                <button class="btn btn-add" id="add-articles-btn">Ajouter un lot</button>
+                <button class="btn btn-add" id="add-livraison-btn">Ajouter une livraison</button>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
@@ -294,44 +301,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             </div>
         </section>
 
-        <div class="form-section" id="add-articles-form-section" style="display:none;">
-            <form action="../../actions/ajouter_articles.php" method="POST">
-                <select name="categorie" required>
-                    <option value="Top">Top</option>
-                    <option value="Bas">Bas</option>
-                    <option value="Dessus">Dessus</option>
-                    <option value="Ensemble">Ensemble</option>
-                </select>
-                <input name="quantite_stock" type="number" placeholder="Quantité en stock" required>
-                <select name="etat" required>
-                    <option value="vert">Vert</option>
-                    <option value="orange">Orange</option>
-                    <option value="rouge">Rouge</option>
-                </select>
-                <select name="fournisseur_id" required>
+        <div class="form-section" id="add-livraison-form-section" style="display:none;">
+            <form action="../../actions/ajouter_livraison.php" method="POST">
+                <label for="numero_livraison">Numéro de livraison</label>
+                <input type="text" name="numero_livraison" id="numero_livraison" required placeholder="Numéro de livraison">
+
+                <label for="date_livraison">Date de livraison</label>
+                <input type="date" name="date_livraison" id="date_livraison" required value="<?= date('Y-m-d') ?>">
+
+                <label for="fournisseur_id">Fournisseur</label>
+                <select name="fournisseur_id" id="fournisseur_id" required>
+                    <option value="">Choisir un fournisseur</option>
                     <?php
                     $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
                     foreach ($fournisseurs as $f) {
-                        echo '<option value="'.$f['id'].'">'.htmlspecialchars($f['nom']).'</option>';
+                        echo '<option value="' . $f['id'] . '">' . htmlspecialchars($f['nom']) . '</option>';
                     }
                     ?>
                 </select>
-                <input name="emplacement" placeholder="Emplacement">
-                <label>Articles du lot :</label>
-                <select name="articles[]" multiple required style="min-width:200px;">
-                    <?php
-                    $articlesList = $pdo->query("SELECT id, nom_article FROM articles")->fetchAll(PDO::FETCH_ASSOC);
-                    foreach ($articlesList as $a) {
-                        echo '<option value="'.$a['id'].'">'.htmlspecialchars($a['nom_article']).'</option>';
-                    }
-                    ?>
+
+                <label for="etat">État</label>
+                <select name="etat" id="etat" required>
+                    <option value="">Choisir un état</option>
+                    <option value="en attente">En attente</option>
+                    <option value="en cours">En cours</option>
+                    <option value="livrée">Livrée</option>
+                    <option value="annulée">Annulée</option>
                 </select>
-                <button type="submit">Ajouter un lot</button>
+
+                <label for="commentaire">Commentaire (optionnel)</label>
+                <textarea name="commentaire" id="commentaire" rows="3" placeholder="Ajouter un commentaire..."></textarea>
+
+                <label for="date_reception">Date de réception</label>
+                <input type="date" name="date_reception" id="date_reception" required value="<?= date('Y-m-d') ?>">
+
+                <button type="submit">Ajouter la livraison</button>
             </form>
         </div>
 
+
+
+
         <h2>Articles à ranger</h2>
-        <table border="1">
+        <table border="1" cellpadding="6" cellspacing="0">
             <thead>
                 <tr>
                     <th>Article</th>
@@ -358,6 +370,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                         </td>
                     </tr>
                 <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <table id="livraisons-table" border="1" cellpadding="6" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Numéro de livraison</th>
+                    <th>Date livraison</th>
+                    <th>Fournisseur</th>
+                    <th>État</th>
+                    <th>Commentaire</th>
+                    <th>Date réception</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (count($livraisons) === 0): ?>
+                    <tr>
+                        <td colspan="7" style="text-align:center;">Aucune livraison trouvée.</td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($livraisons as $livraison): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($livraison['id']) ?></td>
+                            <td><?= htmlspecialchars($livraison['numero_livraison']) ?></td>
+                            <td><?= htmlspecialchars(date('d/m/Y', strtotime($livraison['date_livraison']))) ?></td>
+                            <td><?= htmlspecialchars($livraison['fournisseur'] ?? 'Non défini') ?></td>
+                            <td><?= htmlspecialchars(ucfirst($livraison['etat'])) ?></td>
+                            <td><?= nl2br(htmlspecialchars($livraison['commentaire'])) ?></td>
+                            <td><?= htmlspecialchars(date('d/m/Y', strtotime($livraison['date_reception']))) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
 
@@ -430,20 +475,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
 
     <script>
 
-        document.getElementById('open-basket-modal').onclick = function() {
-            document.getElementById('basket-modal').style.display = 'block';
-        };
-        document.getElementById('close-basket-modal').onclick = function() {
-            document.getElementById('basket-modal').style.display = 'none';
-        };
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('basket-modal')) {
-                document.getElementById('basket-modal').style.display = 'none';
-            }
-        };
-
-        document.getElementById('add-articles-btn').addEventListener('click', function() {
-            const formSection = document.getElementById('add-articles-form-section');
+        document.getElementById('add-livraison-btn').addEventListener('click', function() {
+            const formSection = document.getElementById('add-livraison-form-section');
             formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
         });
 
