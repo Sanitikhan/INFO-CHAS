@@ -148,6 +148,32 @@ if (empty($lotsAPreparer)) {
     echo "<p>Aucun lot à préparer trouvé.</p>";
 }
 
+if(isset($_POST['id_lot'])) {
+    $idLot = intval($_POST['id_lot']);
+
+    // 1. Récupérer la quantité du lot
+    $stmt = $conn->prepare("SELECT quantite FROM lots WHERE id = ?");
+    $stmt->execute([$idLot]);
+    $lot = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if($lot) {
+        $quantiteLot = $lot['quantite'];
+
+        // 2. Mettre à jour l'état du lot en 'prêt'
+        $stmt = $conn->prepare("UPDATE lots SET etat = 'prêt' WHERE id = ?");
+        $stmt->execute([$idLot]);
+
+        // 3. Soustraire la quantité au stock (id=1 ici, à adapter)
+        $stmt = $conn->prepare("UPDATE stock SET quantite_disponible = quantite_disponible - ? WHERE id = 1");
+        $stmt->execute([$quantiteLot]);
+
+        echo "Lot marqué prêt et stock mis à jour.";
+    } else {
+        echo "Lot non trouvé.";
+    }
+}
+
+
 ?>
 
 
@@ -186,7 +212,7 @@ if (empty($lotsAPreparer)) {
         <span class="material-symbols-rounded">menu</span>
     </button>
 
-    <aside class="sidebar">
+   <aside class="sidebar">
         <!-- Sidebar Header -->
         <hearder class="sidebar-header">
             <a href="" class="header-logo">
