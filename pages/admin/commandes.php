@@ -224,6 +224,9 @@ function statutBadgeClass($etat) {
                             <li class="nav-item">
                                 <a href="articles.php" class="nav-link dropdown-link">Articles</a>
                             </li>
+                            <li class="nav-item">
+                                <a href="rangement.php" class="nav-link dropdown-link">Rangement</a>
+                            </li>
                         </ul>
                     </li>
                 <?php if (

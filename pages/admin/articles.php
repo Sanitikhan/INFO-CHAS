@@ -99,7 +99,10 @@ $articles = $pdo->query("
                                 <a href="lots.php" class="nav-link dropdown-link">Lots</a>
                             </li>
                             <li class="nav-item">
-                                <a href="articles.php" class="nav-link dropdown-link active">Articles</a>
+                                <a href="articles.php" class="nav-link dropdown-link">Articles</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="rangement.php" class="nav-link dropdown-link">Rangement</a>
                             </li>
                         </ul>
                     </li>

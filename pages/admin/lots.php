@@ -164,10 +164,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                                 <a class="nav-link dropdown-title">Stock</a>
                             </li>
                             <li class="nav-item">
-                                <a href="lots.php" class="nav-link dropdown-link active">Lots</a>
+                                <a href="lots.php" class="nav-link dropdown-link">Lots</a>
                             </li>
                             <li class="nav-item">
                                 <a href="articles.php" class="nav-link dropdown-link">Articles</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="rangement.php" class="nav-link dropdown-link">Rangement</a>
                             </li>
                         </ul>
                     </li>
