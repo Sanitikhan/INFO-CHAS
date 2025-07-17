@@ -13,22 +13,22 @@ require_once '../../includes/config.php';
     // Lots à préparer
     $sqlApreparer = "
     SELECT 
-    c.id AS commande_id,
-    c.date_commande,
-    c.date_prevue_envoi,
-    c.etat_preparation,
-    cl.quantite_lot_commande,
-    l.id AS lot_id,
-    GROUP_CONCAT(CONCAT(a.nom_article, ' (', al.couleur, ') x', al.quantite) SEPARATOR ', ') AS articles
-FROM commandes c
-JOIN commande_lot cl ON cl.commande_id = c.id
-JOIN lots l ON l.id = cl.lot_id
-JOIN article_lot al ON al.lot_id = l.id
-JOIN articles a ON a.id = al.article_id
-WHERE c.etat_preparation IN ('à préparer', 'en préparation')
-GROUP BY l.id
-ORDER BY c.date_commande ASC
-";
+        c.id AS commande_id,
+        c.date_commande,
+        c.date_prevue_envoi,
+        c.etat_preparation,
+        cl.quantite_lot_commande,
+        l.id AS lot_id,
+        GROUP_CONCAT(CONCAT(a.nom_article, ' (', al.couleur, ') x', al.quantite) SEPARATOR ', ') AS articles
+        FROM commandes c
+        JOIN commande_lot cl ON cl.commande_id = c.id
+        JOIN lots l ON l.id = cl.lot_id
+        JOIN article_lot al ON al.lot_id = l.id
+        JOIN articles a ON a.id = al.article_id
+        WHERE c.etat_preparation IN ('à préparer', 'en préparation')
+        GROUP BY l.id
+        ORDER BY c.date_commande ASC
+    ";
 
 
     $lotsAPreparer = $pdo->query($sqlApreparer)->fetchAll(PDO::FETCH_ASSOC);
@@ -346,7 +346,7 @@ if(isset($_POST['id_lot'])) {
                     (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
                     (isset($_SESSION['role']) && $_SESSION['role'] === 'gestionnaire de stock')
                 ): ?>
-                    <button class="btn btn-add" id="add-commande-btn">Ajouter une commande</button>
+                    <button class="btn btn-add" id="openAddCommande">Ajouter une commande</button>
                 <?php endif; ?>
                 <div class="sort-dropdown" style="display:inline-block;">
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
@@ -361,51 +361,59 @@ if(isset($_POST['id_lot'])) {
             </div>
         </section>
 
-        <div class="form-section" id="add-commande-form-section" style="display:none; color: #fff;">
-            <form action="../../actions/ajouter_commande.php" method="POST">
-                <label for="date_commande">Date de commande :</label>
-                <input type="date" id="date_commande" name="date_commande" required>
+        <div id="modal-commande" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+            <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%;">
+                
+                <button id="closeCommande" style="float:right;">X</button>
 
-                <label for="date_prevue_envoi">Date prévue d'envoi :</label>
-                <input type="date" id="date_prevue_envoi" name="date_prevue_envoi" required>
-
-                <label for="etat_preparation">État de préparation :</label>
-                <select id="etat_preparation" name="etat_preparation" required>
-                    <option value="">Sélectionner un état</option>
-                    <option value="à préparer">À préparer</option>
-                    <option value="en préparation">En préparation</option>
-                    <option value="prêt">Prêt</option>
-                </select>
-
-                <h3>Lots à inclure :</h3>
-                <?php
-                // Récupérer les lots prêts (ou tous selon ta logique)
-                $lots = $pdo->query("
-                    SELECT l.id, 
-                        GROUP_CONCAT(CONCAT(a.nom_article, ' (', al.couleur, '-', al.taille, ') x', al.quantite) SEPARATOR ', ') AS contenu
-                    FROM lots l
-                    LEFT JOIN article_lot al ON l.id = al.lot_id
-                    LEFT JOIN articles a ON al.article_id = a.id
-                    GROUP BY l.id
-                ")->fetchAll(PDO::FETCH_ASSOC);
-
-                 foreach ($lots as $lot): ?>
-                    <div style="margin-bottom: 8px;">
-                        <input type="checkbox" name="lots[<?= $lot['id'] ?>]" id="lot<?= $lot['id'] ?>" value="1">
-                        <label for="lot<?= $lot['id'] ?>" style="cursor:pointer; font-weight:bold;">
-                            Lot #<?= $lot['id'] ?>
-                        </label>
-                        <button type="button" onclick="toggleDetails(<?= $lot['id'] ?>)" style="margin-left:10px;">+ détail</button>
-                        <input type="number" name="quantite[<?= $lot['id'] ?>]" min="1" placeholder="Quantité" style="width:80px; margin-left:10px;">
-                        
-                        <div id="details-<?= $lot['id'] ?>" style="display:none; margin-left:20px; margin-top:5px; font-size:0.9em; color:#ccc;">
-                            <?= htmlspecialchars($lot['contenu']) ?>
-                        </div>
+                <form action="../../actions/ajouter_commande.php" method="POST" style="background: none; box-shadow: none; padding: 0;">
+                    <div style="margin-bottom: 10px">
+                        <label for="date_commande">Date de commande :</label>
+                        <input type="date" id="date_commande" name="date_commande" required>
                     </div>
-                <?php endforeach; ?>
+                    <div style="margin-bottom: 10px">
+                        <label for="date_prevue_envoi">Date prévue d'envoi :</label>
+                        <input type="date" id="date_prevue_envoi" name="date_prevue_envoi" required>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="etat_preparation">État de préparation :</label>
+                        <select id="etat_preparation" name="etat_preparation" required>
+                            <option value="">Sélectionner un état</option>
+                            <option value="à préparer">À préparer</option>
+                            <option value="en préparation">En préparation</option>
+                            <option value="prêt">Prêt</option>
+                        </select>
+                    </div>
+                    <h3>Lots à inclure :</h3>
+                    <?php
+                    // Récupérer les lots prêts (ou tous selon ta logique)
+                    $lots = $pdo->query("
+                        SELECT l.id, 
+                            GROUP_CONCAT(CONCAT(a.nom_article, ' (', al.couleur, '-', al.taille, ') x', al.quantite) SEPARATOR ', ') AS contenu
+                        FROM lots l
+                        LEFT JOIN article_lot al ON l.id = al.lot_id
+                        LEFT JOIN articles a ON al.article_id = a.id
+                        GROUP BY l.id
+                    ")->fetchAll(PDO::FETCH_ASSOC);
 
-                <button type="submit">Ajouter la commande</button>
-            </form>
+                    foreach ($lots as $lot): ?>
+                        <div style="margin-bottom: 8px;">
+                            <input type="checkbox" name="lots[<?= $lot['id'] ?>]" id="lot<?= $lot['id'] ?>" value="1">
+                            <label for="lot<?= $lot['id'] ?>" style="cursor:pointer; font-weight:bold;">
+                                Lot #<?= $lot['id'] ?>
+                            </label>
+                            <button type="button" onclick="toggleDetails(<?= $lot['id'] ?>)" style="margin-left:10px;">+ détail</button>
+                            <input type="number" name="quantite[<?= $lot['id'] ?>]" min="1" placeholder="Quantité" style="width:80px; margin-left:10px;">
+                            
+                            <div id="details-<?= $lot['id'] ?>" style="display:none; margin-left:20px; margin-top:5px; font-size:0.9em; color:#ccc;">
+                                <?= htmlspecialchars($lot['contenu']) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <button type="submit">Ajouter la commande</button>
+                </form>
+            </div>
         </div>
 
         <h2>Lots à préparer</h2>
@@ -557,11 +565,30 @@ if(isset($_POST['id_lot'])) {
 
     <script>
 
-    document.addEventListener('DOMContentLoaded', function () {
-    // Bouton "Ajouter commande"
-    document.getElementById('add-commande-btn')?.addEventListener('click', function() {
-        const formSection = document.getElementById('add-commande-form-section');
-        formSection.style.display = (formSection.style.display === 'none' || formSection.style.display === '') ? 'block' : 'none';
+document.addEventListener('DOMContentLoaded', function () {
+
+    const openBtn = document.getElementById('openAddCommande');
+    const modal = document.getElementById('modal-commande');
+    const closeBtn = document.getElementById('closeCommande');
+
+    openBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', e => {
+    if (e.target === modal) modal.style.display = 'none';
+    });
+
+    // Fermer si clic en dehors de la modal-content
+    window.addEventListener('click', e => {
+    const modal = document.getElementById('modal-commande');
+    if (e.target === modal) {
+        modal.style.display = 'none';
+    }
     });
 
     // Tri commandes
