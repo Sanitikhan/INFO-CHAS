@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commande_id'])) {
     if (!$lots) {
         $_SESSION['flash_message'] = "Aucun lot trouvé pour cette commande.";
         $_SESSION['flash_type'] = "error";
-        header("Location: commandes.php");
+        header("Location: ../pages/admin/commandes.php");
         exit();
     }
 
@@ -72,12 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['commande_id'])) {
         $_SESSION['flash_type'] = "error";
     }
 
-    header("Location: commandes.php");
+    header("Location: ../pages/admin/commandes.php");
     exit();
 
 } else {
     $_SESSION['flash_message'] = "ID de commande non fourni.";
     $_SESSION['flash_type'] = "error";
-    header("Location: commandes.php");
+    header("Location: ../pages/admin/commandes.php");
     exit();
 }
