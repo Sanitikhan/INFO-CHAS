@@ -41,7 +41,7 @@ $pdo = new PDO('mysql:host=localhost;dbname=stock_management;charset=utf8', 'roo
 
 $sql = "
 SELECT la.id AS livraison_article_id, a.nom_article, la.quantite, 
-       e.nom AS emplacement, f.nom AS fournisseur, l.date_reception
+       e.nom_emplacement AS emplacement, f.nom AS fournisseur, l.date_reception
 FROM livraison_articles la
 JOIN articles a ON la.article_id = a.id
 LEFT JOIN emplacements e ON a.emplacement_id = e.id
@@ -351,8 +351,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                         <td><?= htmlspecialchars($article['fournisseur']) ?></td>
                         <td><?= date('d/m/Y', strtotime($article['date_reception'])) ?></td>
                         <td>
-                            <form method="post" action="ranger_article.php">
-                                <input type="hidden" name="livraison_article_id" value="<?= $article['livraison_article_id'] ?>">
+                            <form method="post" action="../../actions/ranger_livraison.php">
+                                <input type="hidden" name="livraison_id" value="<?= $livraison['id'] ?>">
                                 <button type="submit">Marquer comme rangé</button>
                             </form>
                         </td>
