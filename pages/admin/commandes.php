@@ -12,30 +12,24 @@ require_once '../../includes/config.php';
 
     // Lots à préparer
     $sqlApreparer = "
-        SELECT 
-            c.id AS commande_id,
-            c.date_prevue_envoi,
-            c.etat_preparation,
-            cl.quantite_lot_commande,
-            l.id AS lot_id,
-            GROUP_CONCAT(
-                CONCAT(
-                    a.nom_article, ' - ', 
-                    a.reference, ' - ',
-                    al.couleur, ' - ',
-                    al.taille, ' x', al.quantite
-                )
-                SEPARATOR '<br>'
-            ) AS articles
-        FROM commandes c
-        JOIN commande_lot cl ON c.id = cl.commande_id
-        JOIN lots l ON cl.lot_id = l.id
-        LEFT JOIN article_lot al ON l.id = al.lot_id
-        LEFT JOIN articles a ON al.article_id = a.id
-        WHERE c.etat_preparation != 'prêt'
-        GROUP BY c.id, l.id
-        ORDER BY c.date_prevue_envoi ASC
-    ";
+    SELECT 
+    c.id AS commande_id,
+    c.date_commande,
+    c.date_prevue_envoi,
+    c.etat_preparation,
+    cl.quantite_lot_commande,
+    l.id AS lot_id,
+    GROUP_CONCAT(CONCAT(a.nom_article, ' (', al.couleur, ') x', al.quantite) SEPARATOR ', ') AS articles
+FROM commandes c
+JOIN commande_lot cl ON cl.commande_id = c.id
+JOIN lots l ON l.id = cl.lot_id
+JOIN article_lot al ON al.lot_id = l.id
+JOIN articles a ON a.id = al.article_id
+WHERE c.etat_preparation IN ('à préparer', 'en préparation')
+GROUP BY l.id
+ORDER BY c.date_commande ASC
+";
+
 
     $lotsAPreparer = $pdo->query($sqlApreparer)->fetchAll(PDO::FETCH_ASSOC);
 
@@ -172,8 +166,6 @@ if(isset($_POST['id_lot'])) {
         echo "Lot non trouvé.";
     }
 }
-
-
 ?>
 
 
@@ -381,7 +373,7 @@ if(isset($_POST['id_lot'])) {
                 <select id="etat_preparation" name="etat_preparation" required>
                     <option value="">Sélectionner un état</option>
                     <option value="à préparer">À préparer</option>
-                    <option value="en cours">En cours</option>
+                    <option value="en préparation">En préparation</option>
                     <option value="prêt">Prêt</option>
                 </select>
 
@@ -448,8 +440,8 @@ if(isset($_POST['id_lot'])) {
                         <td><?= $lot['quantite_lot_commande'] ?></td>
                         <td><?= $lot['articles'] ?></td>
                         <td><?= date('d/m/Y', strtotime($lot['date_prevue_envoi'])) ?></td>
-                        <td><span class="statut-badge <?= statutBadgeClass($commande['etat_preparation']) ?>">
-                            <?= htmlspecialchars($commande['etat_preparation']) ?>
+                        <td><span class="statut-badge <?= statutBadgeClass($lot['etat_preparation']) ?>">
+                            <?= htmlspecialchars($lot['etat_preparation']) ?>
                         </span></td>
                         <td>
                             <?php if ($commandeAssociee): ?>
@@ -537,10 +529,10 @@ if(isset($_POST['id_lot'])) {
                     </div>
                     <div style="margin-bottom: 10px">
                         <label>État préparation :</label>
-                        <select name="etat_preparation" id="edit-etat_preparation" required>
+                        <select id="etat_preparation" name="etat_preparation" required>
                             <option value="">Sélectionner un état</option>
                             <option value="à préparer">À préparer</option>
-                            <option value="en cours">En cours</option>
+                            <option value="en préparation">En préparation</option>
                             <option value="prêt">Prêt</option>
                         </select>
                     </div>
