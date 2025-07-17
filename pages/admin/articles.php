@@ -209,44 +209,44 @@ $articles = $pdo->query("
             </div>
         </section>
 
-<!-- Modal -->
-<div id="modal-articles" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
-    <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%;">
-        <button id="closeArticles" style="float:right;">X</button>
-        <form action="../../actions/ajouter_articles.php" method="POST">
-            <div style="margin-bottom: 10px">
-                <label for="nom_article">Nom de l'article</label>
-                <input name="nom_article" placeholder="Nom de l'article" required>
+        <!-- Modal -->
+        <div id="modal-articles" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+            <div class="modal-content" style="padding:20px; border-radius:8px; max-width:500px; width:90%;">
+                <button id="closeArticles" style="float:right;">X</button>
+                <form action="../../actions/ajouter_articles.php" method="POST">
+                    <div style="margin-bottom: 10px">
+                        <label for="nom_article">Nom de l'article</label>
+                        <input name="nom_article" placeholder="Nom de l'article" required>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="reference">Référence</label>
+                        <input name="reference" placeholder="Référence" required>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="categorie">Catégorie</label>
+                        <select name="categorie" required>
+                            <option value="Top">Top</option>
+                            <option value="Bas">Bas</option>
+                            <option value="Dessus">Dessus</option>
+                            <option value="Ensemble">Ensemble</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="quantite_stock">Quantité en stock</label>
+                        <input name="quantite_stock" placeholder="Quantité en stock" required>
+                    </div>
+                    <div style="margin-bottom: 10px">
+                        <label for="etat">État</label>
+                        <select name="etat" required>
+                            <option value="vert">Vert</option>
+                            <option value="orange">Orange</option>
+                            <option value="rouge">Rouge</option>
+                        </select>
+                    </div>
+                    <button type="submit">Ajouter l'article</button>
+                </form>
             </div>
-            <div style="margin-bottom: 10px">
-                <label for="reference">Référence</label>
-                <input name="reference" placeholder="Référence" required>
-            </div>
-            <div style="margin-bottom: 10px">
-                <label for="categorie">Catégorie</label>
-                <select name="categorie" required>
-                    <option value="Top">Top</option>
-                    <option value="Bas">Bas</option>
-                    <option value="Dessus">Dessus</option>
-                    <option value="Ensemble">Ensemble</option>
-                </select>
-            </div>
-            <div style="margin-bottom: 10px">
-                <label for="quantite_stock">Quantité en stock</label>
-                <input name="quantite_stock" placeholder="Quantité en stock" required>
-            </div>
-            <div style="margin-bottom: 10px">
-                <label for="etat">État</label>
-                <select name="etat" required>
-                    <option value="vert">Vert</option>
-                    <option value="orange">Orange</option>
-                    <option value="rouge">Rouge</option>
-                </select>
-            </div>
-            <button type="submit">Ajouter l'article</button>
-        </form>
-    </div>
-</div>
+        </div>
 
         <table id="articles-table" border="1" cellpadding="6" cellspacing="0">
             <thead>
