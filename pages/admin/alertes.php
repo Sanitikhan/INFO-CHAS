@@ -4,23 +4,29 @@ require_once('../../includes/config.php');
 
 // Vérifier si l'utilisateur est connecté
 /*if (!isset($_SESSION['loggedIn']) || $_SESSION['loggedIn'] !== true) {
-    // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     header('Location: ../login.php');
     exit();
 }*/
 
-// Query for lots with etat 'rouge'
-$stmt = $pdo->query("SELECT * FROM lots WHERE etat = 'rouge'");
+// Requête pour lots avec état 'rouge' + noms des articles liés
+$stmt = $pdo->query("
+    SELECT lots.id, lots.categorie, GROUP_CONCAT(DISTINCT articles.nom_article SEPARATOR ', ') AS articles_noms
+    FROM lots
+    JOIN article_lot ON lots.id = article_lot.lot_id
+    JOIN articles ON article_lot.article_id = articles.id
+    WHERE lots.etat = 'rouge'
+    GROUP BY lots.id, lots.categorie
+");
 $lots_rouge = $stmt->fetchAll();
 $count_rouge = count($lots_rouge);
 
-// Query for lots with etat 'orange'
+// Lots orange (idem avant, ou adapter si nécessaire)
 $stmt = $pdo->query("SELECT * FROM lots WHERE etat = 'orange'");
 $lots_orange = $stmt->fetchAll();
 $count_orange = count($lots_orange);
 
-// Query for livraisons with statut 'probleme'
-$stmt = $pdo->query("SELECT * FROM livraisons WHERE statut = 'probleme'");
+// Livraisons avec état 'probleme'
+$stmt = $pdo->query("SELECT * FROM livraisons WHERE etat = 'probleme'");
 $livraisons_probleme = $stmt->fetchAll();
 $count_probleme = count($livraisons_probleme);
 
@@ -46,16 +52,17 @@ if ($user_role === 'admin') {
     $all_alertes = $stmt->fetchAll();
 }
 
-// For the form select (array of arrays)
+// Pour le formulaire select utilisateurs
 $userList = $pdo->query("SELECT id, username FROM users ORDER BY username")->fetchAll();
 
-// For mapping user_id to username (associative array)
+// Pour associer user_id à username
 $users = [];
 $stmt = $pdo->query("SELECT id, username FROM users");
 foreach ($stmt->fetchAll() as $user) {
     $users[$user['id']] = $user['username'];
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -298,10 +305,11 @@ foreach ($stmt->fetchAll() as $user) {
                             <span class="material-symbols-rounded" style="color: #fff;">warning</span>
                             <div>
                                 <strong>Lot critique :</strong>
-                                <?= htmlspecialchars($lot['reference']) ?> (<?= htmlspecialchars($lot['type']) ?>)
+                                <?= htmlspecialchars($lot['articles_noms']) ?> (<?= htmlspecialchars($lot['categorie']) ?>)
                             </div>
                         </div>
                     <?php endforeach; ?>
+
                     <?php foreach ($livraisons_probleme as $livraison): ?>
                         <div class="alert alert-danger" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
                             <span class="material-symbols-rounded" style="color: #fff;">warning</span>
