@@ -38,10 +38,6 @@ $lots = $pdo->query("
     GROUP BY l.id
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-foreach ($lots as $lot) {
-    echo "Lot n°" . $lot['id'] . " - Total : " . $lot['prix_total'] . " €<br>";
-}
-
 if (!isset($_SESSION['lot_basket'])) {
     $_SESSION['lot_basket'] = [];
 }
@@ -275,10 +271,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                         <option value="nom_article">Nom</option>
                         <option value="reference">Référence</option>
                         <option value="categorie">Catégorie</option>
-                        <option value="etat">État</option>
-                        <option value="couleur">Couleur</option>
-                        <option value="taille">Taille</option>
-                        <option value="quantite_stock">Quantité en stock</option>
                     </select>
                 </div>
             </div>
@@ -575,11 +567,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                 nom_article: 0,
                 reference: 1,
                 categorie: 2,
-                couleur: 3,
-                taille: 4,
-                quantite_stock: 5,
-                lots: 6,
-                etat: 7
             };
 
             function getCellValue(row, idx) {
@@ -589,22 +576,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             rows.sort((a, b) => {
                 let valA, valB;
                 switch (sortType) {
-                    case 'quantite_stock':
-                        valA = parseInt(getCellValue(a, colIndexes[sortType]), 10) || 0;
-                        valB = parseInt(getCellValue(b, colIndexes[sortType]), 10) || 0;
-                        return valA - valB;
-                    case 'etat':
-                        valA = a.dataset.etat ? a.dataset.etat.toLowerCase() : '';
-                        valB = b.dataset.etat ? b.dataset.etat.toLowerCase() : '';
-                        return valA.localeCompare(valB);
                     case 'nom_article':
                     case 'reference':
                     case 'categorie':
-                    case 'couleur':
-                    case 'taille':
-                        valA = getCellValue(a, colIndexes[sortType]).toLowerCase();
-                        valB = getCellValue(b, colIndexes[sortType]).toLowerCase();
-                        return valA.localeCompare(valB, undefined, {numeric: true});
                     default:
                         return 0;
                 }
