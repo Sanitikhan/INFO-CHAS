@@ -265,14 +265,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             <input type="text" id="search-article-input" placeholder="Rechercher..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
             <div class="btn-section-right">
                 <button class="btn" id="open-basket-modal">Créer le lot</button>
-                <div class="sort-dropdown" style="display:inline-block;">
-                    <label for="sort-select" style="margin-right:8px;">Trier par :</label>
-                    <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-                        <option value="nom_article">Nom</option>
-                        <option value="reference">Référence</option>
-                        <option value="categorie">Catégorie</option>
-                    </select>
-                </div>
             </div>
         </section>
 
@@ -515,7 +507,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                         <label for="edit-fournisseur_id">Fournisseur</label>
                         <select name="fournisseur_id" id="edit-fournisseur_id" required>
                             <?php
-                            $fournisseurs = $pdo->query("SELECT id, nom FROM fournisseurs")->fetchAll(PDO::FETCH_ASSOC);
                             foreach ($fournisseurs as $f) {
                                 echo '<option value="'.$f['id'].'">'.htmlspecialchars($f['nom']).'</option>';
                             }
@@ -533,7 +524,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                 <span class="close" onclick="fermerSupprimerModal()">&times;</span>
                 <h2>Confirmer la suppression</h2>
                 <p>Voulez-vous vraiment supprimer cet article ?</p>
-                <button id="btn-confirm-supprimer" class="btn btn-confirm-delete">Oui, supprimer</button>
+                <button id="btn-confirm-supprimer" class="btn btn-confirm-delete" data-id="<?= $lot['id'] ?>">Oui, supprimer</button>
                 <button type="button" class="btn" onclick="fermerSupprimerModal()">Annuler</button>
             </div>
         </div>
@@ -684,7 +675,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             document.getElementById('edit-categorie').value = this.dataset.categorie;
             document.getElementById('edit-quantite_stock').value = this.dataset.quantite_stock;
             document.getElementById('edit-etat').value = this.dataset.etat;
-            document.getElementById('edit-fournisseur_nom').value = this.dataset.fournisseur_nom;
+            document.getElementById('edit-fournisseur_id').value = this.dataset.fournisseur_id;
         });
     });
 
@@ -704,7 +695,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
         const confirmBtn = document.getElementById('btn-confirm-supprimer');
         if (confirmBtn) {
             confirmBtn.addEventListener('click', function() {
-                if (!erticleToDelete) return;
+                if (!articleToDelete) return;
                 fetch('../../actions/supprimer_article.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
