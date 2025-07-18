@@ -290,12 +290,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
                     <label for="sort-select" style="margin-right:8px;">Trier par :</label>
                     <select id="sort-select" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
                         <option value="nom_article">Nom</option>
-                        <option value="reference">Référence</option>
-                        <option value="categorie">Catégorie</option>
-                        <option value="etat">État</option>
-                        <option value="couleur">Couleur</option>
-                        <option value="taille">Taille</option>
-                        <option value="quantite_stock">Quantité en stock</option>
+                        <option value="quantite_stock">Quantité</option>
+                        <option value="emplacement">Emplacement</option>
+                        <option value="fournisseur">Fournisseur</option>
+                        <option value="date_reception">Date de réception</option>
                     </select>
                 </div>
             </div>
@@ -522,13 +520,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             // Column indexes for your articles table
             const colIndexes = {
                 nom_article: 0,
-                reference: 1,
-                categorie: 2,
-                couleur: 3,
-                taille: 4,
-                quantite_stock: 5,
-                lots: 6,
-                etat: 7
+                quantite: 1,
+                emplacement: 2,
+                fournisseur: 3,
+                date_reception: 4
             };
 
             function getCellValue(row, idx) {
@@ -538,22 +533,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_lot'])) {
             rows.sort((a, b) => {
                 let valA, valB;
                 switch (sortType) {
-                    case 'quantite_stock':
+                    case 'nom_article':
+                        valA = getCellValue(a, colIndexes.nom_article).toLowerCase();
+                        valB = getCellValue(b, colIndexes.nom_article).toLowerCase();
+                        return valA.localeCompare(valB);
+                    case 'quantite':
                         valA = parseInt(getCellValue(a, colIndexes[sortType]), 10) || 0;
                         valB = parseInt(getCellValue(b, colIndexes[sortType]), 10) || 0;
                         return valA - valB;
-                    case 'etat':
-                        valA = a.dataset.etat ? a.dataset.etat.toLowerCase() : '';
-                        valB = b.dataset.etat ? b.dataset.etat.toLowerCase() : '';
+                    case 'emplacement':
+                        valA = getCellValue(a, colIndexes.emplacement).toLowerCase();
+                        valB = getCellValue(b, colIndexes.emplacement).toLowerCase();
                         return valA.localeCompare(valB);
-                    case 'nom_article':
-                    case 'reference':
-                    case 'categorie':
-                    case 'couleur':
-                    case 'taille':
-                        valA = getCellValue(a, colIndexes[sortType]).toLowerCase();
-                        valB = getCellValue(b, colIndexes[sortType]).toLowerCase();
-                        return valA.localeCompare(valB, undefined, {numeric: true});
+                    case 'fournisseur':
+                        valA = getCellValue(a, colIndexes.fournisseur).toLowerCase();
+                        valB = getCellValue(b, colIndexes.fournisseur).toLowerCase();
+                        return valA.localeCompare(valB);
+                    case 'date_reception':
+                        valA = new Date(getCellValue(a, colIndexes.date_reception));
+                        valB = new Date(getCellValue(b, colIndexes.date_reception));
+                        return valA - valB;
                     default:
                         return 0;
                 }
